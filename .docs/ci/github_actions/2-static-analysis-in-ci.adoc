@@ -21,7 +21,7 @@ name: Code analysis
 on:
   push:
     branches:
-      - '**'
+      - main
   pull_request:
     branches:
       - main
@@ -53,6 +53,12 @@ jobs:
       - name: Run Clang Static Analyzer
         run: xcodebuild analyze -workspace "SDET Demo App.xcworkspace" -scheme "SDET Demo App" -destination 'platform=iOS Simulator,name=iPhone 15'
 ----
+
+=== Оптимизация триггеров (`on:`)
+
+Обрати внимание на блок `on:`. Мы настроили его так, чтобы пайплайн запускался при пуше *только* в `main` и при изменениях в Pull Request, нацеленных на `main`.
+
+Это стандартная практика, которая позволяет избежать двойного запуска пайплайна (один раз для `push` в ветку, второй раз для `pull_request`), когда вы отправляете изменения в ветку с уже открытым PR.
 
 === Параллельное выполнение задач (`jobs`)
 
