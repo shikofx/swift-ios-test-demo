@@ -1,0 +1,96 @@
+= Урок 4: Публикация отчетов на GitHub Pages
+:sectnums:
+:source-highlighter: highlight.js
+
+== Цели урока
+
+* Научиться публиковать результаты работы CI на статический сайт GitHub Pages.
+* Понять, как настроить права доступа (`permissions`) для деплоя.
+* Разобрать workflow, который собирает отчеты и публикует их.
+
+---
+
+== Теория
+
+GitHub Pages — это бесплатный сервис для хостинга статических сайтов прямо из вашего репозитория. Мы будем использовать его для создания удобного портала с нашими отчетами.
+
+=== Настройка репозитория
+
+Перед первым деплоем нужно разрешить публикацию через Actions:
+
+. Перейдите в `Settings` -> `Pages`.
+. В разделе `Build and deployment` в выпадающем списке `Source` выберите **`GitHub Actions`**.
+
+=== Workflow для сборки и деплоя
+
+Мы добавим в наш `analyze.yml` две новые задачи: `build_report_site` и `deploy_reports`.
+
+[source,yaml]
+----
+# ... (начало файла, задачи анализа)
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  # ... (задачи swiftlint_analysis и clang_analysis)
+
+  build_report_site:
+    name: Build Report Site
+    runs-on: ubuntu-latest
+    needs: [swiftlint_analysis, clang_analysis]
+    if: always()
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Structure reports for GitHub Pages
+        run: |
+          # Скрипт для создания index.html и копирования отчетов
+          # (полный скрипт см. в файле analyze.yml)
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'pages_root'
+
+  deploy_reports:
+    name: Deploy Reports to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build_report_site
+    if: always()
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+----
+
+=== `permissions` — Выдача прав пайплайну
+
+Блок `permissions` необходим, чтобы разрешить нашему пайплайну выполнять действия, связанные с публикацией на GitHub Pages.
+
+=== Задача `build_report_site`
+
+Это промежуточная задача, которая готовит сайт для публикации.
+
+*   `needs: [swiftlint_analysis, clang_analysis]`: Указывает, что эта задача начнется только после завершения обеих задач анализа.
+*   `- name: Download all artifacts`: Скачивает все артефакты из этого воркфлоу в директорию `artifacts/`.
+*   `- name: Structure reports...`: Выполняет shell-скрипт, который создает `index.html` и копирует в него ссылки на скачанные отчеты.
+*   `- name: Upload Pages artifact`: Этот специальный action (`upload-pages-artifact`) упаковывает готовую структуру сайта в специальный артефакт `github-pages`.
+
+=== Задача `deploy_reports`
+
+Это финальная задача, которая отвечает за публикацию.
+
+*   `needs: build_report_site`: Эта задача зависит от успешного создания артефакта в предыдущей задаче.
+*   `environment`: Определяет окружение для деплоя. GitHub автоматически создает окружение `github-pages`.
+*   `uses: actions/deploy-pages@v4`: Этот стандартный action берет артефакт `github-pages` и разворачивает его на GitHub Pages.
+
+После завершения работы пайплайна ты сможешь найти ссылку на страницу с отчетами во вкладке `Actions` твоего репозитория.
