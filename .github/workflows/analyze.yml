@@ -33,4 +33,4 @@ jobs:
         run: pod install --repo-update
 
       - name: Run Clang Static Analyzer
-        run: xcodebuild analyze -workspace "SDET Demo App.xcworkspace" -scheme "SDET Demo App" -destination 'platform=iOS Simulator,name=iPhone 15'
+        run: xcodebuild analyze -workspace "SDET Demo App.xcworkspace" -scheme "SDET Demo App" -destination 'platform=iOS Simulator,name=iPhone 16'
