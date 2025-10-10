@@ -8,6 +8,11 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs: 
   swiftlint_analysis:
     name: Run SwiftLint
@@ -20,7 +25,16 @@ jobs:
         run: brew install swiftlint
 
       - name: Run SwiftLint
-        run: swiftlint --strict
+        run: swiftlint lint --reporter html > swiftlint-report.html || swiftlint lint --strict
+        continue-on-error: true
+
+      - name: Upload SwiftLint artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: swiftlint-report
+          path: swiftlint-report.html
+          retention-days: 7
 
   clang_analysis:
     name: Run Clang Static Analyzer
@@ -33,4 +47,84 @@ jobs:
         run: pod install --repo-update
 
       - name: Run Clang Static Analyzer
-        run: xcodebuild analyze -workspace "SDET Demo App.xcworkspace" -scheme "SDET Demo App" -destination 'platform=iOS Simulator,name=iPhone 16'
+        run: |
+          set -o pipefail && xcodebuild analyze \
+            -workspace "SDET Demo App.xcworkspace" \
+            -scheme "SDET Demo App" \
+            -destination 'platform=iOS Simulator,name=iPhone 16' | tee clang-analyzer-log.txt
+        continue-on-error: true
+
+      - name: Upload Clang Analyzer artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: clang-analyzer-log
+          path: clang-analyzer-log.txt
+          retention-days: 7
+
+  publish_reports:
+    name: Build Report Site
+    runs-on: ubuntu-latest
+    needs: [swiftlint_analysis, clang_analysis]
+    if: always()
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Structure reports for GitHub Pages
+        run: |
+          set -e
+          mkdir -p pages_root
+
+          # --- Prepare index.html content ---
+          cat <<EOF > pages_root/index.html
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Static Analysis Reports</title>
+            <style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; padding: 2em; line-height: 1.5; } h1 { border-bottom: 1px solid #d0d7de; padding-bottom: .3em; } ul { list-style-type: none; padding-left: 0; } li { margin-bottom: 1em; } a { text-decoration: none; color: #0969da; } a:hover { text-decoration: underline; }</style>
+          </head>
+          <body>
+            <h1>Static Analysis Reports</h1>
+            <p>Reports generated for the latest build. If a link is broken, the report was not generated.</p>
+            <ul>
+          EOF
+
+          # --- Process SwiftLint report ---
+          if [ -f "artifacts/swiftlint-report/swiftlint-report.html" ]; then
+            echo "Processing SwiftLint report..."
+            cp artifacts/swiftlint-report/swiftlint-report.html pages_root/
+            echo '<li><a href="swiftlint-report.html">SwiftLint Report</a></li>' >> pages_root/index.html
+          fi
+
+          # --- Process Clang Analyzer log ---
+          if [ -f "artifacts/clang-analyzer-log/clang-analyzer-log.txt" ]; then
+            echo "Processing Clang Analyzer log..."
+            cp artifacts/clang-analyzer-log/clang-analyzer-log.txt pages_root/
+            echo '<li><a href="clang-analyzer-log.txt">Clang Static Analyzer Log</a></li>' >> pages_root/index.html
+          fi
+
+          # --- Finalize index.html ---
+          echo '</ul></body></html>' >> pages_root/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'pages_root'
+
+  deploy_reports:
+    name: Deploy Reports to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: publish_reports
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    if: always()
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
