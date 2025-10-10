@@ -1,0 +1,33 @@
+name: Code analysis
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+jobs: 
+  swiftlint_analysis:
+    name: Run SwiftLint
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Run SwiftLint
+        run: swiftlint --strict
+
+  clang_analysis:
+    name: Run Clang Static Analyzer
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Clang Static Analyzer
+        run: xcodebuild analyze -scheme "swift-ios-test-demo" -destination 'platform=iOS Simulator,name=iPhone 15'
