@@ -7,5 +7,7 @@
 == Уроки
 
 * <<_урок_1_наш_первый_ci_cd_пайплайн_на_github_actions,Урок 1: Наш первый CI/CD пайплайн на GitHub Actions>>
+* <<_урок_2_интеграция_статического_анализа_в_ci,Урок 2: Интеграция статического анализа в CI>>
 
 include::1-first-pipeline.adoc[leveloffset=+1]
+include::2-static-analysis-in-ci.adoc[leveloffset=+1]

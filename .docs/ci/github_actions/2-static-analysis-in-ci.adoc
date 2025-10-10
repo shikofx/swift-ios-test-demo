@@ -1,0 +1,85 @@
+= Урок 2: Интеграция статического анализа в CI
+:sectnums:
+:source-highlighter: highlight.js
+
+== Цели урока
+
+* Научиться добавлять статические анализаторы (SwiftLint, Clang Static Analyzer) в CI/CD пайплайн.
+* Понять, как запускать задачи (jobs) параллельно для ускорения обратной связи.
+* Разобрать полный workflow для анализа кода.
+
+---
+
+== Теория
+
+После создания базового пайплайна, следующим шагом является добавление автоматических проверок качества кода. Для этого мы создадим отдельный workflow `analyze.yml`, который будет запускать статические анализаторы.
+
+[source,yaml]
+----
+name: Code analysis
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+
+jobs: 
+  swiftlint_analysis:
+    name: Run SwiftLint
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Run SwiftLint
+        run: swiftlint --strict
+
+  clang_analysis:
+    name: Run Clang Static Analyzer
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: pod install --repo-update
+
+      - name: Run Clang Static Analyzer
+        run: xcodebuild analyze -workspace "SDET Demo App.xcworkspace" -scheme "SDET Demo App" -destination 'platform=iOS Simulator,name=iPhone 15'
+----
+
+=== Параллельное выполнение задач (`jobs`)
+
+В этом workflow определены две задачи верхнего уровня: `swiftlint_analysis` и `clang_analysis`. По умолчанию GitHub Actions запускает все задачи одного уровня **параллельно**. Это значит, что проверка стиля с помощью SwiftLint и поиск багов с помощью Clang будут выполняться одновременно, что значительно сокращает общее время выполнения пайплайна.
+
+=== Задача `swiftlint_analysis`
+
+Эта задача отвечает за проверку стиля кода.
+
+*   `- name: Install SwiftLint`: Устанавливает SwiftLint с помощью Homebrew.
+*   `- name: Run SwiftLint`: Запускает анализ. Флаг `--strict` критически важен: он заставляет пайплайн "упасть", если найдено хотя бы одно предупреждение, что гарантирует чистоту кода в репозитории.
+
+=== Задача `clang_analysis`
+
+Эта задача отвечает за более глубокий анализ кода на предмет потенциальных багов.
+
+[NOTE]
+====
+**Важное замечание:** Чтобы `xcodebuild` мог найти схему, она должна быть "расшарена" (shared). Для этого в Xcode нужно зайти в `Product > Scheme > Manage Schemes...` и поставить галочку `Shared` напротив нужной схемы. После этого не забудьте закоммитить изменения в директории `.xcodeproj/xcshareddata/`.
+====
+
+*   `- name: Install dependencies`: Устанавливает зависимости CocoaPods. Это обязательный шаг, так как без них проект не соберется.
+*   `- name: Run Clang Static Analyzer`: Запускает анализатор Clang.
+    *   `-workspace "..."`: Мы используем `.xcworkspace`, так как проект содержит зависимости CocoaPods.
+    *   `-scheme "..."`: Указываем нашу "расшаренную" схему.
+    *   Если анализатор найдет серьезные проблемы, команда завершится с ошибкой, и задача "упадет".
+
+=== Что дальше?
+
+Теперь у нас есть мощный и быстрый пайплайн для статического анализа. Следующим шагом будет создание отдельного workflow для сборки и тестирования приложения.
