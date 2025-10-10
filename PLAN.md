@@ -69,6 +69,7 @@
   * [ ] Создать workflow `.github/workflows/ios-ci.yml`.
   * [ ] Настроить job, который запускает UI-тесты на `macos-latest` runner.
     * [ ] **Интегрировать SwiftLint:** Добавить шаг для запуска статического анализа кода. Пайплайн должен падать при наличии серьезных нарушений.
+    * [ ] **Сборка и архивация:** Добавить шаг для сборки релиза (`.app`) и сохранения его как артефакта для будущих этапов тестирования (например, с Appium).
     * [ ] Создать базовый файл конфигурации `.swiftlint.yml`.
     * Использовать `xcodebuild test -scheme "swift-ios-test-demo" -destination 'platform=iOS Simulator,name=iPhone 15'`.
 * [ ] **Финализация:**
@@ -181,7 +182,6 @@
   * [ ] Интегрировать Allure Report: найти или адаптировать инструмент для конвертации `.xcresult` в формат Allure.
   * [ ] **GitHub Actions:** Настроить публикацию Allure-отчета на GitHub Pages.
   * [ ] **GitLab CI:** Настроить публикацию Allure-отчета на GitLab Pages.
-  * [ ] (Stretch goal) Интегрировать запуск тестов с **BrowserStack** или аналогичным сервисом.
 * [ ] **Финализация:**
 
   * [ ] Выполнить слияние ветки `feature/7-reporting-cloud` в `main`.
