@@ -88,6 +88,11 @@ Workflow состоит из одной или нескольких задач (
 
 ==== `clang_analysis:` - Задача "Run Clang Static Analyzer"
 
+[NOTE]
+====
+**Важное замечание:** Чтобы `xcodebuild` мог найти схему, она должна быть "расшарена" (shared). Для этого в Xcode нужно зайти в `Product > Scheme > Manage Schemes...` и поставить галочку `Shared` напротив нужной схемы. После этого не забудьте закоммитить изменения в директории `.xcodeproj/xcshareddata/`.
+====
+
 *   `name: Run Clang Static Analyzer`: Имя этой конкретной задачи.
 *   `runs-on: macos-latest`: Аналогично, эта задача также требует macOS-раннер.
 
