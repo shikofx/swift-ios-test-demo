@@ -14,6 +14,32 @@ permissions:
   id-token: write
 
 jobs: 
+  run_unit_tests:
+    name: Run Unit Tests
+    runs-on: macos-latest
+    needs: [swiftlint_analysis, clang_analysis]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache CocoaPods dependencies
+        uses: actions/cache@v4
+        with:
+          path: Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Install dependencies
+        run: pod install --repo-update
+
+      - name: Run tests
+        run: |
+          xcodebuild test \
+            -workspace "SDET Demo App.xcworkspace" \
+            -scheme "SDET Demo App" \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest'
+
   swiftlint_analysis:
     name: Run SwiftLint
     runs-on: macos-latest
