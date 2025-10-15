@@ -1,4 +1,4 @@
-name: Code analysis
+name: IOS-DEMO-CI
 
 on:
   push:
@@ -14,32 +14,6 @@ permissions:
   id-token: write
 
 jobs: 
-  run_unit_tests:
-    name: Run Unit Tests
-    runs-on: macos-latest
-    needs: [swiftlint_analysis, clang_analysis]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Cache CocoaPods dependencies
-        uses: actions/cache@v4
-        with:
-          path: Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
-
-      - name: Install dependencies
-        run: pod install --repo-update
-
-      - name: Run tests
-        run: |
-          xcodebuild test \
-            -workspace "SDET Demo App.xcworkspace" \
-            -scheme "SDET Demo App" \
-            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest'
-
   swiftlint_analysis:
     name: Run SwiftLint
     runs-on: macos-latest
@@ -94,12 +68,76 @@ jobs:
         with:
           name: clang-analyzer-log
           path: clang-analyzer-log.txt
+          retention-days: 7gi
+  run_unit_tests:
+    name: Run Unit Tests
+    runs-on: macos-latest
+    needs: [swiftlint_analysis, clang_analysis]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache CocoaPods dependencies
+        uses: actions/cache@v4
+        with:
+          path: Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Install dependencies
+        run: pod install --repo-update
+
+      - name: Run tests
+        run: |
+          xcodebuild test \
+            -workspace "SDET Demo App.xcworkspace" \
+            -scheme "SDET Demo App" \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest'
+
+  build_app:
+    name: Build Release App
+    runs-on: macos-latest
+    needs: [run_unit_tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache CocoaPods dependencies
+        uses: actions/cache@v4
+        with:
+          path: Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Install dependencies
+        run: pod install --repo-update
+
+      - name: Build .app for Simulator
+        run: |
+          xcodebuild build \
+            -workspace "SDET Demo App.xcworkspace" \
+            -scheme "SDET Demo App" \
+            -sdk iphonesimulator \
+            -configuration Release \
+            -derivedDataPath build
+
+      - name: Create .app artifact
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent "build/Build/Products/Release-iphonesimulator/SDET Demo App.app" "SDET-Demo-App.zip"
+
+      - name: Upload .app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdet-demo-app
+          path: SDET-Demo-App.zip
           retention-days: 7
 
   publish_reports:
     name: Build Report Site
     runs-on: ubuntu-latest
-    needs: [swiftlint_analysis, clang_analysis]
+    needs: [build_app]
     if: always()
 
     steps:
