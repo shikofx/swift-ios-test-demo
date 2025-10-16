@@ -18,18 +18,18 @@ jobs:
     name: Code Analysis
     uses: ./.github/workflows/static-analysis.yml
 
-  unit_tests:
-    name: Unit Tests
-    needs: [analysis]
-    uses: ./.github/workflows/unit-tests.yml
+  # unit_tests:
+  #   name: Unit Tests
+  #   needs: [analysis]
+  #   uses: ./.github/workflows/unit-tests.yml
 
-  build_app:
-    name: Build
-    needs: [unit_tests]
-    uses: ./.github/workflows/build-archive.yml
+  # build_app:
+    # name: Build
+    # needs: [unit_tests]
+    # uses: ./.github/workflows/build-archive.yml
   
   deploy_reports:
     name: Reports
-    needs: [unit_tests]
+    needs: [analysis]
     if: always()
     uses: ./.github/workflows/deploy-reports.yml

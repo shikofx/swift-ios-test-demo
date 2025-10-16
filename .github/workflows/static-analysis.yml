@@ -11,8 +11,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Cache Homebrew dependencies
+        uses: actions/cache@v4
+        with:
+          path: $(brew --prefix)/Cellar
+          key: ${{ runner.os }}-brew-${{ hashFiles('.github/workflows/static-analysis.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-brew-
+
       - name: Install SwiftLint
-        run: brew install swiftlint
+        run: |
+          # Install only if the command is not found (i.e., cache miss)
+          if ! command -v swiftlint &> /dev/null; then
+            brew install swiftlint
+          else
+            echo "SwiftLint is already installed (from cache)."
+          fi
 
       - name: Run SwiftLint
         run: swiftlint lint --reporter html > swiftlint-report.html
@@ -26,6 +40,46 @@ jobs:
           path: swiftlint-report.html
           retention-days: 7
 
+  swiftformat_analysis:
+    name: SwiftFormat
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache Homebrew dependencies
+        uses: actions/cache@v4
+        with:
+          path: $(brew --prefix)/Cellar
+          key: ${{ runner.os }}-brew-${{ hashFiles('.github/workflows/static-analysis.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-brew-
+
+      - name: Install SwiftFormat
+        run: |
+          # Install only if the command is not found (i.e., cache miss)
+          if ! command -v swiftformat &> /dev/null; then
+            brew install swiftformat
+          else
+            echo "SwiftFormat is already installed (from cache)."
+          fi
+
+      - name: Run SwiftFormat (Lint Mode)
+        id: swiftformat_run
+        run: |
+          # Генерируем HTML-отчет и одновременно проверяем форматирование.
+          # Команда завершится с ошибкой, если найдены проблемы.
+          swiftformat . --reporter json > swiftformat-report.json
+        continue-on-error: true
+
+      - name: Upload SwiftFormat artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: swiftformat-report
+          path: swiftformat-report.json
+          retention-days: 7
+
   clang_analysis:
     name: Clang
     runs-on: macos-latest
@@ -33,30 +87,42 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Cache Homebrew dependencies
+        uses: actions/cache@v4
+        with:
+          path: $(brew --prefix)/Cellar
+          key: ${{ runner.os }}-brew-${{ hashFiles('.github/workflows/static-analysis.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-brew-
+
       - name: Install Dependencies (if needed for Clang)
         uses: ./.github/actions/setup-ios-environment
 
       - name: Run Clang Static Analyzer
         id: clang_run
         run: |
-          set -o pipefail && PODS_PODFILE_DIR_PATH="${{ github.workspace }}" xcodebuild analyze \
+          mkdir -p clang-report
+          PODS_PODFILE_DIR_PATH="${{ github.workspace }}" xcodebuild analyze \
             -workspace "SDET Demo App.xcworkspace" \
             -scheme "SDET Demo App" \
-            -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation)' | tee clang-analyzer-log.txt
+            -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation)' \
+            -configuration Debug \
+            CLANG_ANALYZER_OUTPUT=html \
+            CLANG_ANALYZER_OUTPUT_DIR="${{ github.workspace }}/clang-report"
         continue-on-error: true
 
       - name: Upload Clang Analyzer artifact
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: clang-analyzer-log
-          path: clang-analyzer-log.txt
+          name: clang-report
+          path: clang-report/
           retention-days: 7
 
       - name: Check for technical failure
         if: steps.clang_run.outcome == 'failure'
         run: |
-          if [ ! -s clang-analyzer-log.txt ]; then
+          if [ -z "$(ls -A clang-report)" ]; then
             echo "Clang Analyzer step failed due to a technical issue (e.g., build error, missing simulator), not analysis warnings."
             exit 1
           fi
