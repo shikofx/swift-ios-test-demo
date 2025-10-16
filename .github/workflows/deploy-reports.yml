@@ -1,0 +1,47 @@
+name: Deploy Reports to GitHub Pages
+
+on:
+  workflow_call:
+
+jobs:
+  build_report_site:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Structure reports for GitHub Pages
+        run: |
+          mkdir -p pages_root
+          cat <<EOF > pages_root/index.html
+          <!DOCTYPE html><html><head><title>Static Analysis Reports</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; padding: 2em; line-height: 1.5; } h1 { border-bottom: 1px solid #d0d7de; } ul { list-style-type: none; padding-left: 0; }</style></head><body><h1>Static Analysis Reports</h1><ul>
+          EOF
+          if [ -f "artifacts/swiftlint-report/swiftlint-report.html" ]; then
+            cp artifacts/swiftlint-report/swiftlint-report.html pages_root/
+            echo '<li><a href="swiftlint-report.html">SwiftLint Report</a></li>' >> pages_root/index.html
+          fi
+          if [ -f "artifacts/clang-analyzer-log/clang-analyzer-log.txt" ]; then
+            cp artifacts/clang-analyzer-log/clang-analyzer-log.txt pages_root/
+            echo '<li><a href="clang-analyzer-log.txt">Clang Static Analyzer Log</a></li>' >> pages_root/index.html
+          fi
+          echo '</ul></body></html>' >> pages_root/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'pages_root'
+
+  deploy_reports:
+    name: GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build_report_site
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

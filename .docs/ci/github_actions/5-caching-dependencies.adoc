@@ -35,13 +35,12 @@
 [source,yaml]
 ----
 name: 'Setup iOS Environment'
-description: 'Checks out code, caches and installs CocoaPods dependencies'
+description: 'Caches and installs CocoaPods dependencies'
 
 runs:
   using: "composite"
-
-steps:
-  - name: Cache CocoaPods dependencies
+  steps:
+    - name: Cache CocoaPods dependencies
     id: pods-cache
     uses: actions/cache@v4
     with:
@@ -50,9 +49,15 @@ steps:
       restore-keys: |
         ${{ runner.os }}-pods-
 
-  - name: Install dependencies
+    - name: Install CocoaPods
     if: steps.pods-cache.outputs.cache-hit != 'true'
-    run: pod install --repo-update
+    shell: bash
+    run: gem install cocoapods
+
+    - name: Install dependencies
+    if: steps.pods-cache.outputs.cache-hit != 'true'
+    shell: bash
+    run: pod install
 ----
 
 Давайте разберем этот файл:
@@ -60,8 +65,7 @@ steps:
 *   `actions/cache@v4`: Это стандартный экшен для работы с кэшем.
     *   `path: Pods`: Указываем, что мы хотим закэшировать директорию `Pods`.
     *   `key: ...-${{ hashFiles('**/Podfile.lock') }}`: Уникальный ключ кэша. Он зависит от ОС и хэша файла `Podfile.lock`. Если зависимости в `Podfile.lock` меняются, хэш тоже меняется, и создается новый кэш.
-*   `if: steps.pods-cache.outputs.cache-hit != 'true'`: Это условное выполнение. Шаги установки (`gem install` и `pod install`) запустятся только в том случае, если `actions/cache` **не нашел** готовый кэш по ключу.
-*   `run: pod install --repo-update`: Устанавливает зависимости.
+*   `if: steps.pods-cache.outputs.cache-hit != 'true'`: Это условное выполнение. Шаги `gem install cocoapods` и `pod install` запустятся только в том случае, если `actions/cache` **не нашел** готовый кэш по ключу.
 
 === Использование Composite Action
 

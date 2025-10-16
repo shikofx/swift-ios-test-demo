@@ -5,7 +5,7 @@ on:
 
 jobs:
   run_unit_tests:
-    name: Run Unit Tests
+    name: Run
     runs-on: macos-latest
     steps:
       - name: Checkout code
