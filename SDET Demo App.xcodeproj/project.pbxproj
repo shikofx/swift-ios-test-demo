@@ -128,6 +128,8 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D6695AB22EA0A9380095A936 /* Demo AppTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = "Demo AppTests";
 			sourceTree = "<group>";
 		};
@@ -341,8 +343,6 @@
 				D6695AB22EA0A9380095A936 /* Demo AppTests */,
 			);
 			name = "Demo AppTests";
-			packageProductDependencies = (
-			);
 			productName = "Demo AppTests";
 			productReference = D6695AB12EA0A9380095A936 /* Demo AppTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -444,13 +444,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-SDET Demo App/Pods-SDET Demo App-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-SDET Demo App/Pods-SDET Demo App-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

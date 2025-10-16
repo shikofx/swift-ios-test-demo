@@ -28,13 +28,6 @@ jobs:
       - name: Install Dependencies (if needed for Clang)
         uses: ./.github/actions/setup-ios-environment
 
-      - name: Debug File Structure
-        run: |
-          echo "--- Current Directory ---"
-          pwd
-          echo "--- Listing All Files (Root) ---"
-          ls -la
-
       - name: Run Clang Static Analyzer
         id: clang_run
         run: |

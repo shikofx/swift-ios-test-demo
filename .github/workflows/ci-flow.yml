@@ -18,10 +18,10 @@ jobs:
     name: Code Analysis
     uses: ./.github/workflows/static-analysis.yml
 
-  # run_unit_tests:
-  #   name: Run Unit Tests
-  #   needs: [analysis]
-  #   uses: ./.github/workflows/unit-tests.yml
+  run_unit_tests:
+    name: Run Unit Tests
+    needs: [analysis]
+    uses: ./.github/workflows/unit-tests.yml
 
   # build_app:
   #   name: Build Release App
