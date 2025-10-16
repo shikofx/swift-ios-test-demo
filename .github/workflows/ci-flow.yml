@@ -51,6 +51,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pods-
 
+      - name: Install latest CocoaPods
+        run: gem install cocoapods --pre
+
       - name: Install dependencies
         run: pod install --repo-update
 
@@ -85,6 +88,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pods-
 
+      - name: Install latest CocoaPods
+        run: gem install cocoapods --pre
+
       - name: Install dependencies
         run: pod install --repo-update
 
@@ -110,6 +116,9 @@ jobs:
           key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pods-
+
+      - name: Install latest CocoaPods
+        run: gem install cocoapods --pre
 
       - name: Install dependencies
         run: pod install --repo-update
