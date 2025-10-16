@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -55,6 +55,16 @@
 		C4513FFB275D1139004BABDA /* PencilKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4513FFA275D1139004BABDA /* PencilKit.framework */; };
 		C451404A2787BAA0004BABDA /* PushNotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C45140492787BAA0004BABDA /* PushNotificationsViewController.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D6695AB52EA0A9380095A936 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2F45FB3926F1CC0100A13B16 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2F45FB4026F1CC0100A13B16;
+			remoteInfo = "SDET Demo App";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		112E55FCE28483308B4409B2 /* Pods-SDET Demo App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SDET Demo App.release.xcconfig"; path = "Target Support Files/Pods-SDET Demo App/Pods-SDET Demo App.release.xcconfig"; sourceTree = "<group>"; };
@@ -112,7 +122,12 @@
 		C45140482787B996004BABDA /* SDET Demo App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "SDET Demo App.entitlements"; sourceTree = "<group>"; };
 		C45140492787BAA0004BABDA /* PushNotificationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationsViewController.swift; sourceTree = "<group>"; };
 		C4A775022709DF3900C1973E /* Bridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Bridge.h; sourceTree = "<group>"; };
+		D6695AB12EA0A9380095A936 /* Demo AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Demo AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		D6695AB22EA0A9380095A936 /* Demo AppTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Demo AppTests"; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		2F45FB3E26F1CC0100A13B16 /* Frameworks */ = {
@@ -121,6 +136,13 @@
 			files = (
 				C4513FFB275D1139004BABDA /* PencilKit.framework in Frameworks */,
 				543CBADAB595FD29694899BD /* Pods_SDET_Demo_App.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D6695AAE2EA0A9380095A936 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -140,6 +162,7 @@
 			isa = PBXGroup;
 			children = (
 				2F45FB4326F1CC0100A13B16 /* SDET Demo App */,
+				D6695AB22EA0A9380095A936 /* Demo AppTests */,
 				2F45FB4226F1CC0100A13B16 /* Products */,
 				00ADF45586AA15CD74704D86 /* Pods */,
 				98B495C95C2D44BB34FF6F13 /* Frameworks */,
@@ -150,6 +173,7 @@
 			isa = PBXGroup;
 			children = (
 				2F45FB4126F1CC0100A13B16 /* SDET Demo App.app */,
+				D6695AB12EA0A9380095A936 /* Demo AppTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -296,17 +320,44 @@
 			productReference = 2F45FB4126F1CC0100A13B16 /* SDET Demo App.app */;
 			productType = "com.apple.product-type.application";
 		};
+		D6695AB02EA0A9380095A936 /* Demo AppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D6695AB92EA0A9380095A936 /* Build configuration list for PBXNativeTarget "Demo AppTests" */;
+			buildPhases = (
+				D6695AAD2EA0A9380095A936 /* Sources */,
+				D6695AAE2EA0A9380095A936 /* Frameworks */,
+				D6695AAF2EA0A9380095A936 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D6695AB62EA0A9380095A936 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D6695AB22EA0A9380095A936 /* Demo AppTests */,
+			);
+			name = "Demo AppTests";
+			packageProductDependencies = (
+			);
+			productName = "Demo AppTests";
+			productReference = D6695AB12EA0A9380095A936 /* Demo AppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		2F45FB3926F1CC0100A13B16 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1240;
+				LastSwiftUpdateCheck = 1630;
 				LastUpgradeCheck = 1250;
 				TargetAttributes = {
 					2F45FB4026F1CC0100A13B16 = {
 						CreatedOnToolsVersion = 12.5;
+					};
+					D6695AB02EA0A9380095A936 = {
+						CreatedOnToolsVersion = 16.3;
+						TestTargetID = 2F45FB4026F1CC0100A13B16;
 					};
 				};
 			};
@@ -325,6 +376,7 @@
 			projectRoot = "";
 			targets = (
 				2F45FB4026F1CC0100A13B16 /* SDET Demo App */,
+				D6695AB02EA0A9380095A936 /* Demo AppTests */,
 			);
 		};
 /* End PBXProject section */
@@ -345,6 +397,13 @@
 				2F0DE6C226FB3485008C6D63 /* Proxima Nova Medium.otf in Resources */,
 				2F0DE6C026FB340C008C6D63 /* proximanova-semibold.otf in Resources */,
 				2F592B2526F9B5CA00F9D6ED /* TabBar.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D6695AAF2EA0A9380095A936 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -438,7 +497,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D6695AAD2EA0A9380095A936 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D6695AB62EA0A9380095A936 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2F45FB4026F1CC0100A13B16 /* SDET Demo App */;
+			targetProxy = D6695AB52EA0A9380095A936 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		2F45FB4A26F1CC0100A13B16 /* Authentication.storyboard */ = {
@@ -654,6 +728,53 @@
 			};
 			name = Release;
 		};
+		D6695AB72EA0A9380095A936 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "by.pda.demoapp.ios.Demo-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SDET Demo App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SDET Demo App";
+			};
+			name = Debug;
+		};
+		D6695AB82EA0A9380095A936 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "by.pda.demoapp.ios.Demo-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SDET Demo App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SDET Demo App";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -671,6 +792,15 @@
 			buildConfigurations = (
 				2F45FB5626F1CC0400A13B16 /* Debug */,
 				2F45FB5726F1CC0400A13B16 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D6695AB92EA0A9380095A936 /* Build configuration list for PBXNativeTarget "Demo AppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D6695AB72EA0A9380095A936 /* Debug */,
+				D6695AB82EA0A9380095A936 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
