@@ -20,4 +20,3 @@ DerivedData
 # CocoaPods
 /Pods/
 /My Demo App.xcworkspace
-Podfile.lock

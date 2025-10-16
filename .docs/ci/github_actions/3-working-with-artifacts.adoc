@@ -1,5 +1,4 @@
-= Урок 3: Работа с артефактами
-:sectnums:
+= Работа с артефактами
 :source-highlighter: highlight.js
 
 == Цели урока

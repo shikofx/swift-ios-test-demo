@@ -1,0 +1,61 @@
+name: Reusable - Static Analysis
+
+on:
+  workflow_call:
+
+jobs:
+  swiftlint_analysis:
+    name: SwiftLint
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Run SwiftLint
+        run: swiftlint --strict
+        continue-on-error: true
+
+  clang_analysis:
+    name: Clang
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies (if needed for Clang)
+        uses: ./.github/actions/setup-ios-environment
+
+      - name: Debug File Structure
+        run: |
+          echo "--- Current Directory ---"
+          pwd
+          echo "--- Listing All Files (Root) ---"
+          ls -la
+
+      - name: Run Clang Static Analyzer
+        id: clang_run
+        run: |
+          set -o pipefail && PODS_PODFILE_DIR_PATH="${{ github.workspace }}" xcodebuild analyze \
+            -workspace "SDET Demo App.xcworkspace" \
+            -scheme "SDET Demo App" \
+            -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation)' | tee clang-analyzer-log.txt
+        continue-on-error: true
+
+      - name: Upload Clang Analyzer artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: clang-analyzer-log
+          path: clang-analyzer-log.txt
+          retention-days: 7
+
+      - name: Check for technical failure
+        if: steps.clang_run.outcome == 'failure'
+        run: |
+          if [ ! -s clang-analyzer-log.txt ]; then
+            echo "Clang Analyzer step failed due to a technical issue (e.g., build error, missing simulator), not analysis warnings."
+            exit 1
+          fi

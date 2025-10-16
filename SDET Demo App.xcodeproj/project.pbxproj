@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -126,7 +126,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		D6695AB22EA0A9380095A936 /* Demo AppTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Demo AppTests"; sourceTree = "<group>"; };
+		D6695AB22EA0A9380095A936 /* Demo AppTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Demo AppTests";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -362,7 +366,6 @@
 				};
 			};
 			buildConfigurationList = 2F45FB3C26F1CC0100A13B16 /* Build configuration list for PBXProject "SDET Demo App" */;
-			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -371,6 +374,7 @@
 				de,
 			);
 			mainGroup = 2F45FB3826F1CC0100A13B16;
+			preferredProjectObjectVersion = 77;
 			productRefGroup = 2F45FB4226F1CC0100A13B16 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";

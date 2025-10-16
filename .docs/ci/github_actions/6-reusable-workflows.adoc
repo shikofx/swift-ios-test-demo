@@ -1,0 +1,80 @@
+= Модульные пайплайны и свои экшены
+:source-highlighter: highlight.js
+
+== Цели урока
+
+* Научиться разбивать один большой workflow на несколько маленьких (Reusable Workflows).
+* Научиться создавать собственные экшены для повторяющихся шагов (Composite Actions).
+* Понять, как вызывать одни workflow из других.
+
+---
+
+== Теория
+
+Когда пайплайн разрастается, его становится сложно читать и поддерживать. GitHub Actions предлагает два мощных инструмента для решения этой проблемы: Reusable Workflows и Composite Actions.
+
+=== Reusable Workflows (Переиспользуемые пайплайны)
+
+Это полноценные workflow, которые можно вызывать из других workflow. Они идеально подходят для группировки нескольких задач (`jobs`), которые вместе выполняют одну большую цель (например, "провести статический анализ").
+
+.Создание переиспользуемого workflow:
+[source,yaml]
+----
+# .github/workflows/reusable/static-analysis.yml
+name: Reusable - Static Analysis
+
+on:
+  workflow_call: # <1>
+
+jobs:
+  swiftlint_analysis:
+    # ...
+  clang_analysis:
+    # ...
+----
+<1> Триггер `workflow_call` указывает, что этот пайплайн можно вызывать извне.
+
+.Вызов переиспользуемого workflow:
+[source,yaml]
+----
+# .github/workflows/ci-flow.yml
+jobs:
+  analysis:
+    name: Static Analysis
+    uses: ./.github/workflows/reusable/static-analysis.yml # <1>
+----
+<1> Секция `uses` теперь ссылается на другой yml-файл в репозитории.
+
+=== Composite Actions (Композитные экшены)
+
+Это способ сгруппировать несколько шагов (`steps`) в один кастомный экшен. Они идеальны для инкапсуляции повторяющихся последовательностей команд (например, "настроить среду и установить зависимости").
+
+.Создание композитного экшена:
+[source,yaml]
+----
+# .github/actions/setup-ios-environment/action.yml
+name: 'Setup iOS Dependencies'
+runs:
+  using: "composite" # <1>
+
+steps:
+  - name: Cache and Install Pods
+    # ... (шаги для кэширования и установки зависимостей)
+----
+<1> `using: "composite"` указывает, что это композитный экшен.
+
+.Вызов композитного экшена:
+[source,yaml]
+----
+# В любом workflow, где нужны зависимости
+steps:
+  - name: Checkout code
+    uses: actions/checkout@v4 # <1>
+
+  - name: Install Dependencies
+    uses: ./.github/actions/setup-ios-environment # <2>
+----
+<1> Сначала мы **обязательно** должны скачать код. Без этого шага GitHub Actions не сможет найти наш локальный экшен.
+<2> И только потом мы вызываем наш экшен, который находится в скачанном репозитории.
+
+Такой подход делает CI/CD-конфигурацию чистой, модульной и легко поддерживаемой.
