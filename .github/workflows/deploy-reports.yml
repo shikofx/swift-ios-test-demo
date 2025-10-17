@@ -40,12 +40,16 @@ jobs:
           mkdir -p allure-results
           xcresultparser artifacts/xcresult-bundle --output-format junit > allure-results/junit.xml
 
-      - name: Checkout previous reports from gh-pages
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-          path: gh-pages-root # Download directly to the target directory
-        continue-on-error: true
+      - name: Get Allure history
+        run: |
+          # Проверяем, существует ли ветка gh-pages на удаленном сервере
+          if git ls-remote --exit-code --heads origin gh-pages; then
+            echo "Branch 'gh-pages' exists. Checking out..."
+            git clone --depth 1 --branch gh-pages https://github.com/${{ github.repository }}.git gh-pages-root
+          else
+            echo "Branch 'gh-pages' does not exist. Creating an empty directory."
+            mkdir -p gh-pages-root
+          fi
 
       - name: Copy Allure history
         run: |

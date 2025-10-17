@@ -24,6 +24,11 @@
                BlueprintName = "Demo AppTests"
                ReferencedContainer = "container:SDET Demo App.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "Demo_AppTests">
+               </Test>
+            </SkippedTests>
          </TestableReference>
       </Testables>
    </TestAction>
