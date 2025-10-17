@@ -5,12 +5,16 @@
 //  Created by d parkheychuk on 16.10.25.
 //
 
-import Testing
+import XCTest
 
-struct Demo_AppTests {
+class Demo_AppTests: XCTestCase {
 
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+    func testSum() {
+        let expected = 15
+        
+        let sum = 12 + 3
+        
+        XCTAssertEqual(expected, sum, "Sum is incorrect")
     }
 
 }

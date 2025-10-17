@@ -14,10 +14,6 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/setup-ios-environment
 
-      - name: Install xcresultparser
-        run: |
-          brew install xcresultparser
-
       - name: Run tests
         run: |
           PODS_PODFILE_DIR_PATH="${{ github.workspace }}" xcodebuild test \
@@ -27,14 +23,10 @@ jobs:
             -resultBundlePath Test.xcresult
         continue-on-error: true
 
-      - name: Convert xcresult to Allure
-        if: always()
-        run: xcresultparser --output-path allure-results --output-type allure Test.xcresult
-
-      - name: Upload Allure results
+      - name: Upload test result bundle
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results
-          path: allure-results
+          name: xcresult-bundle
+          path: Test.xcresult
           retention-days: 7

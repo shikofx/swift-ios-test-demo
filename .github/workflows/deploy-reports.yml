@@ -11,7 +11,7 @@ permissions:
 jobs:
   build_report_site:
     name: Build Site
-    runs-on: ubuntu-latest
+    runs-on: macos-latest # Changed to macOS to run brew
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -26,8 +26,22 @@ jobs:
       - name: Install Allure Commandline
         run: npm install -g allure-commandline
 
+      - name: Install xcresultparser
+        run: |
+          if ! command -v xcresultparser &> /dev/null; then
+            brew install xcresultparser
+          else
+            echo "xcresultparser is already installed."
+          fi
+
+      - name: Convert xcresult to JUnit
+        if: always()
+        run: |
+          mkdir -p allure-results
+          xcresultparser artifacts/xcresult-bundle/Test.xcresult --output-format junit > allure-results/junit.xml
+
       - name: Generate Allure Report
-        run: allure generate artifacts/allure-results -o allure-report --clean
+        run: allure generate allure-results -o allure-report --clean
 
       - name: Create a unified report portal
         run: |
@@ -70,11 +84,6 @@ jobs:
             echo '<li><a href="swiftformat/swiftformat-report.html">➡️ SwiftFormat Style Report</a></li>' >> gh-pages-root/index.html
           fi
 
-          if [ -d "artifacts/clang-report" ] && [ -n "$(ls -A artifacts/clang-report)" ]; then
-            mkdir -p gh-pages-root/clang-report
-            mv artifacts/clang-report/* gh-pages-root/clang-report/
-            echo '<li><a href="clang-report/index.html">➡️ Clang Static Analyzer Report</a></li>' >> gh-pages-root/index.html
-          fi
           echo '</ul></body></html>' >> gh-pages-root/index.html
 
       - name: Upload Pages artifact
