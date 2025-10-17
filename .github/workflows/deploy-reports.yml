@@ -38,10 +38,24 @@ jobs:
         if: always()
         run: |
           mkdir -p allure-results
-          xcresultparser artifacts/xcresult-bundle/Test.xcresult --output-format junit > allure-results/junit.xml
+          xcresultparser artifacts/xcresult-bundle --output-format junit > allure-results/junit.xml
+
+      - name: Checkout previous reports from gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+        continue-on-error: true
+
+      - name: Copy Allure history
+        run: |
+          if [ -d "gh-pages/allure/history" ]; then
+            echo "Previous Allure history found. Copying to results directory."
+            cp -r gh-pages/allure/history allure-results/
+          fi
 
       - name: Generate Allure Report
-        run: allure generate allure-results -o allure-report --clean
+        run: allure generate allure-results -o allure-report
 
       - name: Create a unified report portal
         run: |

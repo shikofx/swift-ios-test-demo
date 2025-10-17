@@ -1,0 +1,65 @@
+= Отчетность с Allure Report
+:source-highlighter: highlight.js
+
+== Цели урока
+
+* Понять, как интегрировать Allure Report в CI/CD пайплайн.
+* Научиться настраивать сохранение истории запусков для построения трендов.
+
+---
+
+== Теория
+
+=== Что такое Allure Report?
+
+*Allure* — это гибкий и легковесный инструмент для создания отчетов о тестировании. Он позволяет создавать наглядные HTML-отчеты с детальной информацией о каждом тесте, шагах, вложениях (скриншоты, логи) и, что очень важно, строить графики и тренды по истории запусков.
+
+image::https://allurereport.org/images/allure-report-screen.png[Allure Report Example, 800]
+
+=== Интеграция в наш CI/CD
+
+Интеграция Allure в нашем проекте разделена на два этапа, чтобы сделать пайплайн более модульным:
+
+1.  **Запуск тестов (`unit-tests.yml`):**
+    *   Задача `run_unit_tests` запускает тесты с помощью `xcodebuild`.
+    *   Результат сохраняется в "сыром" бинарном формате `Test.xcresult`.
+    *   Этот файл `Test.xcresult` загружается как артефакт `xcresult-bundle`.
+
+2.  **Генерация отчета (`deploy-reports.yml`):**
+    *   Задача `build_report_site` скачивает артефакт `xcresult-bundle`.
+    *   С помощью `xcresultparser` бинарный `Test.xcresult` конвертируется в понятный для Allure формат **JUnit XML**.
+        [source,bash]
+        ----
+        xcresultparser artifacts/xcresult-bundle/Test.xcresult --output-format junit > allure-results/junit.xml
+        ----
+    *   Команда `allure generate` создает HTML-отчет из содержимого папки `allure-results`.
+
+=== Сохранение истории запусков (Trends)
+
+Чтобы Allure мог строить графики трендов, ему нужны данные из предыдущих запусков. Мы реализуем это следующим образом:
+
+.   **Хранение отчетов:** Готовые HTML-отчеты публикуются на GitHub Pages и хранятся в специальной ветке `gh-pages`.
+
+.   **Загрузка старой истории:** Перед генерацией нового отчета наш CI-пайплайн скачивает содержимое ветки `gh-pages`.
+    [source,yaml]
+    ----
+    - name: Checkout previous reports from gh-pages
+      uses: actions/checkout@v4
+      with:
+        ref: gh-pages
+        path: gh-pages
+    ----
+
+.   **Копирование истории:** Из скачанного старого отчета извлекается только папка `history` и копируется в директорию с новыми результатами (`allure-results`).
+    [source,bash]
+    ----
+    cp -r gh-pages/allure/history allure-results/
+    ----
+
+.   **Генерация с историей:** Команда `allure generate` запускается *без* флага `--clean`. Она находит папку `history` и использует ее для построения графиков трендов в новом отчете.
+    [source,bash]
+    ----
+    allure generate allure-results -o allure-report
+    ----
+
+В результате каждый новый отчет будет содержать актуальную историю и наглядные графики, показывающие динамику качества нашего продукта.
