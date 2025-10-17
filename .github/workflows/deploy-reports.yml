@@ -26,26 +26,25 @@ jobs:
       - name: Install Allure Commandline
         run: npm install -g allure-commandline
 
-      - name: Install xcresultparser
+      - name: Install and prepare xcresults
         run: |
-          if ! command -v xcresultparser &> /dev/null; then
-            brew install xcresultparser
-          else
-            echo "xcresultparser is already installed."
-          fi
+          brew install wget
+          wget https://github.com/eroshenkoam/xcresults/releases/latest/download/xcresults
+          chmod +x xcresults
 
-      - name: Convert xcresult to JUnit
+      - name: Convert xcresult to Allure format
         if: always()
         run: |
           mkdir -p allure-results
-          xcresultparser artifacts/xcresult-bundle --output-format junit > allure-results/junit.xml
+          ./xcresults export artifacts/xcresult-bundle allure-results
 
-      - name: Checkout previous reports from gh-pages
+      - name: Get Allure history from gh-pages branch
         uses: actions/checkout@v4
+        if: always()
+        continue-on-error: true # This is important! It prevents the workflow from failing if the branch doesn't exist yet.
         with:
           ref: gh-pages
-          path: gh-pages-root # Download directly to the target directory
-        continue-on-error: true
+          path: gh-pages-root
 
       - name: Copy Allure history
         run: |
@@ -106,9 +105,9 @@ jobs:
     name: Deploy to Site
     runs-on: ubuntu-latest
     needs: build_report_site
-    permissions:
-      pages: write
-      id-token: write
+    # permissions:
+      # pages: write
+      # id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
