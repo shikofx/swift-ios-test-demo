@@ -1,0 +1,94 @@
+= Кэширование зависимостей
+:source-highlighter: highlight.js
+
+== Цели урока
+
+* Понять, зачем нужно кэширование в CI/CD.
+* Научиться кэшировать зависимости CocoaPods для ускорения пайплайна.
+* Научиться выносить повторяющуюся логику в `Composite Actions`.
+
+---
+
+== Теория
+
+=== Зачем нужно кэширование?
+
+Каждый раз, когда запускается задача в CI, она выполняется на чистой виртуальной машине. Это значит, что все зависимости (например, CocoaPods) нужно скачивать и устанавливать заново. Этот процесс может занимать несколько минут и замедлять получение обратной связи.
+Этот процесс может занимать несколько минут, замедляя получение обратной связи и расходуя ценное процессорное время, которое часто является платным ресурсом в CI-сервисах.
+
+*Кэширование* позволяет сохранить файлы и директории (например, папку `Pods/`) между запусками workflow. Если зависимости не изменились, пайплайн может просто восстановить их из кэша, пропустив долгий этап установки.
+
+=== Кэширование CocoaPods
+
+В нашем пайплайне многие задачи, такие как `clang_analysis`, а в будущем — запуск тестов и сборка приложения, требуют одинаковых шагов настройки: клонирование репозитория (`checkout`) и установка зависимостей (`pod install`). Копировать их в каждую новую задачу — плохая практика, нарушающая принцип DRY (Don't Repeat Yourself).
+
+Правильный подход — инкапсулировать эту логику в отдельный, переиспользуемый компонент. Для этого в GitHub Actions существуют **Composite Actions**.
+
+=== Создание Composite Action для установки зависимостей
+
+Мы создадим собственный экшен, который будет инкапсулировать всю логику работы с зависимостями:
+1.  Проверку наличия кэша для папки `Pods`.
+2.  Установку зависимостей (`pod install`), только если кэш не найден.
+
+Для этого создадим файл `.github/actions/setup-ios-environment/action.yml`:
+
+[source,yaml]
+----
+name: 'Setup iOS Environment'
+description: 'Caches and installs CocoaPods dependencies'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cache CocoaPods dependencies
+    id: pods-cache
+    uses: actions/cache@v4
+    with:
+      path: Pods
+      key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+      restore-keys: |
+        ${{ runner.os }}-pods-
+
+    - name: Install CocoaPods
+    if: steps.pods-cache.outputs.cache-hit != 'true'
+    shell: bash
+    run: gem install cocoapods
+
+    - name: Install dependencies
+    if: steps.pods-cache.outputs.cache-hit != 'true'
+    shell: bash
+    run: pod install
+----
+
+Давайте разберем этот файл:
+*   `runs: using: "composite"`: Указывает, что этот файл определяет композитный экшен.
+*   `actions/cache@v4`: Это стандартный экшен для работы с кэшем.
+    *   `path: Pods`: Указываем, что мы хотим закэшировать директорию `Pods`.
+    *   `key: ...-${{ hashFiles('**/Podfile.lock') }}`: Уникальный ключ кэша. Он зависит от ОС и хэша файла `Podfile.lock`. Если зависимости в `Podfile.lock` меняются, хэш тоже меняется, и создается новый кэш.
+*   `if: steps.pods-cache.outputs.cache-hit != 'true'`: Это условное выполнение. Шаги `gem install cocoapods` и `pod install` запустятся только в том случае, если `actions/cache` **не нашел** готовый кэш по ключу.
+
+=== Использование Composite Action
+
+Теперь любая наша задача, которой нужны зависимости, будет состоять из двух шагов:
+1.  `actions/checkout@v4`: Сначала нужно скачать код репозитория.
+2.  `uses: ./.github/actions/setup-ios-environment`: Затем вызвать наш экшен для установки зависимостей.
+
+Выносить `checkout` за пределы нашего экшена — это **обязательное требование**. GitHub Actions должен сначала скачать код, чтобы найти файл `action.yml` нашего композитного экшена.
+ 
+[source,yaml]
+----
+jobs:
+  some_job:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        uses: ./.github/actions/setup-ios-environment
+
+      - name: Do some work
+        run: echo "Dependencies are ready!"
+----
+
+Теперь, если нам понадобится изменить логику установки зависимостей (например, добавить новый кэш или изменить команду `pod install`), мы сделаем это только в одном файле — `action.yml`.

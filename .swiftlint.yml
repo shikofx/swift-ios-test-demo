@@ -1,0 +1,29 @@
+# Базовый конфигурационный файл для SwiftLint
+# Полный список правил: https://realm.github.io/SwiftLint/rule-directory.html
+
+# Правила, которые мы отключаем, так как они могут быть слишком строгими
+# или не соответствовать стилю проекта.
+disabled_rules:
+  - trailing_whitespace # Отключаем, так как Xcode часто добавляет их автоматически.
+  - identifier_name # Может быть слишком строгим для имен в тестах.
+
+# Правила, которые не включены по умолчанию, но мы хотим их использовать.
+opt_in_rules:
+  - empty_count # Рекомендует использовать `isEmpty` вместо `count == 0`.
+  - force_unwrapping # Запрещает принудительное разворачивание опционалов (force unwrap).
+  - vertical_whitespace_closing_braces # Проверяет пустые строки перед закрывающими скобками.
+  - redundant_nil_coalescing # Находит избыточное `?? nil`.
+
+# Настройка конкретных правил
+line_length:
+  warning: 120
+  error: 150
+
+file_length:
+  warning: 500
+  error: 800
+
+# Исключаем из анализа директории, которые мы не контролируем (например, зависимости).
+excluded:
+  - Pods
+  - Carthage

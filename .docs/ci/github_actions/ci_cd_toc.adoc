@@ -1,0 +1,14 @@
+= Основы CI/CD на GitHub Actions
+:toc:
+:toc-title: Содержание
+:sectnums:
+
+
+Этот раздел содержит серию уроков, посвященных основам настройки CI/CD пайплайнов для iOS-приложений с использованием GitHub Actions.
+
+include::1-first-pipeline.adoc[leveloffset=+1]
+include::2-static-analysis-in-ci.adoc[leveloffset=+1]
+include::3-working-with-artifacts.adoc[leveloffset=+1]
+include::4-github-pages-deployment.adoc[leveloffset=+1]
+include::5-caching-dependencies.adoc[leveloffset=+1]
+include::6-reusable-workflows.adoc[leveloffset=+1]

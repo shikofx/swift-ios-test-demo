@@ -1,0 +1,143 @@
+= Публикация отчетов на GitHub Pages
+:source-highlighter: highlight.js
+
+== Цели урока
+
+* Научиться публиковать результаты работы CI на статический сайт GitHub Pages.
+* Понять, как настроить права доступа (`permissions`) для деплоя.
+* Разобрать workflow, который собирает отчеты и публикует их.
+
+---
+
+== Теория
+
+[NOTE]
+====
+Этот урок описывает продвинутую функциональность, которая будет полностью реализована на более поздних этапах проекта (например, для публикации Allure-отчетов). Сейчас важно понять общую концепцию.
+====
+
+GitHub Pages — это бесплатный сервис для хостинга статических сайтов прямо из вашего репозитория. Мы будем использовать его для создания удобного портала с нашими отчетами.
+
+=== Настройка репозитория
+
+Перед первым деплоем нужно разрешить публикацию через Actions:
+
+. Перейдите в `Settings` -> `Pages`.
+. В разделе `Build and deployment` в выпадающем списке `Source` выберите **`GitHub Actions`**.
+
+=== Workflow для сборки и деплоя
+
+Для публикации отчетов обычно добавляют две новые задачи: `build_report_site` и `deploy_reports`.
+
+[source,yaml]
+----
+# ... (начало файла, задачи анализа)
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  # ... (задачи swiftlint_analysis и clang_analysis)
+
+  build_report_site:
+    name: Build Report Site
+    runs-on: ubuntu-latest
+    needs: [swiftlint_analysis, clang_analysis]
+    if: always()
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+ 
+      - name: Structure reports for GitHub Pages
+        run: |
+          mkdir -p pages_root
+          cat <<EOF > pages_root/index.html
+          <!DOCTYPE html><html><head><title>Static Analysis Reports</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; padding: 2em; line-height: 1.5; } h1 { border-bottom: 1px solid #d0d7de; } ul { list-style-type: none; padding-left: 0; }</style></head><body><h1>Static Analysis Reports</h1><ul>
+          EOF
+          if [ -f "artifacts/swiftlint-report/swiftlint-report.html" ]; then
+            cp artifacts/swiftlint-report/swiftlint-report.html pages_root/
+            echo '<li><a href="swiftlint-report.html">SwiftLint Report</a></li>' >> pages_root/index.html
+          fi
+          echo '</ul></body></html>' >> pages_root/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'pages_root'
+
+  deploy_reports:
+    name: Deploy Reports to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build_report_site
+    if: always()
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+----
+
+=== `permissions` — Выдача прав пайплайну
+
+По умолчанию `GITHUB_TOKEN`, который используется в пайплайне, имеет довольно широкие права. Это небезопасно. Блок `permissions` позволяет нам явно указать, какие именно разрешения нужны для выполнения workflow, следуя принципу наименьших привилегий.
+
+Давайте разберем, что означает каждая строка:
+
+*   `contents: read`: Разрешает пайплайну только **читать** содержимое репозитория. Это право необходимо для шага `actions/checkout@v4`, чтобы он мог клонировать код.
+
+*   `pages: write`: Это ключевое разрешение. Оно дает право **записывать** данные в окружение GitHub Pages, что необходимо для экшена `actions/deploy-pages@v4`, чтобы он мог опубликовать наш сайт.
+
+*   `id-token: write`: Разрешает пайплайну запрашивать OpenID Connect (OIDC) токен. Это современный и безопасный способ аутентификации. Экшен `deploy-pages` использует этот токен для подтверждения своей легитимности перед API GitHub Pages, без необходимости использовать долгоживущие секреты.
+
+Таким образом, мы даем пайплайну минимально необходимые права для скачивания кода и публикации страницы.
+
+=== Задача `build_report_site`
+
+Это промежуточная задача, которая готовит сайт для публикации.
+
+*   `needs: [swiftlint_analysis, clang_analysis]`: Указывает, что эта задача начнется только после завершения обеих задач анализа.
+*   `- name: Download all artifacts`: Скачивает все артефакты из этого воркфлоу в директорию `artifacts/`.
+*   `- name: Structure reports for GitHub Pages`: Этот шаг выполняет shell-скрипт, который динамически создает главную страницу для нашего сайта с отчетами. Давайте разберем его:
++
+[source,bash]
+----
+mkdir -p pages_root # 1. Создаем директорию для сайта
+
+# 2. Создаем index.html с заголовком и стилями
+cat <<EOF > pages_root/index.html
+... (HTML-код заголовка)
+EOF
+
+# 3. Проверяем, существует ли отчет SwiftLint, и если да - добавляем ссылку на него
+if [ -f "artifacts/swiftlint-report/swiftlint-report.html" ]; then
+  cp artifacts/swiftlint-report/swiftlint-report.html pages_root/
+  echo '<li><a href="swiftlint-report.html">SwiftLint Report</a></li>' >> pages_root/index.html
+fi
+
+# 4. Завершаем HTML-документ
+echo '</ul></body></html>' >> pages_root/index.html
+----
++
+Этот скрипт безопасно создает `index.html` и добавляет в него ссылки только на те отчеты, которые были успешно сгенерированы и скачаны.
+*   `- name: Upload Pages artifact`: Этот специальный action (`upload-pages-artifact`) упаковывает готовую структуру сайта в специальный артефакт `github-pages`.
+
+=== Задача `deploy_reports`
+
+Это финальная задача, которая отвечает за публикацию.
+
+*   `needs: build_report_site`: Эта задача зависит от успешного создания артефакта в предыдущей задаче.
+*   `environment`: Определяет окружение для деплоя. GitHub автоматически создает окружение `github-pages`.
+    ** `url: ${{ steps.deployment.outputs.page_url }}`: Это самая интересная часть. Давайте разберем ее:
+    *** `id: deployment`: Мы присваиваем шагу деплоя уникальный идентификатор `deployment`.
+    *** `uses: actions/deploy-pages@v4`: Этот экшен после успешной публикации сайта генерирует *выходные данные* (`outputs`), среди которых есть `page_url` — итоговый URL опубликованной страницы.
+    *** `${{ steps.deployment.outputs.page_url }}`: С помощью этого синтаксиса мы "вытаскиваем" значение `page_url` из выходных данных шага с `id: deployment`.
+    ** В результате в интерфейсе GitHub Actions, в разделе "Environments", появится активная кнопка "View deployment", которая будет вести прямо на опубликованный сайт.
+*   `uses: actions/deploy-pages@v4`: Этот стандартный экшен берет артефакт `github-pages` и разворачивает его на GitHub Pages.
+
+После завершения работы пайплайна ты сможешь найти ссылку на страницу с отчетами во вкладке `Actions` твоего репозитория.

@@ -1,0 +1,81 @@
+name: Reusable - Static Analysis
+
+on:
+  workflow_call:
+
+jobs:
+  swiftlint_analysis:
+    name: SwiftLint
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache Homebrew dependencies
+        uses: actions/cache@v4
+        with:
+          path: $(brew --prefix)/Cellar
+          key: ${{ runner.os }}-brew-${{ hashFiles('.github/workflows/static-analysis.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-brew-
+
+      - name: Install SwiftLint
+        run: |
+          # Install only if the command is not found (i.e., cache miss)
+          if ! command -v swiftlint &> /dev/null; then
+            brew install swiftlint
+          else
+            echo "SwiftLint is already installed (from cache)."
+          fi
+
+      - name: Run SwiftLint
+        run: swiftlint lint --reporter html > swiftlint-report.html
+        continue-on-error: true
+
+      - name: Upload SwiftLint artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: swiftlint-report
+          path: swiftlint-report.html
+          retention-days: 7
+
+  swiftformat_analysis:
+    name: SwiftFormat
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache Homebrew dependencies
+        uses: actions/cache@v4
+        with:
+          path: $(brew --prefix)/Cellar
+          key: ${{ runner.os }}-brew-${{ hashFiles('.github/workflows/static-analysis.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-brew-
+
+      - name: Install SwiftFormat
+        run: |
+          # Install only if the command is not found (i.e., cache miss)
+          if ! command -v swiftformat &> /dev/null; then
+            brew install swiftformat
+          else
+            echo "SwiftFormat is already installed (from cache)."
+          fi
+
+      - name: Run SwiftFormat (Lint Mode)
+        id: swiftformat_run
+        run: |
+          # Generate a JSON report and check formatting simultaneously.
+          # The command will fail if issues are found.
+          swiftformat . --reporter json > swiftformat-report.json
+        continue-on-error: true
+
+      - name: Upload SwiftFormat artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: swiftformat-report
+          path: swiftformat-report.json
+          retention-days: 7

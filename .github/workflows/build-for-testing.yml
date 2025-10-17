@@ -1,0 +1,30 @@
+name: Build Compiled code
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    name: Compiled Code
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        uses: ./.github/actions/setup-ios-environment
+
+      - name: Build
+        run: |
+          xcodebuild build-for-testing \
+            -workspace "SDET Demo App.xcworkspace" \
+            -scheme "Demo AppTests" \
+            -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=latest' \
+            -derivedDataPath build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: xctestrun-build
+          path: build
+          retention-days: 1

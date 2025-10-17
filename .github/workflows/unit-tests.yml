@@ -1,0 +1,38 @@
+name: Reusable - Unit Tests
+
+on:
+  workflow_call:
+
+jobs:
+  run_unit_tests:
+    name: Run
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: xctestrun-build
+          path: build
+
+      - name: Run Unit Tests
+        run: |
+          # Find the .xctestrun file created in the previous step
+          XCTESTRUN_FILE=$(find build -name "*.xctestrun")
+          echo "Found xctestrun file at: $XCTESTRUN_FILE"
+          
+          xcodebuild test-without-building \
+            -xctestrun "$XCTESTRUN_FILE" \
+            -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=latest' \
+            -resultBundlePath Test.xcresult
+        continue-on-error: true
+
+      - name: Upload unit test result bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcresult-bundle
+          path: Test.xcresult
+          retention-days: 7

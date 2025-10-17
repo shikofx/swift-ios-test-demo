@@ -1,0 +1,118 @@
+name: Deploy Reports to GitHub Pages
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build_report_site:
+    name: Build Reports
+    runs-on: macos-latest # Changed to macOS to run brew
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Allure Commandline
+        run: npm install -g allure-commandline
+
+      - name: Install xcresultparser
+        run: |
+          if ! command -v xcresultparser &> /dev/null; then
+            brew install xcresultparser
+          else
+            echo "xcresultparser is already installed."
+          fi
+
+      - name: Convert xcresult to JUnit
+        if: always()
+        run: |
+          mkdir -p allure-results
+          xcresultparser artifacts/xcresult-bundle --output-format junit > allure-results/junit.xml
+
+      - name: Checkout previous reports from gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages-root # Download directly to the target directory
+        continue-on-error: true
+
+      - name: Copy Allure history
+        run: |
+          if [ -d "gh-pages-root/allure/history" ]; then
+            echo "Previous Allure history found. Copying to results directory."
+            cp -r gh-pages-root/allure/history allure-results/
+          fi
+
+      - name: Generate Allure Report
+        run: allure generate allure-results --clean -o gh-pages-root/allure # Generate the report directly into the target folder
+
+      - name: Create a Report Portal
+        run: |
+          echo '<!DOCTYPE html><html><head><title>Project Reports</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; padding: 2em; line-height: 1.5; } h1 { border-bottom: 1px solid #d0d7de; } ul { list-style-type: none; padding-left: 0; } li { margin-bottom: 0.5em; }</style></head><body>' > gh-pages-root/index.html
+          echo '<h1>Project Quality Reports</h1><ul>' >> gh-pages-root/index.html
+
+          if [ -d "gh-pages-root/allure" ]; then
+            echo '<li><a href="allure/index.html">➡️ Allure Test Report</a></li>' >> gh-pages-root/index.html
+          fi
+
+          if [ -f "artifacts/swiftlint-report/swiftlint-report.html" ]; then
+            mkdir -p gh-pages-root/swiftlint
+            mv artifacts/swiftlint-report/swiftlint-report.html gh-pages-root/swiftlint/
+            echo '<li><a href="swiftlint/swiftlint-report.html">➡️ SwiftLint Static Analysis Report</a></li>' >> gh-pages-root/index.html
+          fi
+
+          if [ -f "artifacts/swiftformat-report/swiftformat-report.json" ]; then
+            mkdir -p gh-pages-root/swiftformat
+            # Convert JSON report to HTML
+            REPORT_FILE="gh-pages-root/swiftformat/swiftformat-report.html"
+            JSON_FILE="artifacts/swiftformat-report/swiftformat-report.json"
+            echo '<!DOCTYPE html><html><head><title>SwiftFormat Report</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; margin: 2em; } table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; } .rule { font-family: monospace; background: #eee; padding: 2px 4px; border-radius: 3px; }</style></head><body>' > $REPORT_FILE
+            echo '<h1>SwiftFormat Style Report</h1>' >> $REPORT_FILE
+            # Check if jq is installed, if not, use basic grep
+            if command -v jq &> /dev/null; then
+              if [ ! -s "$JSON_FILE" ] || [ "$(jq 'length' "$JSON_FILE")" -eq 0 ]; then
+                echo '<p>✅ No formatting issues found.</p>' >> $REPORT_FILE
+              else
+                echo '<table><tr><th>File</th><th>Line</th><th>Rule</th><th>Reason</th></tr>' >> $REPORT_FILE
+                jq -r '.[] | "<tr><td>\(.file)</td><td>\(.line)</td><td><span class=\"rule\">\(.rule)</span></td><td>\(.reason)</td></tr>"' "$JSON_FILE" >> $REPORT_FILE
+                echo '</table>' >> $REPORT_FILE
+              fi
+            else
+                echo "<p>Warning: 'jq' is not installed. Cannot parse detailed report.</p>" >> $REPORT_FILE
+            fi
+            echo '</body></html>' >> $REPORT_FILE
+            echo '<li><a href="swiftformat/swiftformat-report.html">➡️ SwiftFormat Style Report</a></li>' >> gh-pages-root/index.html
+          fi
+
+          echo '</ul></body></html>' >> gh-pages-root/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: gh-pages-root
+
+  deploy_reports:
+    name: Deploy to Site
+    runs-on: ubuntu-latest
+    needs: build_report_site
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
