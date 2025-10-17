@@ -1,4 +1,4 @@
-name: Reusable - Deploy Reports to GitHub Pages
+name: Deploy Reports to GitHub Pages
 
 on:
   workflow_call:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build_report_site:
-    name: Build Site
+    name: Build Reports
     runs-on: macos-latest # Changed to macOS to run brew
     steps:
       - name: Download all artifacts
@@ -44,28 +44,25 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: gh-pages
-          path: gh-pages
+          path: gh-pages-root # Download directly to the target directory
         continue-on-error: true
 
       - name: Copy Allure history
         run: |
-          if [ -d "gh-pages/allure/history" ]; then
+          if [ -d "gh-pages-root/allure/history" ]; then
             echo "Previous Allure history found. Copying to results directory."
-            cp -r gh-pages/allure/history allure-results/
+            cp -r gh-pages-root/allure/history allure-results/
           fi
 
       - name: Generate Allure Report
-        run: allure generate allure-results -o allure-report
+        run: allure generate allure-results --clean -o gh-pages-root/allure # Generate the report directly into the target folder
 
-      - name: Create a unified report portal
+      - name: Create a Report Portal
         run: |
-          mkdir -p gh-pages-root
           echo '<!DOCTYPE html><html><head><title>Project Reports</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; padding: 2em; line-height: 1.5; } h1 { border-bottom: 1px solid #d0d7de; } ul { list-style-type: none; padding-left: 0; } li { margin-bottom: 0.5em; }</style></head><body>' > gh-pages-root/index.html
           echo '<h1>Project Quality Reports</h1><ul>' >> gh-pages-root/index.html
 
-          if [ -d "allure-report" ]; then
-            mkdir -p gh-pages-root/allure
-            mv allure-report/* gh-pages-root/allure/
+          if [ -d "gh-pages-root/allure" ]; then
             echo '<li><a href="allure/index.html">➡️ Allure Test Report</a></li>' >> gh-pages-root/index.html
           fi
 

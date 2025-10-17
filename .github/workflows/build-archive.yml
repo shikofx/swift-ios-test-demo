@@ -1,4 +1,4 @@
-name: Reusable - Build and Archive
+name: Build Release App
 
 on:
   workflow_call:
@@ -14,7 +14,7 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/setup-ios-environment
 
-      - name: Build .app for Simulator
+      - name: Build .app
         run: |
           PODS_PODFILE_DIR_PATH="${{ github.workspace }}" xcodebuild build \
             -workspace "SDET Demo App.xcworkspace" \

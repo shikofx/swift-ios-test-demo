@@ -11,19 +11,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Dependencies
-        uses: ./.github/actions/setup-ios-environment
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: xctestrun-build
+          path: build
 
-      - name: Run tests
+      - name: Run Unit Tests
         run: |
-          PODS_PODFILE_DIR_PATH="${{ github.workspace }}" xcodebuild test \
-            -workspace "SDET Demo App.xcworkspace" \
-            -scheme "Demo AppTests" \
+          # Find the .xctestrun file created in the previous step
+          XCTESTRUN_FILE=$(find build -name "*.xctestrun")
+          echo "Found xctestrun file at: $XCTESTRUN_FILE"
+          
+          xcodebuild test-without-building \
+            -xctestrun "$XCTESTRUN_FILE" \
             -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=latest' \
             -resultBundlePath Test.xcresult
         continue-on-error: true
 
-      - name: Upload test result bundle
+      - name: Upload unit test result bundle
         if: always()
         uses: actions/upload-artifact@v4
         with:

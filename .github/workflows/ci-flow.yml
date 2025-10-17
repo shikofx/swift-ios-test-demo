@@ -18,16 +18,21 @@ jobs:
     name: Code Analysis
     uses: ./.github/workflows/static-analysis.yml
 
+  build_for_testing:
+    name: Build
+    needs: [analysis]
+    uses: ./.github/workflows/build-for-testing.yml
+
   unit_tests:
     name: Unit Tests
-    needs: [analysis]
+    needs: [build_for_testing]
     uses: ./.github/workflows/unit-tests.yml
 
   build_app:
     name: Build
     needs: [unit_tests]
     uses: ./.github/workflows/build-archive.yml
-  
+
   deploy_reports:
     name: Reports
     needs: [unit_tests]
