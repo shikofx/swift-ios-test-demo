@@ -31,6 +31,7 @@ jobs:
   build_app:
     name: Build
     needs: [unit_tests]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     uses: ./.github/workflows/build-archive.yml
 
   deploy_reports:
