@@ -33,10 +33,18 @@ jobs:
             -resultBundlePath Test.xcresult
         continue-on-error: true
 
-      - name: Upload unit test result bundle
+      - name: Debug xcresult bundle
+        if: always()
+        run: |
+          echo "--- Checking if Test.xcresult exists and its size ---"
+          ls -lR Test.xcresult || echo "Test.xcresult not found."
+          echo "--- Inspecting Test.xcresult content with xcresulttool ---"
+          xcrun xcresulttool get object --path Test.xcresult --format json || echo "xcresulttool failed to get content, bundle is likely invalid."
+
+      - name: Upload xcresult artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: xcresult-bundle
+          name: xcresult-artifact
           path: Test.xcresult
-          retention-days: 7
+          retention-days: 1

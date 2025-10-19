@@ -14,19 +14,13 @@ jobs:
       - name: Cache Homebrew dependencies
         uses: actions/cache@v4
         with:
-          path: $(brew --prefix)/Cellar
-          key: ${{ runner.os }}-brew-${{ hashFiles('.github/workflows/static-analysis.yml') }}
+          path: ~/Library/Caches/Homebrew
+          key: ${{ runner.os }}-brew-${{ hashFiles('**/Brewfile') }}
           restore-keys: |
             ${{ runner.os }}-brew-
 
-      - name: Install SwiftLint
-        run: |
-          # Install only if the command is not found (i.e., cache miss)
-          if ! command -v swiftlint &> /dev/null; then
-            brew install swiftlint
-          else
-            echo "SwiftLint is already installed (from cache)."
-          fi
+      - name: Install Homebrew dependencies
+        run: brew bundle install
 
       - name: Run SwiftLint
         run: swiftlint lint --reporter html > swiftlint-report.html
@@ -50,19 +44,13 @@ jobs:
       - name: Cache Homebrew dependencies
         uses: actions/cache@v4
         with:
-          path: $(brew --prefix)/Cellar
-          key: ${{ runner.os }}-brew-${{ hashFiles('.github/workflows/static-analysis.yml') }}
+          path: ~/Library/Caches/Homebrew
+          key: ${{ runner.os }}-brew-${{ hashFiles('**/Brewfile') }}
           restore-keys: |
             ${{ runner.os }}-brew-
 
-      - name: Install SwiftFormat
-        run: |
-          # Install only if the command is not found (i.e., cache miss)
-          if ! command -v swiftformat &> /dev/null; then
-            brew install swiftformat
-          else
-            echo "SwiftFormat is already installed (from cache)."
-          fi
+      - name: Install Homebrew dependencies
+        run: brew bundle install
 
       - name: Run SwiftFormat (Lint Mode)
         id: swiftformat_run

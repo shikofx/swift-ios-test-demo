@@ -70,12 +70,12 @@
   * [ ] **Получение аппрува от ментора по ДЗ "Основы Unit-тестирования".** (Ожидание)
 * [ ] **Портфолио (`swift-ios-test-demo`):**
   * [ ] **Ветка:** `feature/2-unit-tests`
-  * [ ] **Планирование:**
-    * [ ] Проанализировать код и определить ключевые компоненты для тестирования.
-    * [ ] Разработать и задокументировать тест-кейсы для `MyCartViewController`, `CatalogViewController`, `ProductPageDetailViewController` и др.
+  * [x] **Планирование:**
+    * [x] Проанализировать код и определить ключевые компоненты для тестирования.
+    * [x] Разработать и задокументировать тест-кейсы для `MyCartViewController`, `CatalogViewController`, `ProductPageDetailViewController` и др.
   * [ ] **Реализация:**
-    * [ ] Написать unit-тесты для `MyCartViewController` (расчет стоимости, управление товарами).
-    * [ ] Написать unit-тесты для `CatalogViewController` (сортировка).
+    * [x] Написать unit-тесты для `MyCartViewController` (расчет стоимости, управление товарами).
+    * [x] Написать unit-тесты для `CatalogViewController` (сортировка).
     * [ ] Написать unit-тесты для `ProductPageDetailViewController` (логика добавления в корзину).
     * [ ] Написать unit-тесты для `LoginViewController` и `WebViewViewController` (валидация и обработка URL).
 * [ ] **Финализация:**

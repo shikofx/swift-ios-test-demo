@@ -8,8 +8,12 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -28,12 +32,12 @@ jobs:
     needs: [build_for_testing]
     uses: ./.github/workflows/unit-tests.yml
 
-  build_app:
-    name: Build
-    needs: [unit_tests]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    uses: ./.github/workflows/build-archive.yml
-
+  # build_app:
+  #   name: Build
+  #   needs: [unit_tests]
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   uses: ./.github/workflows/build-archive.yml
+ 
   deploy_reports:
     name: Reports
     needs: [unit_tests]

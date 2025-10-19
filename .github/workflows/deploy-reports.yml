@@ -4,114 +4,181 @@ on:
   workflow_call:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
 jobs:
-  build_report_site:
-    name: Build Reports
-    runs-on: macos-latest # Changed to macOS to run brew
+  convert_xcresult_to_allure:
+    name: Xcresult to Allure
+    runs-on: macos-latest
     steps:
+      - name: Download xcresult artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: xcresult-artifact
+          path: artifacts/xcresult-artifact
+
+      - name: Debug downloaded xcresult artifact
+        if: always()
+        run: |
+          echo "--- Checking content of downloaded artifacts/xcresult-artifact ---"
+          ls -lR artifacts/xcresult-artifact || echo "Artifact directory not found or is empty."
+
+      - name: Download xcresults tool
+        run: |
+          echo "Downloading xcresults..."
+          curl -sL "https://github.com/eroshenkoam/xcresults/releases/latest/download/xcresults" -o xcresults
+          chmod +x xcresults
+
+      - name: Convert xcresult to Allure format
+        run: |
+          mkdir -p allure-results
+          # Try to get a summary from the xcresult bundle. If it fails, print the error.
+          if xcrun xcresulttool get object --path artifacts/xcresult-artifact/Test.xcresult --format json > xcresult_summary.json; then
+              echo "Test.xcresult is valid. Converting to Allure format."
+              ./xcresults export artifacts/xcresult-artifact/Test.xcresult allure-results
+          else
+              echo "::error::Test.xcresult is invalid. xcresulttool failed to get summary."
+              echo "--- Attempting to read the bundle with raw xcrun to see the error: ---"
+              # This command will likely fail, but its error output is what we need for diagnosis.
+              xcrun xcresulttool get object --path artifacts/xcresult-artifact/Test.xcresult --format json || true
+          fi
+
+      - name: Debug generated allure-results
+        if: always()
+        run: |
+          echo "--- Checking content of generated allure-results before upload ---"
+          ls -lR allure-results || echo "allure-results directory not found or is empty."
+
+      - name: Upload Allure results artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+          retention-days: 1
+
+  create_reports_site:
+    name: Create and Deploy Site
+    runs-on: ubuntu-latest
+    needs: convert_xcresult_to_allure
+    environment:
+      name: github-pages
+      url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+    steps:
+      - name: Get Allure history from gh-pages branch
+        uses: actions/checkout@v4
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages-history
+
+      - name: Debug gh-pages history
+        if: always()
+        run: |
+          echo "--- Checking content of checked-out gh-pages-history ---"
+          ls -lR gh-pages-history || echo "gh-pages-history directory not found or is empty."
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts/
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      
-      - name: Install Allure Commandline
-        run: npm install -g allure-commandline
-
-      - name: Install and prepare xcresults
-        run: |
-          brew install wget
-          wget https://github.com/eroshenkoam/xcresults/releases/latest/download/xcresults
-          chmod +x xcresults
-
-      - name: Convert xcresult to Allure format
+      - name: Debug downloaded allure-results artifact
         if: always()
         run: |
-          mkdir -p allure-results
-          ./xcresults export artifacts/xcresult-bundle allure-results
+          echo "--- Checking content of downloaded artifacts/allure-results ---"
+          ls -lR artifacts/allure-results || echo "allure-results artifact directory not found or is empty."
 
-      - name: Get Allure history from gh-pages branch
-        uses: actions/checkout@v4
+      - name: Generate Allure Report with History
+        uses: simple-elf/allure-report-action@v1.7
         if: always()
-        continue-on-error: true # This is important! It prevents the workflow from failing if the branch doesn't exist yet.
         with:
-          ref: gh-pages
-          path: gh-pages-root
+          allure_results: artifacts/allure-results
+          gh_pages: gh-pages-history
+          allure_history: allure-history
+          keep_reports: 20
 
-      - name: Copy Allure history
+      - name: Debug generated Allure site
+        if: always()
         run: |
-          if [ -d "gh-pages-root/allure/history" ]; then
-            echo "Previous Allure history found. Copying to results directory."
-            cp -r gh-pages-root/allure/history allure-results/
-          fi
+          echo "--- Checking content of generated allure-history directory ---"
+          ls -lR allure-history || echo "allure-history directory not found or is empty."
 
-      - name: Generate Allure Report
-        run: allure generate allure-results --clean -o gh-pages-root/allure # Generate the report directly into the target folder
+      - name: Remove incorrect redirect from Allure history
+        run: rm -f allure-history/index.html
 
-      - name: Create a Report Portal
+      - name: Assemble Site and Create Index Page
         run: |
-          echo '<!DOCTYPE html><html><head><title>Project Reports</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; padding: 2em; line-height: 1.5; } h1 { border-bottom: 1px solid #d0d7de; } ul { list-style-type: none; padding-left: 0; } li { margin-bottom: 0.5em; }</style></head><body>' > gh-pages-root/index.html
-          echo '<h1>Project Quality Reports</h1><ul>' >> gh-pages-root/index.html
+          # Create the main directory for the site
+          mkdir -p report-site
 
-          if [ -d "gh-pages-root/allure" ]; then
-            echo '<li><a href="allure/index.html">➡️ Allure Test Report</a></li>' >> gh-pages-root/index.html
-          fi
+          # Move all report artifacts into the site directory
+          sudo chown -R $USER:$USER allure-history
+          mv allure-history report-site/allure-history
+          mv artifacts/swiftlint-report report-site/swiftlint-report
+          mv artifacts/swiftformat-report report-site/swiftformat-report
 
-          if [ -f "artifacts/swiftlint-report/swiftlint-report.html" ]; then
-            mkdir -p gh-pages-root/swiftlint
-            mv artifacts/swiftlint-report/swiftlint-report.html gh-pages-root/swiftlint/
-            echo '<li><a href="swiftlint/swiftlint-report.html">➡️ SwiftLint Static Analysis Report</a></li>' >> gh-pages-root/index.html
-          fi
+          # Create the index.html directly inside the site directory
+          cat <<EOF > report-site/index.html
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Project Quality Reports</title>
+            <style>
+              body { font-family: sans-serif; }
+              table { width: 60%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+              th { background-color: #f2f2f2; }
+              tr:nth-child(even) { background-color: #f9f9f9; }
+              a { text-decoration: none; color: #0366d6; }
+              a:hover { text-decoration: underline; }
+            </style>
+          </head>
+          <body>
+            <h1>Project Quality Reports</h1>
+            <h2>Static Analysis & Formatting</h2>
+            <ul>
+              <li>🔎 <a href="swiftlint-report/swiftlint-report.html">SwiftLint Static Analysis Report</a></li>
+              <li>🪄 <a href="swiftformat-report/swiftformat-report.json">SwiftFormat Style Report</a></li>
+            </ul>
 
-          if [ -f "artifacts/swiftformat-report/swiftformat-report.json" ]; then
-            mkdir -p gh-pages-root/swiftformat
-            # Convert JSON report to HTML
-            REPORT_FILE="gh-pages-root/swiftformat/swiftformat-report.html"
-            JSON_FILE="artifacts/swiftformat-report/swiftformat-report.json"
-            echo '<!DOCTYPE html><html><head><title>SwiftFormat Report</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; margin: 2em; } table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #ddd; padding: 8px; text-align: left; } th { background-color: #f2f2f2; } .rule { font-family: monospace; background: #eee; padding: 2px 4px; border-radius: 3px; }</style></head><body>' > $REPORT_FILE
-            echo '<h1>SwiftFormat Style Report</h1>' >> $REPORT_FILE
-            # Check if jq is installed, if not, use basic grep
-            if command -v jq &> /dev/null; then
-              if [ ! -s "$JSON_FILE" ] || [ "$(jq 'length' "$JSON_FILE")" -eq 0 ]; then
-                echo '<p>✅ No formatting issues found.</p>' >> $REPORT_FILE
-              else
-                echo '<table><tr><th>File</th><th>Line</th><th>Rule</th><th>Reason</th></tr>' >> $REPORT_FILE
-                jq -r '.[] | "<tr><td>\(.file)</td><td>\(.line)</td><td><span class=\"rule\">\(.rule)</span></td><td>\(.reason)</td></tr>"' "$JSON_FILE" >> $REPORT_FILE
-                echo '</table>' >> $REPORT_FILE
-              fi
-            else
-                echo "<p>Warning: 'jq' is not installed. Cannot parse detailed report.</p>" >> $REPORT_FILE
-            fi
-            echo '</body></html>' >> $REPORT_FILE
-            echo '<li><a href="swiftformat/swiftformat-report.html">➡️ SwiftFormat Style Report</a></li>' >> gh-pages-root/index.html
-          fi
+            <h2>Test Execution History (Allure)</h2>
+            <p>📖 <a href="allure-history/index.html">View Full Allure Reports History Page</a></p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Run Number</th>
+                  <th>Link to Report</th>
+                </tr>
+              </thead>
+              <tbody>
+          EOF
 
-          echo '</ul></body></html>' >> gh-pages-root/index.html
+          for run_dir in $(ls -d report-site/allure-history/*/ | grep -E '[0-9]+/$' | sed 's/report-site\/allure-history\///;s/\///' | sort -rn); do
+            echo "<tr><td>Run #${run_dir}</td><td><a href=\"allure-history/${run_dir}/index.html\">View Report</a></td></tr>" >> report-site/index.html
+          done
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: gh-pages-root
+          # Close the HTML tags
+          cat <<EOF >> report-site/index.html
+              </tbody>
+            </table>
+          </body>
+          </html>
+          EOF
+          
+      - name: Verify Site Content
+        run: |
+          echo "Verifying content of 'report-site' directory:"
+          ls -R report-site
 
-  deploy_reports:
-    name: Deploy to Site
-    runs-on: ubuntu-latest
-    needs: build_report_site
-    # permissions:
-      # pages: write
-      # id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: report-site # Deploy the final composed site
+          publish_branch: gh-pages
+          keep_files: true
+          commit_message: "Deploy reports for run ${{ github.run_number }}"
