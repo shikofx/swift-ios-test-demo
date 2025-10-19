@@ -13,6 +13,11 @@ final class CatalogViewControllerTests: XCTestCase {
 
     var engine: Engine!
     var controller: CatalogViewController!
+    let unsortedList: [NSMutableDictionary] = [
+        ["ProductName": "Sauce Labs T-Shirt", "ProductPrice": "15.99"],
+        ["ProductName": "Sauce Labs Backpack", "ProductPrice": "29.99"],
+        ["ProductName": "Sauce Labs Onesie", "ProductPrice": "7.99"]
+    ]
     
     override func setUp() {
         engine = Engine()
@@ -20,6 +25,7 @@ final class CatalogViewControllerTests: XCTestCase {
         
         let storyboard = UIStoryboard(name: "TabBar", bundle: nil)
         controller = storyboard.instantiateViewController(identifier: "CatalogViewController") as? CatalogViewController
+        controller.loadViewIfNeeded() // <-- Важный шаг: загружаем view, чтобы outlets были доступны
     }
     
     override func tearDown() {
@@ -27,17 +33,83 @@ final class CatalogViewControllerTests: XCTestCase {
         controller = nil
     }
     
-    func test_sort_ByName() {
-        given("unsorted list") { _ in
-            
+    func testSortByNameAscending() {
+        given("unsorted list: \(unsortedList)") { _ in
+            engine.productList = unsortedList
         }
         
-        when("sort by name") { _ in
-            
+        when("sort by name ascending") { _ in
+            controller.nameAscendingButton(controller.nameAscendingBtn)
         }
         
         then("list is sorted by name") { _ in
+            let expectedList: [NSMutableDictionary] = [
+                ["ProductName": "Sauce Labs Backpack", "ProductPrice": "29.99"],
+                ["ProductName": "Sauce Labs Onesie", "ProductPrice": "7.99"],
+                ["ProductName": "Sauce Labs T-Shirt", "ProductPrice": "15.99"]
+            ]
             
+            XCTAssertEqual(engine.productList, expectedList)
+        }
+    }
+    
+    func testSortByNameDescending() {
+        given("unsorted list: \(unsortedList)") { _ in
+            engine.productList = unsortedList
+        }
+        
+        when("sort by name descending") { _ in
+            controller.nameDescendingButton(controller.nameDescendingBtn)
+        }
+        
+        then("list is sorted by name descending") { _ in
+            let expectedList: [NSMutableDictionary] = [
+                ["ProductName": "Sauce Labs T-Shirt", "ProductPrice": "15.99"],
+                ["ProductName": "Sauce Labs Onesie", "ProductPrice": "7.99"],
+                ["ProductName": "Sauce Labs Backpack", "ProductPrice": "29.99"]
+            ]
+            
+            XCTAssertEqual(engine.productList, expectedList)
+        }
+    }
+    
+    func testSortByPriceAscending() {
+        given("unsorted list: \(unsortedList)") { _ in
+            engine.productList = unsortedList
+        }
+        
+        when("sort by name ascending") { _ in
+            controller.priceAscendingButton(controller.priceAscendingBtn)
+        }
+        
+        then("list is sorted by price ascending") { _ in
+            let expectedList: [NSMutableDictionary] = [
+                ["ProductName": "Sauce Labs Onesie", "ProductPrice": "7.99"],
+                ["ProductName": "Sauce Labs T-Shirt", "ProductPrice": "15.99"],
+                ["ProductName": "Sauce Labs Backpack", "ProductPrice": "29.99"]
+            ]
+            
+            XCTAssertEqual(engine.productList, expectedList)
+        }
+    }
+    
+    func testSortByPriceDescending() {
+        given("unsorted list: \(unsortedList)") { _ in
+            engine.productList = unsortedList
+        }
+        
+        when("sort by price descending") { _ in
+            controller.priceDescendingButton(controller.priceDescendingBtn)
+        }
+        
+        then("list is sorted by price descending") { _ in
+            let expectedList: [NSMutableDictionary] = [
+                ["ProductName": "Sauce Labs Backpack", "ProductPrice": "29.99"],
+                ["ProductName": "Sauce Labs T-Shirt", "ProductPrice": "15.99"],
+                ["ProductName": "Sauce Labs Onesie", "ProductPrice": "7.99"]
+            ]
+            
+            XCTAssertEqual(engine.productList, expectedList)
         }
     }
 }

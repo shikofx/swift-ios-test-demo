@@ -10,7 +10,18 @@
 *Название:* Сортировка товаров по имени в алфавитном порядке.
 
 *Предусловие:*
-. `Engine.sharedInstance.productList` содержит несортированный список товаров.
+. В `setUp()` теста создается несколько "товаров" (объектов `NSMutableDictionary`) и помещаются в `Engine.sharedInstance.productList` в заведомо неправильном порядке. Это необходимо, чтобы убедиться, что метод сортировки действительно работает, а не просто оставляет список без изменений.
++
+Например:
++
+[source,swift]
+----
+engine.productList = [
+    ["ProductName": "Sauce Labs T-Shirt", "ProductPrice": "15.99"],
+    ["ProductName": "Sauce Labs Backpack", "ProductPrice": "29.99"],
+    ["ProductName": "Sauce Labs Onesie", "ProductPrice": "7.99"]
+]
+----
 
 *Шаги:*
 . Вызвать метод `nameAscendingButton()`.
@@ -23,7 +34,7 @@
 *Название:* Сортировка товаров по имени в обратном алфавитном порядке.
 
 *Предусловие:*
-. `Engine.sharedInstance.productList` содержит несортированный список товаров.
+. `Engine.sharedInstance.productList` содержит список товаров, не отсортированный по имени в обратном алфавитном порядке (см. пример в UC-CV-001).
 
 *Шаги:*
 . Вызвать метод `nameDescendingButton()`.
@@ -36,7 +47,7 @@
 *Название:* Сортировка товаров по цене от меньшей к большей.
 
 *Предусловие:*
-. `Engine.sharedInstance.productList` содержит несортированный список товаров.
+. `Engine.sharedInstance.productList` содержит список товаров, не отсортированный по цене по возрастанию (см. пример в UC-CV-001).
 
 *Шаги:*
 . Вызвать метод `priceAscendingButton()`.
@@ -49,7 +60,7 @@
 *Название:* Сортировка товаров по цене от большей к меньшей.
 
 *Предусловие:*
-. `Engine.sharedInstance.productList` содержит несортированный список товаров.
+. `Engine.sharedInstance.productList` содержит список товаров, не отсортированный по цене по убыванию (см. пример в UC-CV-001).
 
 *Шаги:*
 . Вызвать метод `priceDescendingButton()`.
