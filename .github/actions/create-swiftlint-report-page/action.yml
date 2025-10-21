@@ -1,0 +1,199 @@
+name: 'Create SwiftLint Report Page'
+description: 'Converts a SwiftLint JSON report to a Markdown file for Jekyll.'
+
+inputs:
+  json-path:
+    description: 'Path to the input swiftlint-report.json file.'
+    required: true
+  output-path:
+    description: 'Path where the output swiftlint-report.md file will be created.'
+    required: true
+
+runs:
+  using: "composite"
+  steps:      
+    - name: Generate Markdown from JSON
+      shell: bash
+      run: |
+        JSON_FILE="${{ inputs.json-path }}"
+        MD_FILE="${{ inputs.output-path }}"
+        DATA_DIR=$(dirname "$MD_FILE")/_data
+
+        if [ ! -f "$JSON_FILE" ]; then
+          echo "::warning::SwiftLint report not found at $JSON_FILE. Skipping page generation."
+          exit 0
+        fi
+
+        # Calculate summary using jq
+        TOTAL_FILES=$(jq '[.[] | .file] | unique | length' $JSON_FILE)
+        TOTAL_WARNINGS=$(jq '[.[] | select(.severity=="Warning")] | length' $JSON_FILE)
+        TOTAL_ERRORS=$(jq '[.[] | select(.severity=="Error")] | length' $JSON_FILE)
+
+        # Create data directory if it doesn't exist
+        mkdir -p "$DATA_DIR"
+
+        # Write summary to a data file for Jekyll
+        cat <<EOF > "$DATA_DIR/swiftlint_summary.yml"
+        total_files: $TOTAL_FILES
+        total_warnings: $TOTAL_WARNINGS
+        total_errors: $TOTAL_ERRORS
+        EOF
+
+        # Generate Front Matter with summary and list of violations
+        cat <<EOF > $MD_FILE
+        ---
+        layout: default
+        title: SwiftLint Style Report
+        total_files: $TOTAL_FILES
+        total_warnings: $TOTAL_WARNINGS
+        total_errors: $TOTAL_ERRORS
+        violations:
+        EOF
+
+        echo "" >> $MD_FILE
+
+        # Since the report is generated on macOS and processed on Ubuntu,
+        # GITHUB_WORKSPACE differs (/Users/runner/... vs /home/runner/...).
+        # We manually create the correct prefix for removal by replacing /home/ with /Users/.
+        MACOS_WORKSPACE_PREFIX=$(echo "$GITHUB_WORKSPACE" | sed 's/\/home\//\/Users\//')
+        echo "Using prefix to strip: $MACOS_WORKSPACE_PREFIX"
+        jq -r --arg ws "$MACOS_WORKSPACE_PREFIX/" '.[] | .file |= (sub($ws; "") | sub("SDET Demo App"; "")) | @json | "- " + .' "$JSON_FILE" >> $MD_FILE
+
+        cat <<'EOF' >> $MD_FILE
+        ---
+        ## SwiftLint Style Violations
+
+        {% if page.violations.size > 0 %}
+        <style>
+          .filter-buttons {
+            text-align: right;
+            margin-bottom: 8px;
+          }
+          .filter-buttons button {
+            padding: 4px 8px;
+            font-size: 12px;
+            border: 1px solid #ccc;
+            background-color: #f2f2f2;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-right: 5px;
+          }
+          .filter-buttons button.active {
+            background-color: #0366d6;
+            color: white;
+            border-color: #0366d6;
+          }
+        </style>
+
+        <div class="filter-buttons">
+          <button id="filter-all" onclick="applyFilter('all')">All ({{ page.total_warnings | plus: page.total_errors }})</button>
+          <button id="filter-warning" onclick="applyFilter('warning')">Warnings ({{ page.total_warnings }})</button>
+          <button id="filter-error" onclick="applyFilter('error')">Errors ({{ page.total_errors }})</button>
+        </div>
+        {% capture table_html %}
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; }
+              .lint-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+              .lint-table th, .lint-table td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
+              .lint-table th:nth-child(1), .lint-table td:nth-child(1) { width: 5%; }
+              .lint-table th:nth-child(2), .lint-table td:nth-child(2) { width: 40%; }
+              .lint-table th:nth-child(3), .lint-table td:nth-child(3) { width: 55%; }
+              .lint-type { font-weight: bold; }
+              .lint-reason { font-style: italic; }
+              .lint-table th { background-color: #f2f2f2; }
+              .severity-warning { background-color: #FFD700; } /* Gold */
+              .severity-error { background-color: #FF4136; color: white; } /* Red */
+              .copyable { cursor: pointer; }
+              .copyable:hover { background-color: #f0f0f0; }
+            </style>
+            <script>
+              function copyToClipboard(element) {
+                const originalText = element.innerText;
+                navigator.clipboard.writeText(originalText).then(function() {
+                  console.log('Copied to clipboard: ' + originalText);
+                  element.innerText = 'Copied';
+                  setTimeout(function() {
+                    element.innerText = originalText;
+                  }, 500);
+                }, function(err) {
+                  console.error('Could not copy text: ', err);
+                  element.innerText = 'Copy Failed!';
+                  setTimeout(function() {
+                    element.innerText = originalText;
+                  }, 500);
+                });
+              }
+            </script>
+          </head>
+          <body>
+            <table class="lint-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Path (click to copy)</th>
+                  <th>Reason</th>                  
+                </tr>
+              </thead>
+              <tbody>
+                {% for item_str in page.violations -%}
+                {%- assign item = item_str | from_json -%}
+                {%- assign severity_class = "severity-" | append: item.severity | downcase -%}
+                <tr>
+                  <td class="{{ severity_class }}">{{ forloop.index }}</td>
+                  <td class="copyable" onclick="copyToClipboard(this)">{{ item.file }}:{{ item.line }}</td>
+                  <td>
+                    <div class="lint-type">{{ item.type }}</div> 
+                    <div class="lint-reason">{{ item.reason | escape }}</div>
+                  </td>
+                </tr>
+                {%- endfor %}
+              </tbody>
+            </table>
+          </body>
+          </html>
+        {% endcapture %}
+        <iframe srcdoc="{{ table_html | escape }}" style="width: 100%; height: 600px; border: 1px solid #ddd; border-radius: 5px;"></iframe>
+
+        <script>
+          function applyFilter(filter) {
+            const iframe = document.querySelector('iframe');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            const rows = iframeDoc.querySelectorAll('.lint-table tbody tr');
+
+            rows.forEach(row => {
+              const severityCell = row.querySelector('td:first-child');
+              if (filter === 'all') {
+                row.style.display = '';
+              } else if (severityCell) {
+                if (severityCell.classList.contains('severity-' + filter)) {
+                  row.style.display = '';
+                } else {
+                  row.style.display = 'none';
+                }
+              }
+            });
+
+            // Update URL and button styles
+            const url = new URL(window.location);
+            url.searchParams.set('filter', filter);
+            window.history.pushState({}, '', url);
+            
+            document.querySelectorAll('.filter-buttons button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('filter-' + filter).classList.add('active');
+          }
+
+          document.addEventListener("DOMContentLoaded", function() {
+            const params = new URLSearchParams(window.location.search);
+            const filter = params.get('filter') || 'all';
+            applyFilter(filter);
+          });
+        </script>
+        {% else %}
+        No SwiftLint violations found. Your code is clean! ✨
+        {% endif %}
+        EOF
+
+        echo "SwiftLint Markdown page generated at $MD_FILE"

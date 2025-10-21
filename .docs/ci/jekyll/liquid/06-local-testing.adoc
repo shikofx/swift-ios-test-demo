@@ -1,0 +1,154 @@
+---
+layout: default
+title: 6. Разбор и тестирование Liquid-шаблона
+parent: Jekyll & GitHub Pages
+nav_order: 6
+---
+
+=== Разбор Liquid-шаблона
+
+Давайте подробно разберем, как Liquid-шаблон преобразует данные в HTML-таблицу.
+
+[source,liquid]
+<style>
+  .lint-table { width: 100%; border-collapse: collapse; }
+  .lint-table th, .lint-table td { border: 1px solid #ddd; padding: 8px; }
+  .lint-table th { background-color: #f2f2f2; text-align: left; }
+  .lint-table tr:nth-child(even) { background-color: #f9f9f9; }
+  .severity-warning { background-color: #FFD700; } /* Gold */
+  .severity-error { background-color: #FF4136; color: white; } /* Red */
+</style>
+
+{% if page.violations.size > 0 %}
+<table class="lint-table">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>File</th>
+      <th>Location</th>
+      <th>Reason</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item_str in page.violations -%}
+    {%- assign item = item_str | from_json -%}
+    {%- assign severity_class = "severity-" | append: item.severity | downcase -%}
+    <tr>
+      <td class="{{ severity_class }}">{{ forloop.index }}</td>
+      <td>{{ item.file }}</td>
+      <td>{{ item.line }}:{{ item.character | default: "N/A" }}</td>
+      <td>{{ item.type }}: {{ item.reason | escape }}</td>
+    </tr>
+    {%- endfor %}
+  </tbody>
+</table>
+{% else %}
+No SwiftLint violations found. Your code is clean! ✨
+{% endif %}
+
+1.  **`{% if page.violations.size > 0 %} ... {% else %} ... {% endif %}`**: Это основной условный блок.
+    *   Он проверяет, содержит ли массив `page.violations` хотя бы один элемент (`.size > 0`).
+    *   Если нарушения есть, выполняется первая часть кода: создается HTML-таблица и запускается цикл для ее заполнения.
+    *   Если нарушений нет (`{% else %}`), выводится сообщение `No SwiftLint violations found...`.
+
+2.  **`{% for item_str in page.violations -%} ... {%- endfor %}`**: Цикл, который выполняется для каждого нарушения в списке и создает строку таблицы `<tr>`.
+    *   Он перебирает массив `page.violations`.
+    *   На каждой итерации очередное нарушение (в виде JSON-строки) помещается в переменную `item_str`.
+
+3.  **`{%- assign item = item_str | from_json -%}`**: Ключевой шаг внутри цикла.
+    *   `assign item = ...`: Создается новая переменная `item`.
+    *   `item_str | from_json`: JSON-строка передается в кастомный фильтр `from_json`, который парсит ее и превращает в объект.
+
+4.  **`{%- assign severity_class = "severity-" | append: item.severity | downcase -%}`**: Эта строка динамически создает имя CSS-класса. Например, если `item.severity` равно "Warning", то переменная `severity_class` будет содержать строку "severity-warning".
+
+5.  **`<td class="{{ severity_class }}">...</td>`**: Созданная на предыдущем шаге переменная `severity_class` подставляется в атрибут `class` первой ячейки таблицы, что позволяет применить к ней нужный цвет фона.
+
+Таким образом, этот шаблон динамически создает красивый и информативный отчет на основе данных из JSON-файла.
+
+==== Что такое "нарушение"?
+
+В нашем контексте, **"нарушение" (violation)** — это один конкретный случай в коде, который не соответствует правилам, заданным в конфигурации SwiftLint.
+
+Каждый JSON-объект в файле отчета (`test.json` или `swiftlint-report.json`) представляет собой одно такое нарушение и содержит всю информацию о нем:
+*   `file` и `line`: где именно в коде найдена проблема.
+*   `severity`: насколько проблема критична (`Warning` или `Error`).
+*   `reason` и `type`: что именно было нарушено.
+
+==== Передача данных через Front Matter
+
+Обратите внимание, что каждое нарушение в списке `violations` — это **текстовая строка**, содержащая JSON. Это сделано намеренно, чтобы безопасно передать данные через YAML Front Matter.
+
+Затем, при сборке сайта, кастомный Liquid-фильтр `from_json` преобразует каждую из этих строк обратно в объект, с которым уже можно работать. Протестировать работу этого фильтра можно либо локально, запустив сервер Jekyll (об этом в следующем уроке), либо просто отправив изменения в репозиторий — если на этапе сборки сайта (`jekyll-build`) возникнет ошибка, вы увидите ее в логах CI.
+
+Таким образом, вы можете локально отлаживать и проверять любую часть логики генерации отчетов.
+
+=== Локальное тестирование Liquid-шаблона
+
+Иногда возникает необходимость проверить или отладить сложную логику в Liquid-шаблоне, особенно если он использует кастомные фильтры, как наш `from_json`. Запускать для этого полную сборку сайта Jekyll может быть долго и избыточно.
+
+К счастью, поскольку и Jekyll, и его шаблонизатор Liquid написаны на Ruby, мы можем использовать интерактивную консоль Ruby (`irb`) для быстрой и изолированной проверки.
+
+==== Пошаговая инструкция
+
+Давайте протестируем наш шаблон для отчета SwiftLint в изоляции.
+
+==== Шаг 1: Установка `liquid`
+
+Для работы с Liquid в Ruby необходимо установить соответствующую библиотеку (gem). Если этого не сделать, вы получите ошибку `LoadError`.
+
+[source,bash]
+----
+gem install liquid
+----
+
+==== Шаг 2: Запуск интерактивной консоли
+
+Откройте терминал и запустите `irb`.
+
+[source,bash]
+----
+irb
+----
+
+==== Шаг 3: Подготовка окружения и данных
+
+Теперь, находясь в `irb`, выполните следующий Ruby-код. Он подключает библиотеки, определяет наш кастомный фильтр `from_json`, готовит тестовые данные и сам шаблон.
+
+[source,ruby]
+----
+# 1. Подключаем библиотеки
+require 'liquid'
+require 'json'
+
+# 2. Определяем наш кастомный фильтр
+module FromJsonFilter
+  def from_json(input)
+    JSON.parse(input)
+  end
+end
+
+# 3. Регистрируем фильтр в Liquid
+Liquid::Template.register_filter(FromJsonFilter)
+
+# 4. Определяем шаблон и тестовые данные (две строки нарушений)
+template_string = "{% for item_str in violations -%}{%- assign item = item_str | from_json -%}| {{ forloop.index }} | {{ item.file }} | {{ item.line }}:{{ item.character }} | {{ item.severity }} | {{ item.type }}: {{ item.reason | escape }} |\n{% endfor %}"
+violations_data = [ # Обратите внимание, что пути к файлам теперь относительные
+  '{"character":34,"file":"SDET Demo App/Constants/FileA.swift","line":20,"reason":"Reason A","severity":"Warning","type":"Type A"}',
+  '{"character":43,"file":"SDET Demo App/Constants/FileB.swift","line":23,"reason":"Reason B","severity":"Error","type":"Type B"}'
+]
+
+# 5. Парсим шаблон и рендерим его с нашими данными
+template = Liquid::Template.parse(template_string)
+puts template.render('violations' => violations_data)
+----
+
+==== Шаг 4: Анализ результата
+
+Сразу после выполнения кода вы увидите в консоли результат — две корректно отформатированные строки для Markdown-таблицы:
+
+----
+| 1 | /path/to/FileA.swift | 20:34 | Warning | Type A: Reason A |
+| 2 | /path/to/FileB.swift | 23:43 | Error | Type B: Reason B |
+----
+
+Этот вывод подтверждает, что и кастомный фильтр `from_json`, и логика цикла в шаблоне работают именно так, как мы ожидаем. Такой подход идеально подходит для быстрой отладки и экспериментов с шаблонами.

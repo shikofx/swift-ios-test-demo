@@ -1,0 +1,72 @@
+name: Deploy Jekyll Site to GitHub Pages
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build: 
+    name: Build Site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure github pages
+        uses: actions/configure-pages@v5
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: .source
+
+      - name: Download static analysis artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: .artifacts
+
+      - name: Assemble Site Structure
+        run: |
+          cp -r .source/.site/ .
+          cp .source/Gemfile ./.site/
+          mkdir -p .site/reports
+          mv .artifacts/swiftlint-report/swiftlint-report.json .site/reports/swiftlint-report.json || echo "swiftlint-report.json not found"
+          mv .artifacts/swiftformat-report/swiftformat-report.json .site/reports/swiftformat-report.json || echo "swiftformat-report.json not found"
+
+      - name: Create SwiftLint Report
+        uses: ./.source/.github/actions/create-swiftlint-report-page
+        with:
+          json-path: .site/reports/swiftlint-report.json
+          output-path: .site/swiftlint-report.md
+
+      - name: Create SwiftFormat Report
+        uses: ./.source/.github/actions/create-swiftformat-report-page
+        with:
+          json-path: .site/reports/swiftformat-report.json
+          output-path: .site/swiftformat-report.md
+
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./.site
+          destination: ./_site
+      
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+  
+  deploy: 
+    name: Deploy Site
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

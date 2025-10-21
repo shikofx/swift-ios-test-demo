@@ -1,0 +1,14 @@
+title: Project Quality Reports
+description: swift-ios-test-demo
+theme: jekyll-theme-dinky
+
+markdown: kramdown 
+
+kramdown:
+  input: GFM # GitHub Flavored Markdown
+  hard_wrap: false
+
+exclude: # Файлы и папки, которые Jekyll должен игнорировать при сборке
+  - Gemfile
+  - Gemfile.lock
+  - README.md
