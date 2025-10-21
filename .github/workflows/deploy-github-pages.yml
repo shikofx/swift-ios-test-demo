@@ -1,0 +1,120 @@
+name: Deploy Jekyll Site to GitHub Pages
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build: # Эта job готовит артефакты и собирает сайт
+    name: Build Site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download static analysis artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Assemble Site Structure
+        run: |
+          # Создаем директории для отчетов, куда Jekyll их скопирует
+          mkdir -p .site/swiftformat-report
+          
+          # Перемещаем артефакты в нужные места
+          mv artifacts/swiftlint-report/swiftlint-report.json .site/swiftlint-report.json
+          # Перемещаем JSON-отчет для последующей конвертации
+          mv artifacts/swiftformat-report/swiftformat-report.json .site/swiftformat-report/swiftformat-report.json
+
+      - name: Convert SwiftFormat JSON to HTML
+        run: |
+          JSON_FILE=".site/swiftformat-report/swiftformat-report.json"
+          HTML_FILE=".site/swiftformat-report/swiftformat-report.html"
+
+          # Создаем заголовок HTML-файла
+          cat <<EOF > $HTML_FILE
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>SwiftFormat Report</title>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; margin: 2em; }
+              table { border-collapse: collapse; width: 100%; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background-color: #f2f2f2; }
+              .file { font-family: monospace, monospace; }
+            </style>
+          </head>
+          <body>
+            <h1>SwiftFormat Report</h1>
+          EOF
+
+          # Проверяем, есть ли нарушения. Если есть, создаем таблицу.
+          if [ "$(jq length $JSON_FILE)" -gt 0 ]; then
+            jq -r '. | ["File", "Line", "Rule", "Reason"], (.[] | [.file, .line, .rule, .reason]) | @html' $JSON_FILE >> $HTML_FILE
+          else
+            echo "<p>No SwiftFormat violations found. Great job!</p>" >> $HTML_FILE
+          fi
+
+          echo "</body></html>" >> $HTML_FILE
+          echo "SwiftFormat HTML report generated at $HTML_FILE"
+          
+      - name: Create SwiftLint Report Page
+        run: |
+          JSON_FILE=".site/swiftlint-report.json"
+          MD_FILE=".site/swiftlint-report.md"
+
+          # Создаем заголовок Markdown-файла с Front Matter для Jekyll
+          cat <<EOF > $MD_FILE
+          ---
+          layout: default
+          title: SwiftLint Static Analysis Report
+          ---
+
+          ## SwiftLint Static Analysis Report
+
+          EOF
+
+          # Проверяем, есть ли нарушения. Если есть, создаем таблицу.
+          if [ "$(jq length $JSON_FILE)" -gt 0 ]; then
+            # Заголовки таблицы
+            echo "| File | Line | Rule | Severity | Reason |" >> $MD_FILE
+            echo "|------|------|------|----------|--------|" >> $MD_FILE
+            # Генерируем строки таблицы из JSON
+            jq -r '.[] | "| \(.file):\(.line):\(.character) | \(.line) | \(.rule_id) | \(.severity) | \(.reason) |"' $JSON_FILE >> $MD_FILE
+          else
+            echo "No SwiftLint violations found. Your code is clean! ✨" >> $MD_FILE
+          fi
+
+      - name: Setup Ruby and Jekyll
+        uses: actions/configure-pages@v5
+
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./.site
+          destination: ./_site
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+  
+  deploy: # Эта job разворачивает собранный сайт
+    name: Deploy Site
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

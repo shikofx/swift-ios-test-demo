@@ -1,24 +1,41 @@
 name: 'Setup iOS Environment'
-description: 'Caches and installs CocoaPods dependencies'
+description: 'Installs dependencies like Homebrew, SwiftLint, SwiftFormat, and xcresults'
 
 runs:
   using: "composite"
   steps:
-    - name: Cache CocoaPods dependencies
-      id: pods-cache
-      uses: actions/cache@v4
-      with:
-        path: Pods
-        key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-pods-
-
-    - name: Install CocoaPods
-      if: steps.pods-cache.outputs.cache-hit != 'true'
+    - name: 'Check for Homebrew and install if not present'
       shell: bash
-      run: gem install cocoapods
+      run: |
+        if ! command -v brew &> /dev/null; then
+          echo "Homebrew not found. Installing..."
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo "/opt/homebrew/bin" >> $GITHUB_PATH
+        else
+          echo "Homebrew is already installed."
+        fi
 
-    - name: Install dependencies
-      if: steps.pods-cache.outputs.cache-hit != 'true'
+    - name: 'Install tools from Brewfile'
       shell: bash
-      run: pod install
+      run: |
+        echo "Installing tools using Brewfile..."
+        brew bundle install
+        echo "Tools installed successfully."
+
+    - name: 'Install xcresults binary'
+      shell: bash
+      run: |
+        ARCH=$(uname -m)
+        echo "CPU Architecture: $ARCH"
+
+        if [[ "$ARCH" == "arm64" ]]; then
+          echo "Downloading xcresults for Apple Silicon (arm64)..."
+          wget https://github.com/eroshenkoam/xcresults/releases/latest/download/xcresults -O xcresults
+        else
+          echo "Downloading xcresults for Intel (x86_64)..."
+          wget https://github.com/eroshenkoam/xcresults/releases/latest/download/xcresults-i386 -O xcresults
+        fi
+
+        chmod +x xcresults
+        sudo mv xcresults /usr/local/bin/xcresults
+        echo "xcresults installed successfully."
