@@ -16,7 +16,7 @@ title: Project Quality Dashboard
 ### Test Reports
 
 * 📈 **Code Coverage:** [View Report](./coverage-report/index.html)
-* 📊 **Allure:** [View Report](./allure-report/index.html)
+* 📊 **Allure:** [View Report](./reports/allure/)
 
 #### Run History
 

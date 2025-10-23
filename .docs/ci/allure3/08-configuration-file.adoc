@@ -1,0 +1,178 @@
+= Конфигурационный файл Allure 3
+:sectnums:
+:source-highlighter: highlight.js
+
+Allure 3 централизует все настройки в едином конфигурационном файле `allurerc.mjs`. Этот файл, написанный на JavaScript (ES Module), позволяет гибко управлять генерацией отчетов, поведением плагинов и настройками окружения.
+
+Хотя в нашем Swift-проекте мы используем более простой подход с файлами `environment.properties` и `categories.json` (см. xref:./07-rich-dashboard.adoc[Создание информативного дашборда]), понимание `allurerc.mjs` важно для полного освоения Allure 3, особенно в JavaScript/TypeScript проектах.
+
+== Пример полного файла `allurerc.mjs`
+
+Ниже приведен пример комплексного конфигурационного файла, демонстрирующего множество доступных опций.
+
+[source,javascript]
+----
+import { defineConfig } from "allure";
+
+export default defineConfig({
+  name: "Allure Report 3",
+  output: "./out/allure-report",
+  plugins: {
+    // Плагин для UI отчета
+    awesome: {
+      options: {
+        logo: "./logo.svg",
+        theme: "dark",
+        singleFile: false,
+        reportLanguage: "en",
+        groupBy: ["module", "parentSuite", "suite", "subSuite"],
+      },
+    },
+    // Плагин для вывода в консоль
+    log: {
+      options: {
+        groupBy: "none",
+      },
+    },
+  },
+  // Глобальные переменные
+  variables: {
+    project: "Allure3",
+    version: "3.0.0-beta",
+  },
+  // Конфигурации окружений
+  environments: {
+    chromium: {
+      matcher: ({ labels }) =>
+        labels.find(({ name, value }) => name === "env" && value === "chromium"),
+    },
+    firefox: {
+      matcher: ({ labels }) =>
+        labels.find(({ name, value }) => name === "env" && value === "firefox"),
+    },
+    safari: {
+      matcher: ({ labels }) =>
+        labels.find(({ name, value }) => name === "env" && value === "webkit"),
+    },
+  },
+});
+----
+
+== Структура и основные опции
+
+Файл экспортирует объект конфигурации. Рекомендуется использовать хелпер `defineConfig` для получения автодополнения и проверки типов в IDE.
+
+|===
+| Опция | Тип | Описание
+
+| `name`
+| `string`
+| Имя отчета, которое будет отображаться в заголовке.
+
+| `output`
+| `string`
+| Директория для сгенерированного отчета.
+
+| `plugins`
+| `object`
+| Секция для настройки плагинов.
+
+| `variables`
+| `object`
+| Глобальные переменные, доступные во всех окружениях.
+
+| `environments`
+| `object`
+| Конфигурации для разных окружений выполнения тестов.
+|===
+
+== Детальная настройка плагинов
+
+В секции `plugins` можно настраивать поведение каждого плагина. Ключ объекта — это имя плагина.
+
+=== Плагин `awesome` (основной UI)
+
+Это основной плагин, отвечающий за внешний вид и функциональность отчета.
+
+[source,javascript]
+----
+plugins: {
+  awesome: {
+    options: {
+      logo: "./logo.svg",                 // Путь к файлу логотипа
+      theme: "dark",                      // Тема оформления ('light', 'dark' или 'system')
+      singleFile: false,                  // Генерировать отчет в виде одного HTML-файла
+      reportLanguage: "ru",               // Язык интерфейса ("en", "ru", и т.д.)
+      groupBy: ["suite", "parentSuite"],  // Группировка тестов в дереве на вкладке Suites
+    },
+  },
+}
+----
+
+=== Плагин `log`
+
+Этот плагин управляет выводом результатов в консоль с помощью команды `allure log`.
+
+[source,javascript]
+----
+plugins: {
+  log: {
+    options: {
+      groupBy: "none", // Не группировать тесты при выводе в консоль
+    },
+  },
+}
+----
+
+== Настройка окружений (Environments)
+
+Секция `environments` позволяет определять разные контексты выполнения тестов. Это полезно, когда вы запускаете одни и те же тесты в разных браузерах, на разных ОС или стендах.
+
+[source,javascript]
+----
+environments: {
+  chrome: {
+    // 1. Функция-матчер, которая определяет, принадлежит ли тест этому окружению.
+    //    Она анализирует метки (labels) теста.
+    matcher: ({ labels }) => labels.find(({ name, value }) => name === "browser" && value === "chrome"),
+    
+    // 2. Переменные, специфичные для этого окружения.
+    //    Они будут отображаться в виджете "Environment" только для тестов,
+    //    попавших в это окружение.
+    variables: {
+      browser: "Chrome",
+      version: "125"
+    }
+  },
+  // ... другие окружения
+}
+----
+
+== Глобальные переменные (Variables)
+
+Секция `variables` позволяет определить переменные, которые будут доступны во всех окружениях. Это удобно для задания общих параметров, таких как URL тестового стенда.
+
+[source,javascript]
+----
+variables: {
+  host: "http://localhost:8080",
+}
+----
+
+== Использование и переопределение
+
+Чтобы Allure CLI использовал ваш конфигурационный файл, необходимо указать путь к нему с помощью флага `--config` или `-c`.
+
+[source,bash]
+----
+# Генерация отчета с использованием кастомной конфигурации
+npx allure generate --config ./allurerc.mjs
+----
+
+Многие параметры из файла конфигурации можно переопределить с помощью флагов командной строки. Например, флаг `--output` имеет более высокий приоритет, чем опция `output` в файле.
+
+[source,bash]
+----
+# Отчет будет сгенерирован в ./my-custom-report, а не в ./allure-report
+npx allure generate --config ./allurerc.mjs --output ./my-custom-report
+----

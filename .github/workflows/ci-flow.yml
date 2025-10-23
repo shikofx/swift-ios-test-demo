@@ -19,15 +19,15 @@ jobs:
     name: Code Analysis
     uses: ./.github/workflows/static-analysis.yml
 
-  # build_for_testing:
-  #   name: Build
-  #   needs: [analysis]
-  #   uses: ./.github/workflows/build-for-testing.yml
+  build_for_testing:
+    name: Build
+    needs: [analysis]
+    uses: ./.github/workflows/build-for-testing.yml
 
-  # unit_tests:
-  #   name: Unit Tests
-  #   needs: [build_for_testing]
-  #   uses: ./.github/workflows/unit-tests.yml
+  unit_tests:
+    name: Unit Tests
+    needs: [build_for_testing]
+    uses: ./.github/workflows/unit-tests.yml
 
   # build_app:
   #   name: Build
@@ -37,6 +37,6 @@ jobs:
  
   deploy_reports:
     name: Reports
-    needs: [analysis]
+    needs: [unit_tests]
     if: always()
     uses: ./.github/workflows/deploy-github-pages.yml

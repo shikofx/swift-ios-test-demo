@@ -1,0 +1,158 @@
+= Пример: Комплексный CI-пайплайн для XCTest и Allure
+:sectnums:
+:source-highlighter: highlight.js
+
+Этот урок представляет собой детальный разбор реального CI/CD-пайплайна на GitHub Actions, который решает сложную задачу: запуск тестов в нескольких конфигурациях, объединение результатов и генерация отдельных Allure-отчетов для каждого сценария.
+
+Такой подход полезен, когда необходимо:
+*   Тестировать приложение на разных устройствах или платформах (например, macOS и iOS Simulator).
+*   Запускать разные наборы тестов (Unit, UI) с разными настройками.
+*   Иметь отдельные отчеты для каждого типа тестов для удобства анализа.
+
+== Полный код пайплайна
+
+Ниже представлен полный YAML-файл workflow, который мы будем разбирать.
+
+[source,yaml]
+----
+name: Run tests and publish Allure 3 reports
+
+on:
+  push:
+    branches:
+      - 'main'
+  workflow_dispatch: {}
+
+env:
+  XCODE_VERSION: "16.4"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  update-reports:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+    
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+    
+      - name: Set Xcode ${{ env.XCODE_VERSION }}
+        run: sudo xcode-select --switch /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Run tests against Mac OS
+        run: |
+          set +e
+          xcodebuild test -scheme XcresultSamples -destination 'name=My Mac,arch=arm64' -testPlan UnitTests -only-test-configuration Default -resultBundlePath ./test-results/destinations/mac.xcresult
+          exit 0
+      
+      - name: Run tests against iPhone 16 simulator
+        run: |
+          set +e
+          xcodebuild test -scheme XcresultSamples -destination 'name=iPhone 16,arch=arm64,OS=18.5' -testPlan UnitTests -only-test-configuration Default -resultBundlePath ./test-results/destinations/iphone16.xcresult
+          exit 0
+
+      # ... и другие шаги запуска тестов ...
+
+      - name: Merge Mac OS and iPhone 16 destinations
+        run: |
+          xcrun xcresulttool merge --output-path ./test-results/destinations/merged.xcresult ./test-results/destinations/mac.xcresult ./test-results/destinations/iphone16.xcresult
+
+      # ... и другие шаги объединения ...
+
+      # workaround, see https://github.com/allure-framework/allure3/issues/294
+      - run: mdimport -m -y com.apple.xcode.resultbundle -u ./test-results/destinations/mac.xcresult
+      # ... и другие mdimport ...
+      
+      - name: Generate Allure 3 reports
+        run: |
+          npx allure awesome --output ./allure-reports/main ./test-results/destinations/mac.xcresult
+          npx allure awesome --output ./allure-reports/destinations ./test-results/destinations/merged.xcresult
+          # ... и другие allure awesome ...
+  
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./allure-reports
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+----
+
+== Разбор ключевых секций
+
+=== Запуск тестов в разных конфигурациях
+
+В этом пайплайне тесты запускаются несколько раз с разными параметрами.
+
+[source,yaml]
+----
+- name: Run tests against Mac OS
+  run: |
+    set +e
+    xcodebuild test ... -resultBundlePath ./test-results/destinations/mac.xcresult
+    exit 0
+----
+
+*   `set +e` и `exit 0`: Эти команды гарантируют, что шаг пайплайна не завершится с ошибкой, даже если тесты упадут. Это критически важно, так как основная цель этого workflow — сгенерировать отчет о состоянии тестов, а не остановить CI/CD при их падении.
+*   `-resultBundlePath`: Каждый запуск `xcodebuild` сохраняет результаты в свой уникальный `.xcresult` файл. Это позволяет нам изолировать результаты разных прогонов.
+
+=== Объединение результатов `.xcresult`
+
+Xcode предоставляет встроенную утилиту `xcresulttool` для работы с результатами тестов. Мы используем ее для объединения нескольких `.xcresult` в один.
+
+[source,yaml]
+----
+- name: Merge Mac OS and iPhone 16 destinations
+  run: |
+    xcrun xcresulttool merge --output-path ./test-results/destinations/merged.xcresult ./test-results/destinations/mac.xcresult ./test-results/destinations/iphone16.xcresult
+----
+
+Это позволяет создать единый отчет для тестов, запущенных на разных устройствах.
+
+=== Генерация нескольких отчетов
+
+Ключевая особенность этого пайплайна — генерация нескольких независимых Allure-отчетов.
+
+[source,yaml]
+----
+- name: Generate Allure 3 reports
+  run: |
+    npx allure awesome --output ./allure-reports/main ./test-results/destinations/mac.xcresult
+    npx allure awesome --output ./allure-reports/destinations ./test-results/destinations/merged.xcresult
+    # ... и другие команды ...
+----
+
+*   `npx allure awesome`: Для каждого `.xcresult` файла (или объединенного) генерируется свой отчет.
+*   `--output`: Каждый отчет помещается в свою собственную поддиректорию внутри `allure-reports`.
+
+=== Публикация на GitHub Pages
+
+Последние шаги загружают всю директорию `allure-reports` как артефакт и разворачивают его на GitHub Pages.
+
+[source,yaml]
+----
+- name: Upload pages artifact
+  uses: actions/upload-pages-artifact@v3
+  with:
+    path: ./allure-reports
+
+- name: Deploy to GitHub Pages
+  uses: actions/deploy-pages@v4
+----
+
+В результате на GitHub Pages будет создан сайт, где каждый отчет доступен по своему URL, например:
+*   `https://<user>.github.io/<repo>/main/`
+*   `https://<user>.github.io/<repo>/destinations/`
+*   `https://<user>.github.io/<repo>/repetitions/`
+
+Этот пример демонстрирует гибкость Allure 3 и `xcodebuild`, позволяя создавать сложные и информативные системы отчетности для ваших iOS- и macOS-проектов.

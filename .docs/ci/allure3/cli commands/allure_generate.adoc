@@ -1,0 +1,60 @@
+:doctype: book
+:encoding: utf-8
+:lang: ru
+:toc: left
+:toclevels: 4
+:sectnums:
+= allure generate
+
+Команда `allure generate` является основной командой для создания HTML-отчета из директорий с результатами Allure.
+
+== Синтаксис
+
+[source,bash]
+----
+$ allure generate [options] [шаблон_пути_к_результатам]
+----
+По умолчанию команда ищет результаты в директориях, соответствующих шаблону `**/allure-results`.
+
+== Опции
+
+`--config, -c <путь>`::
+Путь к файлу конфигурации Allure.
+
+`--output, -o <путь>`::
+Имя директории для вывода отчета. По умолчанию `allure-report`. Также принимаются абсолютные пути.
+
+`--cwd <путь>`::
+Рабочая директория для запуска команды. По умолчанию используется текущая рабочая директория.
+
+`--report-name, --name <имя>`::
+Имя отчета. По умолчанию "Allure Report".
+
+`--stage <путь_к_архиву>`::
+Архивы "stage", из которых нужно восстановить состояние. Можно указывать несколько раз для объединения результатов из разных архивов.
+
+== Примеры
+
+.Сгенерировать отчет из директории `./allure-results`:
+[source,bash]
+----
+$ allure generate ./allure-results
+----
+
+.Сгенерировать отчет из `./allure-results` в директорию `custom-report`:
+[source,bash]
+----
+$ allure generate ./allure-results --output custom-report
+----
+
+.Сгенерировать отчет, используя данные из архивов `windows.zip`, `macos.zip` и результаты из `./allure-results`:
+[source,bash]
+----
+$ allure generate --stage=windows.zip --stage=macos.zip ./allure-results
+----
+
+.Сгенерировать отчет, используя только данные из архивов, соответствующих шаблону `allure-*.zip` (игнорируя директории с результатами):
+[source,bash]
+----
+$ allure generate --stage="allure-*.zip"
+----

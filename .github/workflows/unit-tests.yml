@@ -1,4 +1,4 @@
-name: Reusable - Unit Tests
+name: Unit Tests
 
 on:
   workflow_call:
@@ -8,6 +8,21 @@ jobs:
     name: Run
     runs-on: macos-latest
     steps:
+      - name: Check npx allure awesome environment
+        shell: bash
+        run: |
+          node -v
+          npm -v
+          npx -v
+
+          echo "--- Verifying npx allure awesome command ---"
+          if npx allure awesome -h; then
+            echo "npx allure awesome command is accessible and executable."
+          else
+            echo "Error: npx allure awesome command failed to execute. This might indicate an issue with Node.js, npm, npx, or the allure-awesome package itself."
+            exit 1
+          fi
+  
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -30,21 +45,19 @@ jobs:
           xcodebuild test-without-building \
             -xctestrun "$XCTESTRUN_FILE" \
             -destination "id=$DESTINATION_UDID" \
-            -resultBundlePath Test.xcresult
+            -resultBundlePath unit-tests.xcresult
         continue-on-error: true
-
-      - name: Debug xcresult bundle
+        
+      - name: Generate Allure Report
         if: always()
+        continue-on-error: true
         run: |
-          echo "--- Checking if Test.xcresult exists and its size ---"
-          ls -lR Test.xcresult || echo "Test.xcresult not found."
-          echo "--- Inspecting Test.xcresult content with xcresulttool ---"
-          xcrun xcresulttool get object --path Test.xcresult --format json || echo "xcresulttool failed to get content, bundle is likely invalid."
+          npx allure awesome --output allure-report unit-tests.xcresult
 
-      - name: Upload xcresult artifact
+      - name: Upload Allure results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: xcresult-artifact
-          path: Test.xcresult
+          name: allure-report
+          path: allure-report
           retention-days: 1

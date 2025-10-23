@@ -1,0 +1,41 @@
+:doctype: book
+:encoding: utf-8
+:lang: ru
+:toc: left
+:toclevels: 4
+:sectnums:
+= allure projects delete
+
+Команда `allure projects delete` удаляет проект из Allure Service.
+
+== Синтаксис
+
+[source,bash]
+----
+$ allure projects delete [options] <имя_проекта>
+----
+
+== Опции
+
+`--force`::
+Удалить проект без запроса подтверждения.
+
+`--config, -c <путь>`::
+Путь к файлу конфигурации Allure.
+
+`--cwd <путь>`::
+Рабочая директория для запуска команды. По умолчанию используется текущая рабочая директория.
+
+== Примеры
+
+.Удалить проект с именем 'my-project' (с запросом подтверждения):
+[source,bash]
+----
+$ allure projects delete my-project
+----
+
+.Удалить проект с именем 'my-project' без запроса подтверждения:
+[source,bash]
+----
+$ allure projects delete my-project --force
+----

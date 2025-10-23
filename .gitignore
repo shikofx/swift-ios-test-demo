@@ -20,3 +20,8 @@ DerivedData
 # CocoaPods
 /Pods/
 /My Demo App.xcworkspace
+.allure
+/**/*.xcresult
+Podfile.lock.htm
+package-lock.json
+package.json

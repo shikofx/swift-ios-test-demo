@@ -21,7 +21,7 @@
 [source,yaml]
 ----
 # .github/workflows/reusable/static-analysis.yml
-name: Reusable - Static Analysis
+name: Static Analysis
 
 on:
   workflow_call: # <1>

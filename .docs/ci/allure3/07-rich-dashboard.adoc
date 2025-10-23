@@ -1,0 +1,90 @@
+= Создание информативного дашборда
+:sectnums:
+:source-highlighter: highlight.js
+
+Дашборд (страница Overview) в Allure 3 становится по-настоящему полезным, когда он наполнен данными. Рассмотрим, как обогатить отчет и сделать его похожим на официальные примеры.
+
+== 1. Обогащение тестов с помощью меток (Labels)
+
+Виджеты "Suites", "Behaviors" и графики по приоритетам (Severity) строятся на основе меток, которые добавляются к тестам. В нашем проекте для этого уже есть удобный `XCTestExtension.swift`.
+
+Используй эти методы внутри своих тестов, чтобы добавить метаданные:
+
+[source,swift]
+----
+func testSortByNameAscending() {
+    // Группировка по функциональности
+    epic("Каталог")
+    feature("Сортировка")
+    story("Сортировка по имени (A-Z)")
+
+    // Важность теста
+    severity("critical")
+
+    // Ссылка на тест-кейс в TMS
+    link("TC-1337")
+
+    step("...") {
+        // ...
+    }
+}
+----
+
+*   `epic`, `feature`, `story`: Создают иерархию на вкладке "Behaviors".
+*   `severity`: Позволяет фильтровать тесты по критичности (`blocker`, `critical`, `normal`, `minor`, `trivial`).
+*   `link`: Добавляет ссылку на внешний ресурс, например, на тест-кейс в Jira или TestRail.
+
+== 2. Добавление информации об окружении (Environment)
+
+Виджет "Environment" показывает, на каком стенде, браузере или устройстве выполнялись тесты.
+
+Для этого перед генерацией отчета нужно создать файл `environment.properties` (например, в папке `allure-config`).
+
+[source,properties]
+----
+# environment.properties
+Stand=Staging
+iOS_Version=17.5
+Device=iPhone 15 Pro
+Build_Number=${{ github.run_number }}
+----
+
+В CI-пайплайне этот файл можно создавать динамически.
+
+== 3. Настройка категорий (Categories)
+
+Виджет "Categories" автоматически классифицирует упавшие тесты. Это мощный инструмент для быстрого анализа причин сбоев.
+
+Для этого в ту же папку (`allure-config`) нужно добавить файл `categories.json`:
+
+[source,json]
+----
+[
+  {
+    "name": "Product Defects",
+    "messageRegex": ".*(failed to find|element not found).*",
+    "matchedStatuses": ["failed"]
+  },
+  {
+    "name": "Test Defects",
+    "messageRegex": ".*(assertion failed|expected not equal).*",
+    "matchedStatuses": ["failed"]
+  }
+]
+----
+
+*   `name`: Название категории.
+*   `messageRegex`: Регулярное выражение для поиска в сообщении об ошибке.
+*   `matchedStatuses`: Статусы тестов, к которым применяется правило (`failed`, `broken`).
+
+== 4. Генерация отчета
+
+Чтобы Allure учел эти файлы, их нужно передать как дополнительный источник при генерации отчета:
+
+[source,bash]
+----
+# npx allure awesome <путь-к-результатам> <путь-к-конфигам> --output <папка-отчета>
+npx allure awesome ./TestResults/Test.xcresult ./allure-config --output allure-report
+----
+
+Собрав все эти элементы вместе, ты получишь дашборд, который предоставляет максимум полезной информации для всей команды.

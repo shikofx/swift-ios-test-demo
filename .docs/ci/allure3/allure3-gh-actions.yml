@@ -1,0 +1,114 @@
+name: Run tests and publish Allure 3 reports
+
+on:
+  push:
+    branches:
+      - 'main'
+  workflow_dispatch: {}
+
+env:
+  XCODE_VERSION: "16.4"
+  XCRESULTS_TOOL_VERSION: "1.19.1"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  update-reports:
+    runs-on: macos-15
+    steps:
+    
+      - name: Checkout
+        uses: actions/checkout@v4
+    
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+    
+      - name: Set Xcode ${{ env.XCODE_VERSION }}
+        run: |
+          sudo xcode-select --switch /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Run tests against Mac OS
+        run: |
+          set +e
+          xcodebuild test -scheme XcresultSamples -destination 'name=My Mac,arch=arm64' -testPlan UnitTests -only-test-configuration Default -resultBundlePath ./test-results/destinations/mac.xcresult
+          exit 0
+      
+      - name: Run tests against iPhone 16 simulator
+        run: |
+          set +e
+          xcodebuild test -scheme XcresultSamples -destination 'name=iPhone 16,arch=arm64,OS=18.5' -testPlan UnitTests -only-test-configuration Default -resultBundlePath ./test-results/destinations/iphone16.xcresult
+          exit 0
+
+      - name: Run an alternative test plan against Mac OS
+        run: |
+          set +e
+          xcodebuild test -scheme XcresultSamples -destination 'name=My Mac,arch=arm64' -testPlan UnitTests2 -resultBundlePath ./test-results/destinations/mac-alt-testplan.xcresult
+          exit 0
+
+      - name: Run tests with repetitions
+        run: |
+          set +e
+          xcodebuild test -scheme XcresultSamples -destination 'name=My Mac,arch=arm64' -testPlan UnitTests -only-test-configuration Repetitions -resultBundlePath ./test-results/repetitions.xcresult
+          exit 0
+
+      - name: Run UI tests with screenshot capturing enabled
+        run: |
+          set +e
+          xcodebuild test -scheme XcresultSamples -destination 'name=My Mac,arch=arm64' -testPlan UiTests -only-test-configuration Screenshots -resultBundlePath ./test-results/screenshots.xcresult
+          exit 0
+
+      - name: Run UI tests with recording enabled
+        run: |
+          set +e
+          xcodebuild test -scheme XcresultSamples -destination 'name=My Mac,arch=arm64' -testPlan UiTests -only-test-configuration Recordings -resultBundlePath ./test-results/recordings.xcresult
+          exit 0
+
+      - name: Generate an error bundle
+        run: |
+          set +e
+          xcodebuild test -scheme NonExistingScheme -resultBundlePath ./test-results/error.xcresult
+          exit 0
+
+      - name: Merge Mac OS and iPhone 16 destinations
+        run: |
+          xcrun xcresulttool merge --output-path ./test-results/destinations/merged.xcresult ./test-results/destinations/mac.xcresult ./test-results/destinations/iphone16.xcresult
+
+      - name: Merge unit tests executed via different test plans
+        run: |
+          xcrun xcresulttool merge --output-path ./test-results/testplans.xcresult ./test-results/destinations/mac.xcresult ./test-results/destinations/mac-alt-testplan.xcresult
+
+        # workaround, see https://github.com/allure-framework/allure3/issues/294
+      - run: mdimport -m -y com.apple.xcode.resultbundle -u ./test-results/destinations/mac.xcresult
+      - run: mdimport -m -y com.apple.xcode.resultbundle -u ./test-results/destinations/iphone16.xcresult
+      - run: mdimport -m -y com.apple.xcode.resultbundle -u ./test-results/destinations/merged.xcresult
+      - run: mdimport -m -y com.apple.xcode.resultbundle -u ./test-results/repetitions.xcresult
+      - run: mdimport -m -y com.apple.xcode.resultbundle -u ./test-results/testplans.xcresult
+      - run: mdimport -m -y com.apple.xcode.resultbundle -u ./test-results/screenshots.xcresult
+      - run: mdimport -m -y com.apple.xcode.resultbundle -u ./test-results/recordings.xcresult
+      - run: mdimport -m -y com.apple.xcode.resultbundle -u ./test-results/error.xcresult
+      
+      - name: Generate Allure 3 reports
+        run: |
+          npx allure awesome --output ./allure-reports/main ./test-results/destinations/mac.xcresult
+          npx allure awesome --output ./allure-reports/destinations ./test-results/destinations/merged.xcresult
+          npx allure awesome --output ./allure-reports/repetitions ./test-results/repetitions.xcresult
+          npx allure awesome --output ./allure-reports/testplans ./test-results/testplans.xcresult
+          npx allure awesome --output ./allure-reports/ui-screenshots ./test-results/screenshots.xcresult
+          npx allure awesome --output ./allure-reports/ui-recording ./test-results/recordings.xcresult
+          npx allure awesome --output ./allure-reports/error ./test-results/error.xcresult
+  
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./allure-reports
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

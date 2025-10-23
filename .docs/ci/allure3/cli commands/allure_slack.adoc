@@ -1,0 +1,38 @@
+:doctype: book
+:encoding: utf-8
+:lang: ru
+:toc: left
+:toclevels: 4
+:sectnums:
+= allure slack
+
+Команда `allure slack` отправляет результаты тестирования из указанной директории Allure Results в канал Slack.
+
+== Синтаксис
+
+[source,bash]
+----
+$ allure slack [options] <путь_к_директории_с_результатами>
+----
+
+== Опции
+
+`--config, -c <путь>`::
+Путь к файлу конфигурации Allure.
+
+`--cwd <путь>`::
+Рабочая директория для запуска команды. По умолчанию используется текущая рабочая директория.
+
+`--token, -t <токен>`::
+OAuth-токен бота Slack.
+
+`--channel <идентификатор_канала>`::
+Идентификатор канала Slack.
+
+== Примеры
+
+.Отправить результаты тестирования из директории `./allure-results` в указанный канал Slack:
+[source,bash]
+----
+$ allure slack ./allure-results --token xoxb-token --channel C12345
+----
