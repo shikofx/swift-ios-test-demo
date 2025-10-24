@@ -1,14 +1,8 @@
-title: Project Quality Reports
-description: swift-ios-test-demo
-theme: jekyll-theme-dinky
+title: [Project Quality Report]
+description: [Provide SWIFT project with different kinds of tests with reporting]
 
-markdown: kramdown 
+remote_theme: shikofx/jekyll-theme-minimal
 
-kramdown:
-  input: GFM # GitHub Flavored Markdown
-  hard_wrap: false
-
-exclude: # Файлы и папки, которые Jekyll должен игнорировать при сборке
-  - Gemfile
-  - Gemfile.lock
-  - README.md
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag

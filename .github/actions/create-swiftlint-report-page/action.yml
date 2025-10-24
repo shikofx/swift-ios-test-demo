@@ -63,6 +63,21 @@ runs:
         ---
         ## SwiftLint Style Violations
 
+        <div class="report-summary">
+          <span>
+            <strong>Files Scanned:</strong> {{ page.total_files }}
+          </span>
+          <span class="summary-divider">|</span>
+          <span>
+            <strong>Total Warnings:</strong> {{ page.total_warnings }}
+          </span>
+          <span class="summary-divider">|</span>
+          <span>
+            <strong>Total Errors:</strong> {{ page.total_errors }}
+          </span>
+        </div>
+        <hr>
+
         {% if page.violations.size > 0 %}
         <style>
           .filter-buttons {
@@ -82,6 +97,16 @@ runs:
             background-color: #0366d6;
             color: white;
             border-color: #0366d6;
+          }
+          .report-summary {
+            background-color: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin-bottom: 16px;
+          }
+          .summary-divider {
+            margin: 0 10px;
           }
         </style>
 
