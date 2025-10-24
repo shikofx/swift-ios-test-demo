@@ -1,0 +1,373 @@
+= Переменные окружения в GitHub Actions
+:source-highlighter: highlight.js
+toc::[]
+== Цели урока
+
+* Понять, какие переменные окружения доступны в среде выполнения GitHub Actions.
+* Научиться использовать эти переменные для создания более гибких и динамичных пайплайнов.
+
+---
+
+== Теория
+
+GitHub Actions автоматически предоставляет набор переменных окружения для каждого шага в рабочем процессе. Эти переменные содержат информацию о событии, которое запустило workflow, о среде выполнения, о коде и многом другом.
+
+Ниже приведены все переменные из вашего лога запуска, сгруппированные по категориям.
+
+=== Переменные контекста GitHub (`GITHUB_*`)
+
+Эти переменные предоставляют информацию о самом запуске workflow.
+
+[cols="1,2,2"]
+|===
+| Переменная | Пример значения | Описание
+
+| `GITHUB_ACTOR`
+| `shikofx`
+| Имя пользователя, который инициировал запуск workflow.
+
+| `GITHUB_EVENT_NAME`
+| `push`
+| Название события, которое вызвало запуск (например, `push`, `pull_request`).
+
+| `GITHUB_REF_NAME`
+| `feature/2-unit-tests`
+| Имя ветки или тега, на котором произошел запуск.
+
+| `GITHUB_REPOSITORY`
+| `shikofx/swift-ios-test-demo`
+| Имя владельца и репозитория.
+
+| `GITHUB_RUN_ID`
+| `18769285505`
+| Уникальный идентификатор для конкретного запуска workflow в репозитории.
+
+| `GITHUB_RUN_NUMBER`
+| `265`
+| Уникальный номер для каждого запуска workflow. Увеличивается на 1 с каждым новым запуском.
+
+| `GITHUB_SHA`
+| `1496e09...`
+| SHA-хэш коммита, который вызвал запуск.
+
+| `GITHUB_WORKFLOW`
+| `IOS-DEMO-CI`
+| Имя файла workflow.
+
+| `GITHUB_WORKSPACE`
+| `/Users/runner/work/swift-ios-test-demo/swift-ios-test-demo`
+| Путь к рабочей директории, где находится копия вашего репозитория.
+| `GITHUB_ACTION`
+| `__run`
+| Имя текущего действия, которое выполняется.
+| `GITHUB_ACTION_REF`
+|
+| Ссылка на действие (если используется внешнее действие).
+| `GITHUB_ACTION_REPOSITORY`
+|
+| Репозиторий, содержащий текущее действие.
+| `GITHUB_ACTOR_ID`
+| `40614563`
+| ID пользователя, инициировавшего workflow.
+| `GITHUB_API_URL`
+| `https://api.github.com`
+| Базовый URL для GitHub API.
+| `GITHUB_BASE_REF`
+|
+| Имя базовой ветки для pull request'ов.
+| `GITHUB_ENV`
+| `/Users/runner/work/_temp/_runner_file_commands/set_env_b1527713-d826-424e-a2ef-f2e25b91da8e`
+| Путь к временному файлу, который можно использовать для установки переменных окружения для последующих шагов.
+| `GITHUB_EVENT_PATH`
+| `/Users/runner/work/_temp/_github_workflow/event.json`
+| Путь к файлу JSON, содержащему полный payload события GitHub, которое вызвало workflow.
+| `GITHUB_GRAPHQL_URL`
+| `https://api.github.com/graphql`
+| Базовый URL для GitHub GraphQL API.
+| `GITHUB_HEAD_REF`
+|
+| Имя ветки HEAD для pull request'ов.
+| `GITHUB_JOB`
+| `swiftlint_analysis`
+| ID текущего задания.
+| `GITHUB_OUTPUT`
+| `/Users/runner/work/_temp/_runner_file_commands/set_output_b1527713-d826-424e-a2ef-f2e25b91da8e`
+| Путь к временному файлу, который можно использовать для установки выходных данных для последующих шагов или заданий.
+| `GITHUB_PATH`
+| `/Users/runner/work/_temp/_runner_file_commands/add_path_b1527713-d826-424e-a2ef-f2e25b91da8e`
+| Путь к временному файлу, который можно использовать для добавления путей к переменной окружения `PATH`.
+| `GITHUB_REF_PROTECTED`
+| `false`
+| Указывает, защищена ли ссылка (ветка или тег).
+| `GITHUB_REF_TYPE`
+| `branch`
+| Тип ссылки, которая вызвала workflow (например, `branch`, `tag`).
+| `GITHUB_REF`
+| `refs/heads/feature/2-unit-tests`
+| Полная ссылка на ветку или тег, которая вызвала workflow.
+| `GITHUB_REPOSITORY_ID`
+| `1073405103`
+| ID репозитория.
+| `GITHUB_REPOSITORY_OWNER_ID`
+| `40614563`
+| ID владельца репозитория.
+| `GITHUB_RETENTION_DAYS`
+| `90`
+| Количество дней, в течение которых хранятся артефакты и логи.
+| `GITHUB_RUN_ATTEMPT`
+| `1`
+| Номер попытки текущего запуска workflow.
+| `GITHUB_SERVER_URL`
+| `https://github.com`
+| Базовый URL для сервера GitHub.
+| `GITHUB_SHA`
+| `1496e094950066fce8181e5be3340306d0bd4017`
+| SHA последнего коммита в ветке.
+| `GITHUB_STATE`
+| `/Users/runner/work/_temp/_runner_file_commands/save_state_b1527713-d826-424e-a2ef-f2e25b91da8e`
+| Путь к временному файлу, который можно использовать для сохранения состояния между шагами.
+| `GITHUB_STEP_SUMMARY`
+| `/Users/runner/work/_temp/_runner_file_commands/step_summary_b1527713-d826-424e-a2ef-f2e25b91da8e`
+| Путь к временному файлу, который можно использовать для добавления сводки шага.
+| `GITHUB_TRIGGERING_ACTOR`
+| `shikofx`
+| Имя пользователя, который инициировал workflow (может отличаться от `GITHUB_ACTOR` для событий, таких как `schedule`).
+| `GITHUB_WORKFLOW_REF`
+| `shikofx/swift-ios-test-demo/.github/workflows/ci-flow.yml@refs/heads/feature/2-unit-tests`
+| Полная ссылка на файл workflow.
+| `GITHUB_WORKFLOW_SHA`
+| `1496e094950066fce8181e5be3340306d0bd4017`
+| SHA коммита, в котором находится файл workflow.
+| `GITHUB_WORKFLOW`
+| `IOS-DEMO-CI`
+| Имя workflow.
+|===
+
+=== Переменные среды выполнения (`RUNNER_*`)
+
+Эти переменные описывают виртуальную машину (runner), на которой выполняется ваша задача.
+
+[cols="1,2,2"]
+|===
+| Переменная | Пример значения | Описание
+
+| `RUNNER_OS`
+| `macOS`
+| Операционная система, на которой работает runner.
+
+| `RUNNER_ARCH`
+| `ARM64`
+| Архитектура процессора runner'а.
+
+| `ImageOS`
+| `macos15`
+| Конкретный образ ОС, используемый для runner'а.
+| `RUNNER_ENVIRONMENT`
+| `github-hosted`
+| Среда, в которой работает runner (например, `github-hosted` или `self-hosted`).
+| `RUNNER_NAME`
+| `GitHub Actions 1000001788`
+| Имя runner'а.
+| `RUNNER_TEMP`
+| `/Users/runner/work/_temp`
+| Путь к временной директории на runner'е.
+| `RUNNER_TOOL_CACHE`
+| `/Users/runner/hostedtoolcache`
+| Путь к кэшу инструментов на runner'е.
+| `RUNNER_TRACKING_ID`
+| `github_5d843992-1e33-40e4-a6a6-a035efdcda45`
+| ID отслеживания runner'а.
+|===
+
+=== Переменные, связанные с инструментами и путями
+
+[cols="1,2,2"]
+|===
+| Переменная | Пример значения | Описание
+
+| `AGENT_TOOLSDIRECTORY`
+| `/Users/runner/hostedtoolcache`
+| Директория, где хранятся установленные инструменты.
+| `ANDROID_HOME`
+| `/Users/runner/Library/Android/sdk`
+| Путь к Android SDK.
+| `ANDROID_NDK_HOME`
+| `/Users/runner/Library/Android/sdk/ndk/27.3.13750724`
+| Путь к Android NDK (версия 27.3).
+| `ANDROID_NDK_LATEST_HOME`
+| `/Users/runner/Library/Android/sdk/ndk/28.2.13676358`
+| Путь к последней версии Android NDK.
+| `ANDROID_NDK_ROOT`
+| `/Users/runner/Library/Android/sdk/ndk/27.3.13750724`
+| Корневой путь к Android NDK.
+| `ANDROID_NDK`
+| `/Users/runner/Library/Android/sdk/ndk/27.3.13750724`
+| Путь к Android NDK.
+| `ANDROID_SDK_ROOT`
+| `/Users/runner/Library/Android/sdk`
+| Корневой путь к Android SDK.
+| `CHROMEWEBDRIVER`
+| `/usr/local/share/chromedriver-mac-arm64`
+| Путь к ChromeDriver.
+| `DOTNET_ROOT`
+| `/Users/runner/.dotnet`
+| Путь к установке .NET.
+| `EDGEWEBDRIVER`
+| `/usr/local/share/edge_driver`
+| Путь к Edge WebDriver.
+| `GECKOWEBDRIVER`
+| `/opt/homebrew/opt/geckodriver/bin`
+| Путь к GeckoDriver.
+| `GOROOT_1_22_ARM64`
+| `/Users/runner/hostedtoolcache/go/1.22.12/arm64`
+| Путь к Go SDK (версия 1.22, ARM64).
+| `GOROOT_1_23_ARM64`
+| `/Users/runner/hostedtoolcache/go/1.23.12/arm64`
+| Путь к Go SDK (версия 1.23, ARM64).
+| `GOROOT_1_24_ARM64`
+| `/Users/runner/hostedtoolcache/go/1.24.9/arm64`
+| Путь к Go SDK (версия 1.24, ARM64).
+| `GOROOT_1_25_ARM64`
+| `/Users/runner/hostedtoolcache/go/1.25.3/arm64`
+| Путь к Go SDK (версия 1.25, ARM64).
+| `HOMEBREW_CELLAR`
+| `/opt/homebrew/Cellar`
+| Директория Homebrew Cellar.
+| `HOMEBREW_PREFIX`
+| `/opt/homebrew`
+| Префикс установки Homebrew.
+| `HOMEBREW_REPOSITORY`
+| `/opt/homebrew`
+| Репозиторий Homebrew.
+| `JAVA_HOME_11_arm64`
+| `/Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/11.0.28-6/arm64/Contents/Home/`
+| Путь к Java Development Kit (JDK) версии 11 (ARM64).
+| `JAVA_HOME_17_arm64`
+| `/Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.16-8/arm64/Contents/Home/`
+| Путь к JDK версии 17 (ARM64).
+| `JAVA_HOME_21_arm64`
+| `/Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.8-9.0/arm64/Contents/Home/`
+| Путь к JDK версии 21 (ARM64).
+| `JAVA_HOME_25_arm64`
+| `/Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/25.0.0-36.0/arm64/Contents/Home/`
+| Путь к JDK версии 25 (ARM64).
+| `JAVA_HOME`
+| `/Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.8-9.0/arm64/Contents/Home/`
+| Путь к текущему JDK.
+| `NUNIT_BASE_PATH`
+| `/Library/Developer/nunit`
+| Базовый путь к NUnit.
+| `NUNIT3_PATH`
+| `/Library/Developer/nunit/3.6.0`
+| Путь к NUnit версии 3.6.0.
+| `PATH`
+| `/opt/homebrew/lib/ruby/gems/3.3.0/bin:...`
+| Переменная PATH, содержащая пути к исполняемым файлам.
+| `PIPX_BIN_DIR`
+| `/Users/runner/.local/bin`
+| Директория для исполняемых файлов Pipx.
+| `PIPX_HOME`
+| `/Users/runner/.local/pipx`
+| Домашняя директория Pipx.
+| `VCPKG_INSTALLATION_ROOT`
+| `/usr/local/share/vcpkg`
+| Корневая директория установки Vcpkg.
+| `VM_ASSETS`
+| `/usr/local/opt/runner/scripts`
+| Путь к скриптам runner'а.
+| `XCODE_16_DEVELOPER_DIR`
+| `/Applications/Xcode_16.4.app/Contents/Developer`
+| Путь к Xcode версии 16.4.
+| `XCODE_26_DEVELOPER_DIR`
+| `/Applications/Xcode_26.0.1.app/Contents/Developer`
+| Путь к Xcode версии 26.0.1.
+|===
+
+=== Системные и прочие переменные
+
+[cols="1,2,2"]
+|===
+| Переменная | Пример значения | Описание
+
+| `__CF_USER_TEXT_ENCODING`
+| `0x1F5:0x0:0x0`
+| Переменная, связанная с кодировкой текста пользователя в macOS.
+| `_`
+| `/usr/bin/env`
+| Путь к утилите `env`.
+| `ACTIONS_ID_TOKEN_REQUEST_TOKEN`
+| `***`
+| Токен для запроса OIDC ID токена.
+| `ACTIONS_ID_TOKEN_REQUEST_URL`
+| `https://run-actions-3-azure-eastus.actions.githubusercontent.com/...`
+| URL для запроса OIDC ID токена.
+| `ACTIONS_RUNNER_ACTION_ARCHIVE_CACHE`
+| `/Users/runner/actionarchivecache`
+| Путь к кэшу архивов действий runner'а.
+| `BOOTSTRAP_HASKELL_INSTALL_NO_STACK_HOOK`
+| `1`
+| Флаг для установки Haskell без хука Stack.
+| `BOOTSTRAP_HASKELL_NONINTERACTIVE`
+| `1`
+| Флаг для неинтерактивной установки Haskell.
+| `CI`
+| `true`
+| Указывает, что среда является средой непрерывной интеграции.
+| `DOTNET_MULTILEVEL_LOOKUP`
+| `0`
+| Отключает многоуровневый поиск .NET.
+| `ENABLE_RUNNER_TRACING`
+| `true`
+| Включает трассировку runner'а.
+| `HOME`
+| `/Users/runner`
+| Домашняя директория пользователя runner'а.
+| `HOMEBREW_CASK_OPTS`
+| `--no-quarantine`
+| Опции для Homebrew Cask.
+| `HOMEBREW_NO_AUTO_UPDATE`
+| `1`
+| Отключает автоматическое обновление Homebrew.
+| `HOMEBREW_NO_INSTALL_CLEANUP`
+| `1`
+| Отключает очистку после установки Homebrew.
+| `INFOPATH`
+| `/opt/homebrew/share/info:`
+| Путь для поиска info-страниц.
+| `LANG`
+| `en_US.UTF-8`
+| Язык и кодировка.
+| `LC_ALL`
+| `en_US.UTF-8`
+| Локаль для всех категорий.
+| `LC_CTYPE`
+| `en_US.UTF-8`
+| Локаль для классификации символов.
+| `LOGNAME`
+| `runner`
+| Имя пользователя, под которым запущен процесс.
+| `RCT_NO_LAUNCH_PACKAGER`
+| `1`
+| Флаг для React Native, предотвращающий запуск упаковщика.
+| `SHELL`
+| `/bin/bash`
+| Используемая оболочка.
+| `SHLVL`
+| `2`
+| Уровень вложенности оболочки.
+| `SSH_AUTH_SOCK`
+| `/private/tmp/com.apple.launchd.qlhjAhJybu/Listeners`
+| Путь к сокету агента SSH.
+| `TMPDIR`
+| `/var/folders/q0/wmf37v850txck86cpnvwm_zw0000gn/T/`
+| Путь к временной директории.
+| `USER`
+| `runner`
+| Имя текущего пользователя.
+| `XPC_FLAGS`
+| `0x0`
+| Флаги XPC (XNU Interprocess Communication).
+| `XPC_SERVICE_NAME`
+| `0`
+| Имя XPC-сервиса.
+|===

@@ -1,0 +1,32 @@
+name: 'Build App'
+description: 'Builds the release .app and creates a zip artifact.'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Dependencies
+      uses: ./.github/actions/setup-ios-environment
+
+    - name: Cache Xcode DerivedData
+      uses: actions/cache@v4
+      with:
+        path: build
+        key: ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('**/Podfile.lock') }}-${{ hashFiles('**/*.swift') }}
+        restore-keys: |
+          ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('**/Podfile.lock') }}-
+          ${{ runner.os }}-xcode-deriveddata-
+
+    - name: Build .app
+      shell: bash
+      run: |
+        PODS_PODFILE_DIR_PATH="${{ github.workspace }}" xcodebuild build \
+          -workspace "SDET Demo App.xcworkspace" \
+          -scheme "SDET Demo App" \
+          -sdk iphonesimulator \
+          -configuration Release \
+          -derivedDataPath build
+
+    - name: Create .app artifact
+      shell: bash
+      run: |
+        ditto -c -k --sequesterRsrc --keepParent "build/Build/Products/Release-iphonesimulator/SDET Demo App.app" "SDET-Demo-App.zip"

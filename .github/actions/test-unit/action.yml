@@ -1,0 +1,42 @@
+name: 'Run Unit Tests'
+description: 'Runs unit tests using a pre-built xctestrun file and generates an Allure report.'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check npx allure awesome environment
+      shell: bash
+      run: |
+        node -v
+        npm -v
+        npx -v
+
+        echo "--- Verifying npx allure awesome command ---"
+        if npx allure awesome -h; then
+          echo "npx allure awesome command is accessible and executable."
+        else
+          echo "Error: npx allure awesome command failed to execute. This might indicate an issue with Node.js, npm, npx, or the allure-awesome package itself."
+          exit 1
+        fi
+
+    - name: Run Unit Tests
+      shell: bash
+      run: |
+        # Find the .xctestrun file from the downloaded artifact
+        XCTESTRUN_FILE=$(find build -name "*.xctestrun")
+        echo "Found xctestrun file at: $XCTESTRUN_FILE"
+        
+        DESTINATION_UDID=$(xcrun simctl list devices available | grep 'iPhone' | grep '(Shutdown)' | head -n 1 | awk -F'[()]' '{print $2}')
+        echo "Using destination UDID: $DESTINATION_UDID"
+
+        xcodebuild test-without-building \
+          -xctestrun "$XCTESTRUN_FILE" \
+          -destination "id=$DESTINATION_UDID" \
+          -resultBundlePath unit-tests.xcresult
+      
+    - name: Generate Allure Report
+      if: always()
+      continue-on-error: true
+      shell: bash
+      run: |
+        npx allure awesome --output allure-report unit-tests.xcresult
