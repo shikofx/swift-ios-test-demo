@@ -1,0 +1,184 @@
+---
+layout: default
+title: Тема Minimal
+parent: Темы Jekyll
+grand_parent: Jekyll & GitHub Pages
+nav_order: 1
+---
+
+= Тема Minimal
+
+Minimal — это тема Jekyll для GitHub Pages. Вы можете [предварительно просмотреть тему](https://pages-themes.github.io/minimal/), чтобы увидеть, как она выглядит, или даже использовать ее сегодня.
+
+== Использование
+
+Чтобы использовать тему Minimal:
+
+. Добавьте следующее в `_config.yml` вашего сайта:
++
+[source,yaml]
+----
+remote_theme: pages-themes/minimal@v0.2.0
+plugins:
+  - jekyll-remote-theme # добавьте эту строку в список плагинов, если он у вас уже есть
+----
+
+. Опционально, если вы хотите предварительно просматривать свой сайт на компьютере, добавьте следующее в `Gemfile` вашего сайта:
++
+[source,ruby]
+----
+gem "github-pages", group: :jekyll_plugins
+----
+
+== Кастомизация
+
+=== Конфигурационные переменные
+
+Minimal будет учитывать следующие переменные, если они установлены в `_config.yml` вашего сайта:
+
+* `title`: [Заголовок вашего сайта]
+* `description`: [Краткое описание цели вашего сайта]
+
+Дополнительно вы можете установить следующие необязательные переменные:
+
+* `show_downloads`: `"true"` или `"false"` (без кавычек), чтобы указать, предоставлять ли URL для скачивания.
+* `google_analytics`: [Ваш идентификатор отслеживания Google Analytics]
+
+=== Таблица стилей
+
+Если вы хотите добавить свои собственные стили:
+
+. Создайте файл `/assets/css/style.scss` на вашем сайте.
+. Добавьте следующее содержимое в начало файла, точно как показано:
++
+[source,scss]
+----
+---
+---
+
+@import "{{ site.theme }}";
+----
+
+. Добавьте любой пользовательский CSS (или Sass, включая импорты) сразу после строки `@import`.
+
+NOTE: Если вы хотите изменить переменные Sass темы, вы должны установить новые значения *перед* строкой `@import` в вашей таблице стилей.
+
+=== Макеты
+
+Если вы хотите изменить HTML-макет темы:
+
+. Для некоторых изменений, таких как пользовательский favicon, вы можете добавить пользовательские файлы в вашу локальную папку `_includes`. Файлы, поставляемые с темой, служат отправной точкой и включаются в исходный шаблон макета.
+. Для более существенных изменений скопируйте исходный шаблон из репозитория темы. (Совет: нажмите "raw", чтобы упростить копирование).
+. Создайте файл `/_layouts/default.html` на вашем сайте.
+. Вставьте содержимое макета по умолчанию, скопированное на предыдущем шаге.
+. Настройте макет по своему усмотрению.
+
+=== Кастомизация кода Google Analytics
+
+Google выпускал несколько итераций своего кода Google Analytics с момента создания этой темы. Если вы хотите использовать последнюю версию кода, вставьте его в `_includes/head-custom-google-analytics.html` на вашем сайте Jekyll.
+
+=== Переопределение URL-адресов, генерируемых GitHub
+
+Шаблоны часто полагаются на URL-адреса, предоставляемые GitHub, такие как ссылки на ваш репозиторий или ссылки для скачивания вашего проекта. Если вы хотите переопределить один или несколько URL-адресов по умолчанию:
+
+. Посмотрите исходный код шаблона, чтобы определить имя переменной. Она будет иметь вид `{{ site.github.zip_url }}`.
+. Укажите URL-адрес, который вы хотите использовать в шаблоне, в `_config.yml` вашего сайта. Например, если переменная была `site.github.url`, вы бы добавили следующее:
++
+[source,yaml]
+----
+github:
+  zip_url: http://example.com/download.zip
+  another_url: another value
+----
+
+NOTE: Вы должны удалить префикс `site.` и каждая переменная (после `github.`) должна быть с отступом в два пробела под `github:`.
+
+Для получения дополнительной информации см. документацию по переменным Jekyll.
+
+== Дорожная карта
+
+См. открытые issues для списка предложенных функций (и известных проблем).
+
+== Философия проекта
+
+Тема Minimal предназначена для того, чтобы пользователи GitHub Pages могли быстро и легко создавать свой первый (или сотый) веб-сайт. Тема должна удовлетворять подавляющее большинство потребностей пользователей "из коробки", отдавая предпочтение простоте, а не гибкости, и предоставляя пользователям возможность выбора дополнительной сложности, если у них есть особые потребности или они хотят进一步 настроить свой опыт (например, добавив пользовательский CSS или изменив макет по умолчанию). Она также должна отлично выглядеть, но это само собой разумеется.
+
+== Участие в проекте
+
+Заинтересованы в участии в Minimal? Мы будем рады вашей помощи. Minimal — это проект с открытым исходным кодом, создаваемый по одному вкладу за раз такими пользователями, как вы. См. файл `CONTRIBUTING` для инструкций по участию.
+
+== Локальный предпросмотр темы
+
+Если вы хотите предварительно просмотреть тему локально (например, в процессе предложения изменений):
+
+. Склонируйте репозиторий темы (`git clone https://github.com/pages-themes/minimal`)
+. Перейдите в каталог темы (`cd minimal`)
+. Запустите `script/bootstrap` для установки необходимых зависимостей.
+. Запустите `bundle exec jekyll serve` для запуска сервера предпросмотра.
+. Посетите `localhost:4000` в вашем браузере для предпросмотра темы.
+
+== Запуск тестов
+
+Тема содержит минимальный набор тестов, чтобы убедиться, что сайт с темой будет успешно собран. Чтобы запустить тесты, просто выполните `script/cibuild`. Вам нужно будет один раз запустить `script/bootstrap` перед тем, как скрипт тестов заработает.
+
+== Пример `default.html`
+
+[source,html]
+----
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: "en-US" }}">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+{% seo %}
+    <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
+    <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <![endif]-->
+    {% include head-custom.html %}
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1><a href="{{ "/" | absolute_url }}">{{ site.title | default: site.github.repository_name }}</a></h1>
+
+        {% if site.logo %}
+          <img src="{{site.logo | relative_url}}" alt="Logo" />
+        {% endif %}
+
+        <p>{{ site.description | default: site.github.project_tagline }}</p>
+
+        {% if site.github.is_project_page %}
+        <p class="view"><a href="{{ site.github.repository_url }}">View the Project on GitHub <small>{{ site.github.repository_nwo }}</small></a></p>
+        {% endif %}
+
+        {% if site.github.is_user_page %}
+        <p class="view"><a href="{{ site.github.owner_url }}">View My GitHub Profile</a></p>
+        {% endif %}
+
+        {% if site.show_downloads %}
+        <ul class="downloads">
+          <li><a href="{{ site.github.zip_url }}">Download <strong>ZIP File</strong></a></li>
+          <li><a href="{{ site.github.tar_url }}">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="{{ site.github.repository_url }}">View On <strong>GitHub</strong></a></li>
+        </ul>
+        {% endif %}
+      </header>
+      <section>
+
+      {{ content }}
+
+      </section>
+      <footer>
+        {% if site.github.is_project_page %}
+        <p>This project is maintained by <a href="{{ site.github.owner_url }}">{{ site.github.owner_name }}</a></p>
+        {% endif %}
+        <p><small>Hosted on GitHub Pages — Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="{{ "/assets/js/scale.fix.js" | relative_url }}"></script>
+  </body>
+</html>
+----

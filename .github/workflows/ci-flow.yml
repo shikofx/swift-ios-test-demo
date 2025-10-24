@@ -195,8 +195,12 @@ jobs:
     if: always()
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}/$GITHUB_REF_NAME/$GITHUB_RUN_NUMBER
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Set sanitized branch name
+        id: set_vars
+        run: echo "github_branch=$(echo ${GITHUB_REF_NAME} | sed 's/\//-/g')" >> $GITHUB_ENV
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
