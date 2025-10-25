@@ -195,7 +195,42 @@ jobs:
           layout: default
           title: Allure Test Report
           ---
-          <iframe src="{{ '/reports/allure/index.html' | relative_url }}" style="width: 100%; height: 80vh; border: 1px solid #ddd; border-radius: 5px;"></iframe>
+          <iframe id="allure-frame" src="{{ '/reports/allure/index.html' | relative_url }}" style="width: 100%; border: 1px solid #ddd; border-radius: 5px; min-height: 80vh; transition: height 0.2s ease-out;" scrolling="no"></iframe>
+          <script>
+            document.addEventListener("DOMContentLoaded", function() {
+              const iframe = document.getElementById('allure-frame');
+
+              iframe.onload = function() {
+                try {
+                  const iframeBody = iframe.contentWindow.document.body;
+
+                  const resizeIframe = () => {
+                    const allureLayoutContent = iframe.contentWindow.document.querySelector('[data-testid="base-layout"] > div');
+                    
+                    if (allureLayoutContent) {
+                      const newHeight = allureLayoutContent.scrollHeight;
+                      if (newHeight > 0) {
+                        iframe.style.height = (newHeight + 96) + 'px';
+                      }
+                    }
+                  };
+
+                  const observer = new MutationObserver(() => {
+                    resizeIframe();
+                  });
+
+                  const config = { childList: true, subtree: true };
+                  observer.observe(iframeBody, config);
+
+                  resizeIframe();
+
+                } catch (e) {
+                  console.error("Could not access iframe content for resizing. This might be a cross-origin security error.", e);
+                  iframe.style.height = '85vh';
+                }
+              };
+            });
+          </script>
           EOF
 
       - name: Verify .site content
