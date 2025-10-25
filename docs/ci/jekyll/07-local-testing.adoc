@@ -77,11 +77,6 @@ cat <<'EOF' >> $MD_FILE
 ## SwiftLint Style Violations
 
 {% if page.violations.size > 0 %}
-<style>
-  .filter-buttons { text-align: right; margin-bottom: 8px; }
-  .filter-buttons button { padding: 4px 8px; font-size: 12px; border: 1px solid #ccc; background-color: #f2f2f2; cursor: pointer; border-radius: 4px; margin-right: 5px; }
-  .filter-buttons button.active { background-color: #0366d6; color: white; border-color: #0366d6; }
-</style>
 
 <div class="filter-buttons">
   <button id="filter-all" onclick="applyFilter('all')">All ({{ page.total_warnings | plus: page.total_errors }})</button>

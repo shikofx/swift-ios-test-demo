@@ -61,55 +61,9 @@ runs:
 
         cat <<'EOF' >> $MD_FILE
         ---
-        ## SwiftLint Style Violations
-
-        <div class="report-summary">
-          <span>
-            <strong>Files Scanned:</strong> {{ page.total_files }}
-          </span>
-          <span class="summary-divider">|</span>
-          <span>
-            <strong>Total Warnings:</strong> {{ page.total_warnings }}
-          </span>
-          <span class="summary-divider">|</span>
-          <span>
-            <strong>Total Errors:</strong> {{ page.total_errors }}
-          </span>
-        </div>
-        <hr>
+        ### SwiftLint Style Violations
 
         {% if page.violations.size > 0 %}
-        <style>
-          .filter-buttons {
-            text-align: right;
-            margin-bottom: 8px;
-          }
-          .filter-buttons button {
-            padding: 4px 8px;
-            font-size: 12px;
-            border: 1px solid #ccc;
-            background-color: #f2f2f2;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-right: 5px;
-          }
-          .filter-buttons button.active {
-            background-color: #0366d6;
-            color: white;
-            border-color: #0366d6;
-          }
-          .report-summary {
-            background-color: #f6f8fa;
-            border: 1px solid #e1e4e8;
-            border-radius: 6px;
-            padding: 10px 15px;
-            margin-bottom: 16px;
-          }
-          .summary-divider {
-            margin: 0 10px;
-          }
-        </style>
-
         <div class="filter-buttons">
           <button id="filter-all" onclick="applyFilter('all')">All ({{ page.total_warnings | plus: page.total_errors }})</button>
           <button id="filter-warning" onclick="applyFilter('warning')">Warnings ({{ page.total_warnings }})</button>
