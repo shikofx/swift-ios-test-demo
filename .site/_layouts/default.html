@@ -19,19 +19,23 @@
           <ul class="nav-menu">
             {% assign home_url = '/' | relative_url %}
             <li {% if page.url == home_url or page.url == '/index.html' %}class="active"{% endif %}>
-              <a href="{{ home_url }}">🏠 Allure</a>
+              <a href="{{ home_url }}">
+                <img src="{{ '/assets/img/allure.svg' | relative_url }}" alt="Allure Icon" class="nav-icon">Allure
+              </a>
             </li>
 
             {% assign swiftlint_url = '/swiftlint-report.html' | relative_url %}
             <li {% if page.url == swiftlint_url %}class="active"{% endif %}>
-              <a href="{{ swiftlint_url }}">🔎 SwiftLint Report</a>
+              <a href="{{ swiftlint_url }}">
+                <img src="{{ '/assets/img/swiftlint.png' | relative_url }}" alt="SwiftLint Icon" class="nav-icon">SwiftLint Report
+              </a>
             </li>
 
             {% assign swiftformat_url = '/swiftformat-report.html' | relative_url %}
-            <li {% if page.url == swiftformat_url %}class="active"{% endif %}><a href="{{ swiftformat_url }}">🪄 SwiftFormat Report</a></li>
+            <li {% if page.url == swiftformat_url %}class="active"{% endif %}><a href="{{ swiftformat_url }}"><img src="{{ '/assets/img/swiftformat.png' | relative_url }}" alt="SwiftFormat Icon" class="nav-icon">SwiftFormat Report</a></li>
 
             {% assign coverage_url = '/coverage-report.html' | relative_url %}
-            <li {% if page.url == coverage_url %}class="active"{% endif %}><a href="{{ coverage_url }}">📈 Code Coverage Report</a></li>
+            <li {% if page.url == coverage_url %}class="active"{% endif %}><a href="{{ coverage_url }}"><img src="{{ '/assets/img/xcode.png' | relative_url }}" alt="Coverage Icon" class="nav-icon">Code Coverage</a></li>
           </ul>
         </nav>
       </header>

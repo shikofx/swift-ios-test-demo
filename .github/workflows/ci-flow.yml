@@ -167,6 +167,13 @@ jobs:
           echo "branch_name: ${{ github.ref_name }}" > .site/_data/build.yml
           echo "run_id: ${{ github.run_id }}" >> .site/_data/build.yml
 
+      - name: Include Allure Report in Jekyll Config
+        # id: include_allure # ID is not used, can be removed or renamed if needed elsewhere
+        run: |
+          echo "Telling Jekyll to include the Allure report directory"
+          echo "" >> .site/_config.yml
+          echo "include: [\"reports/allure\"]" >> .site/_config.yml
+
       - name: Create SwiftLint Report
         continue-on-error: true
         uses: ./.source/.github/actions/create-swiftlint-report-page
@@ -181,6 +188,16 @@ jobs:
           json-path: .site/reports/swiftformat-report.json
           output-path: .site/swiftformat-report.md
 
+      - name: Create Main Page with Allure Report
+        run: |
+          cat <<'EOF' > .site/index.md
+          ---
+          layout: default
+          title: Allure Test Report
+          ---
+          <iframe src="{{ '/reports/allure/index.html' | relative_url }}" style="width: 100%; height: 80vh; border: 1px solid #ddd; border-radius: 5px;"></iframe>
+          EOF
+
       - name: Verify .site content
         run: |
           ls -R .site
@@ -193,12 +210,10 @@ jobs:
           source: ./.site
           destination: ./_site
            
-      - name: Check generated style.css content
+      - name: Verify result site content
         run: |
-          echo "--- Content of _site/assets/css/style.css ---"
-          cat ./_site/assets/css/style.css
-          echo "---------------------------------------------"
-
+          ls -R ./_site
+          
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
 

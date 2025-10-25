@@ -24,12 +24,12 @@ runs:
           echo "::warning::SwiftFormat report not found at $JSON_FILE. Skipping page generation."
           echo "[]" > "$DATA_FILE" # Create an empty JSON file so Jekyll doesn't fail
         else
-          # Копируем отчет в папку _data
+          # Copy the report to the _data folder
           mkdir -p "$SITE_PATH/_data"
           cp "$JSON_FILE" "$DATA_FILE"
         fi
 
-        # Создаем простую страницу-шаблон, которая будет использовать данные из _data
+        # Create a simple template page that will use data from _data
         cat <<'EOF' > "$PAGE_FILE"
         ---
         layout: default
