@@ -111,6 +111,36 @@ jobs:
           path: allure-report
           retention-days: 1
 
+  code_coverage_report:
+    name: Code Coverage Report
+    needs: [unit_tests]
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download test results artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report # .xcresult находится в этом артефакте
+          path: .
+
+      - name: Install Slather
+        run: gem install slather
+
+      - name: Generate HTML coverage report
+        run: |
+          slather coverage --html --output-directory coverage-report \
+          --scheme "SDET Demo App" --workspace "SDET Demo App.xcworkspace" \
+          allure-report/TestResults.xcresult
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage-report
+          retention-days: 1
+
   # build_app:
   #   name: Build App
   #   needs: [unit_tests]
@@ -132,7 +162,7 @@ jobs:
  
   build_site:
     name: Build Reports Site
-    needs: [swiftlint_analysis, swiftformat_analysis, unit_tests]
+    needs: [swiftlint_analysis, swiftformat_analysis, unit_tests, code_coverage_report]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -160,6 +190,7 @@ jobs:
           mv .artifacts/swiftlint-report/swiftlint-report.json .site/reports/swiftlint-report.json || echo "swiftlint-report.json not found"
           mv .artifacts/swiftformat-report/swiftformat-report.json .site/reports/swiftformat-report.json || echo "swiftformat-report.json not found"
           mv .artifacts/allure-report .site/reports/allure || echo "allure-report not found"
+          mv .artifacts/coverage-report .site/reports/coverage || echo "coverage-report not found"
 
       - name: Create Build Info Data File
         run: |
@@ -172,7 +203,7 @@ jobs:
         run: |
           echo "Telling Jekyll to include the Allure report directory"
           echo "" >> .site/_config.yml
-          echo "include: [\"reports/allure\"]" >> .site/_config.yml
+          echo "include: [\"reports/allure\", \"reports/coverage\"]" >> .site/_config.yml
 
       - name: Create SwiftLint Report
         continue-on-error: true
@@ -188,6 +219,16 @@ jobs:
           json-path: .site/reports/swiftformat-report.json
           output-path: .site/swiftformat-report.md
 
+      - name: Create Code Coverage Page
+        run: |
+          cat <<'EOF' > .site/coverage-report.md
+          ---
+          layout: default
+          title: Code Coverage Report
+          ---
+          <iframe id="coverage-frame" src="{{ '/reports/coverage/index.html' | relative_url }}" style="width: 100%; border: 1px solid #ddd; border-radius: 5px; min-height: 85vh;" scrolling="yes"></iframe>
+          EOF
+
       - name: Create Main Page with Allure Report
         run: |
           cat <<'EOF' > .site/index.md
@@ -202,27 +243,48 @@ jobs:
 
               iframe.onload = function() {
                 try {
+                  if (iframe.contentWindow.location.hash) {
+                    iframe.contentWindow.location.href = iframe.contentWindow.location.href.split('#')[0];
+                    return;
+                  }
+
                   const iframeBody = iframe.contentWindow.document.body;
+                  const pageBody = document.body;
+                  let isWideMode = false;
 
                   const resizeIframe = () => {
-                    const allureLayoutContent = iframe.contentWindow.document.querySelector('[data-testid="base-layout"] > div');
-                    
-                    if (allureLayoutContent) {
-                      const newHeight = allureLayoutContent.scrollHeight;
+                    if (isWideMode) return;
+
+                    const contentContainer = iframe.contentWindow.document.querySelector('[data-testid="base-layout"]');
+                    if (contentContainer) {
+                      const newHeight = contentContainer.scrollHeight + 96;
                       if (newHeight > 0) {
-                        iframe.style.height = (newHeight + 96) + 'px';
+                        iframe.style.height = newHeight + 'px';
+                      }
+                    }
+                  };
+
+                  const toggleWideMode = () => {
+                    const shouldBeWide = !!iframe.contentWindow.document.querySelector('[data-testid="split-layout"]');
+                    if (shouldBeWide !== isWideMode) {
+                      isWideMode = shouldBeWide;
+                      pageBody.classList.toggle('wide-mode', isWideMode);
+                      if (!isWideMode) {
+                        requestAnimationFrame(resizeIframe);
                       }
                     }
                   };
 
                   const observer = new MutationObserver(() => {
-                    resizeIframe();
+                    requestAnimationFrame(resizeIframe);
+                    requestAnimationFrame(toggleWideMode);
                   });
 
                   const config = { childList: true, subtree: true };
                   observer.observe(iframeBody, config);
 
                   resizeIframe();
+                  toggleWideMode();
 
                 } catch (e) {
                   console.error("Could not access iframe content for resizing. This might be a cross-origin security error.", e);
