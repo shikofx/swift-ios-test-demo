@@ -4,6 +4,12 @@ description: 'Runs unit tests using a pre-built xctestrun file and generates an 
 runs:
   using: "composite"
   steps:
+    - name: Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: xctestrun-build
+        path: build
+
     - name: Check npx allure awesome environment
       shell: bash
       run: |
@@ -40,3 +46,12 @@ runs:
       shell: bash
       run: |
         npx allure awesome --output allure-report unit-tests.xcresult
+
+    - name: Upload Allure results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: allure-report
+        path: allure-report
+        retention-days: 1
+    

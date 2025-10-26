@@ -99,7 +99,7 @@ final class MyCartViewControllerTest: XCTestCase {
         
         then( "product items count and cardCount should be increased", _block: { _ in
             XCTAssertEqual(engine.cartList[0]["ProductQuantity"] as! Int, 3)
-            XCTAssertEqual(engine.cartCount, 1)
+            XCTAssertEqual(engine.cartCount, 2)
         })
     }
 

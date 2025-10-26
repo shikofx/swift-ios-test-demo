@@ -15,6 +15,7 @@ permissions:
   id-token: write
 
 jobs:
+
   swiftlint_analysis:
     name: SwiftLint
     runs-on: macos-latest
@@ -94,75 +95,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: xctestrun-build
-          path: build
-
       - name: Run tests and generate report
         uses: ./.github/actions/test-unit
 
-      - name: Upload Allure results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: allure-report
-          retention-days: 1
-
-  code_coverage_report:
-    name: Code Coverage Report
+  build_app:
+    name: Build App
     needs: [unit_tests]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download test results artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-report # .xcresult находится в этом артефакте
-          path: .
+      - name: Build and Archive
+        uses: ./.github/actions/build-app
 
-      - name: Install Slather
-        run: gem install slather
-
-      - name: Generate HTML coverage report
-        run: |
-          slather coverage --html --output-directory coverage-report \
-          --scheme "SDET Demo App" --workspace "SDET Demo App.xcworkspace" \
-          allure-report/TestResults.xcresult
-
-      - name: Upload coverage report artifact
+      - name: Upload .app artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
-          path: coverage-report
-          retention-days: 1
-
-  # build_app:
-  #   name: Build App
-  #   needs: [unit_tests]
-  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-  #   runs-on: macos-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Build and Archive
-  #       uses: ./.github/actions/build-app
-
-  #     - name: Upload .app artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: sdet-demo-app
-  #         path: SDET-Demo-App.zip
-  #         retention-days: 7
+          name: sdet-demo-app
+          path: SDET-Demo-App.zip
+          retention-days: 7
  
   build_site:
     name: Build Reports Site
-    needs: [swiftlint_analysis, swiftformat_analysis, unit_tests, code_coverage_report]
+    needs: [swiftlint_analysis, swiftformat_analysis, unit_tests]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -198,13 +155,6 @@ jobs:
           echo "branch_name: ${{ github.ref_name }}" > .site/_data/build.yml
           echo "run_id: ${{ github.run_id }}" >> .site/_data/build.yml
 
-      - name: Include Allure Report in Jekyll Config
-        # id: include_allure # ID is not used, can be removed or renamed if needed elsewhere
-        run: |
-          echo "Telling Jekyll to include the Allure report directory"
-          echo "" >> .site/_config.yml
-          echo "include: [\"reports/allure\", \"reports/coverage\"]" >> .site/_config.yml
-
       - name: Create SwiftLint Report
         continue-on-error: true
         uses: ./.source/.github/actions/create-swiftlint-report-page
@@ -219,81 +169,8 @@ jobs:
           json-path: .site/reports/swiftformat-report.json
           output-path: .site/swiftformat-report.md
 
-      - name: Create Code Coverage Page
-        run: |
-          cat <<'EOF' > .site/coverage-report.md
-          ---
-          layout: default
-          title: Code Coverage Report
-          ---
-          <iframe id="coverage-frame" src="{{ '/reports/coverage/index.html' | relative_url }}" style="width: 100%; border: 1px solid #ddd; border-radius: 5px; min-height: 85vh;" scrolling="yes"></iframe>
-          EOF
-
-      - name: Create Main Page with Allure Report
-        run: |
-          cat <<'EOF' > .site/index.md
-          ---
-          layout: default
-          title: Allure Test Report
-          ---
-          <iframe id="allure-frame" src="{{ '/reports/allure/index.html' | relative_url }}" style="width: 100%; border: 1px solid #ddd; border-radius: 5px; min-height: 80vh; transition: height 0.2s ease-out;" scrolling="no"></iframe>
-          <script>
-            document.addEventListener("DOMContentLoaded", function() {
-              const iframe = document.getElementById('allure-frame');
-
-              iframe.onload = function() {
-                try {
-                  if (iframe.contentWindow.location.hash) {
-                    iframe.contentWindow.location.href = iframe.contentWindow.location.href.split('#')[0];
-                    return;
-                  }
-
-                  const iframeBody = iframe.contentWindow.document.body;
-                  const pageBody = document.body;
-                  let isWideMode = false;
-
-                  const resizeIframe = () => {
-                    if (isWideMode) return;
-
-                    const contentContainer = iframe.contentWindow.document.querySelector('[data-testid="base-layout"]');
-                    if (contentContainer) {
-                      const newHeight = contentContainer.scrollHeight + 96;
-                      if (newHeight > 0) {
-                        iframe.style.height = newHeight + 'px';
-                      }
-                    }
-                  };
-
-                  const toggleWideMode = () => {
-                    const shouldBeWide = !!iframe.contentWindow.document.querySelector('[data-testid="split-layout"]');
-                    if (shouldBeWide !== isWideMode) {
-                      isWideMode = shouldBeWide;
-                      pageBody.classList.toggle('wide-mode', isWideMode);
-                      if (!isWideMode) {
-                        requestAnimationFrame(resizeIframe);
-                      }
-                    }
-                  };
-
-                  const observer = new MutationObserver(() => {
-                    requestAnimationFrame(resizeIframe);
-                    requestAnimationFrame(toggleWideMode);
-                  });
-
-                  const config = { childList: true, subtree: true };
-                  observer.observe(iframeBody, config);
-
-                  resizeIframe();
-                  toggleWideMode();
-
-                } catch (e) {
-                  console.error("Could not access iframe content for resizing. This might be a cross-origin security error.", e);
-                  iframe.style.height = '85vh';
-                }
-              };
-            });
-          </script>
-          EOF
+      - name: Create Allure Report page
+        uses: ./.source/.github/actions/allure-report
 
       - name: Verify .site content
         run: |

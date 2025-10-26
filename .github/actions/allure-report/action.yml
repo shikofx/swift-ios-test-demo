@@ -1,0 +1,80 @@
+name: 'Allure Report'
+description: 'Creates HTML version of allure report and moves it to the separate frame'
+
+runs: 
+  using: "composite"
+  steps: 
+    - name: Include Allure Report in Jekyll Config
+      shell: bash
+      # id: include_allure # ID is not used, can be removed or renamed if needed elsewhere
+      run: |
+        echo "Telling Jekyll to include the Allure report directory"
+        echo "" >> .site/_config.yml
+        echo "include: [\"reports/allure\", \"reports/coverage\"]" >> .site/_config.yml
+
+    - name: Create Main Page with Allure Report
+      shell: bash
+      run: |
+        cat <<'EOF' > .site/index.md
+        ---
+        layout: default
+        title: Allure Test Report
+        ---
+        <iframe id="allure-frame" src="{{ '/reports/allure/index.html' | relative_url }}" style="width: 100%; border: 1px solid #ddd; border-radius: 5px; min-height: 80vh; transition: height 0.2s ease-out;" scrolling="no"></iframe>
+        <script>
+          document.addEventListener("DOMContentLoaded", function() {
+            const iframe = document.getElementById('allure-frame');
+
+            iframe.onload = function() {
+              try {
+                if (iframe.contentWindow.location.hash) {
+                  iframe.contentWindow.location.href = iframe.contentWindow.location.href.split('#')[0];
+                  return;
+                }
+
+                const iframeBody = iframe.contentWindow.document.body;
+                const pageBody = document.body;
+                let isWideMode = false;
+
+                const resizeIframe = () => {
+                  if (isWideMode) return;
+
+                  const contentContainer = iframe.contentWindow.document.querySelector('[data-testid="base-layout"]');
+                  if (contentContainer) {
+                    const newHeight = contentContainer.scrollHeight + 96;
+                    if (newHeight > 0) {
+                      iframe.style.height = newHeight + 'px';
+                    }
+                  }
+                };
+
+                const toggleWideMode = () => {
+                  const shouldBeWide = !!iframe.contentWindow.document.querySelector('[data-testid="split-layout"]');
+                  if (shouldBeWide !== isWideMode) {
+                    isWideMode = shouldBeWide;
+                    pageBody.classList.toggle('wide-mode', isWideMode);
+                    if (!isWideMode) {
+                      requestAnimationFrame(resizeIframe);
+                    }
+                  }
+                };
+
+                const observer = new MutationObserver(() => {
+                  requestAnimationFrame(resizeIframe);
+                  requestAnimationFrame(toggleWideMode);
+                });
+
+                const config = { childList: true, subtree: true };
+                observer.observe(iframeBody, config);
+
+                resizeIframe();
+                toggleWideMode();
+
+              } catch (e) {
+                console.error("Could not access iframe content for resizing. This might be a cross-origin security error.", e);
+                iframe.style.height = '85vh';
+              }
+            };
+          });
+        </script>
+        EOF

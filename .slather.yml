@@ -1,0 +1,6 @@
+coverage_service: cobertura_xml
+xcodeproj: ./SDET Demo App.xcodeproj
+scheme: SDET Demo App
+output_directory: ./test-reports
+ignore:
+  - "ThirdParty/*"
