@@ -1,0 +1,20 @@
+= Rule: Inclusive Language
+:source-highlighter: highlight.js
+
+Рекомендует избегать использования терминов, которые могут считаться неинклюзивными (например, `whitelist`/`blacklist`, `master`/`slave`).
+
+*Identifier*: `inclusive_language`
+
+== Non-compliant
+
+[source,swift]
+----
+let whitelist = ["a", "b"]
+----
+
+== Compliant
+
+[source,swift]
+----
+let allowlist = ["a", "b"]
+----

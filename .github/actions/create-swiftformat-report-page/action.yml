@@ -12,22 +12,14 @@ inputs:
 runs:
   using: "composite"
   steps:
+    
     - name: Generate Markdown from JSON
       shell: bash
       run: |
-        JSON_FILE="${{ inputs.json-path }}"
-        PAGE_FILE="${{ inputs.output-path }}"
-        SITE_PATH=$(dirname "${{ inputs.output-path }}")
+        JSON_FILE="${{ swiftlint-report.json }}"
+        PAGE_FILE="${{ swiftlint-report.md }}"
+        SITE_PATH=$(dirname "${{ _site }}")
         DATA_FILE="$SITE_PATH/_data/swiftformat.json"
-
-        if [ ! -f "$JSON_FILE" ]; then
-          echo "::warning::SwiftFormat report not found at $JSON_FILE. Skipping page generation."
-          echo "[]" > "$DATA_FILE" # Create an empty JSON file so Jekyll doesn't fail
-        else
-          # Copy the report to the _data folder
-          mkdir -p "$SITE_PATH/_data"
-          cp "$JSON_FILE" "$DATA_FILE"
-        fi
 
         # Create a simple template page that will use data from _data
         cat <<'EOF' > "$PAGE_FILE"
@@ -49,3 +41,11 @@ runs:
         EOF
 
         echo "SwiftFormat data and page generated."
+
+    - name: Upload SwiftLint artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: swiftlint-report
+        path: swiftlint-report.json
+        retention-days: 7

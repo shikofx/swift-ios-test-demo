@@ -3,7 +3,7 @@ name: IOS-DEMO-CI
 on:
   push:
     branches:
-      - main
+      - test
       - 'feature/**' # Запускать при push в feature-ветки
   pull_request:
     branches:
@@ -15,7 +15,6 @@ permissions:
   id-token: write
 
 jobs:
-
   swiftlint_analysis:
     name: SwiftLint
     runs-on: macos-latest
@@ -23,20 +22,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Dependencies
-        uses: ./.github/actions/setup-ios-environment
-
-      - name: Run SwiftLint
-        run: swiftlint lint --reporter json > swiftlint-report.json
-        continue-on-error: true
-
-      - name: Upload SwiftLint artifact
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: swiftlint-report
-          path: swiftlint-report.json
-          retention-days: 7
+      - name: Prepare Swiftlint report
+        uses: ./.github/actions/create-swiftformat-report-page
 
   swiftformat_analysis:
     name: SwiftFormat
@@ -98,6 +85,13 @@ jobs:
       - name: Run tests and generate report
         uses: ./.github/actions/test-unit
 
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults.xcresult
+
   build_app:
     name: Build App
     needs: [unit_tests]
@@ -146,8 +140,8 @@ jobs:
           mkdir -p .site/reports
           mv .artifacts/swiftlint-report/swiftlint-report.json .site/reports/swiftlint-report.json || echo "swiftlint-report.json not found"
           mv .artifacts/swiftformat-report/swiftformat-report.json .site/reports/swiftformat-report.json || echo "swiftformat-report.json not found"
-          mv .artifacts/allure-report .site/reports/allure || echo "allure-report not found"
-          mv .artifacts/coverage-report .site/reports/coverage || echo "coverage-report not found"
+          mv .artifacts/allure-report/* .site/reports/allure/ || echo "allure-report not found"
+          mv .artifacts/test-results/TestResults.xcresult . || echo "TestResults.xcresult not found"
 
       - name: Create Build Info Data File
         run: |
@@ -171,6 +165,21 @@ jobs:
 
       - name: Create Allure Report page
         uses: ./.source/.github/actions/allure-report
+        
+      - name: Create Coverage Report page
+        # Этот шаг должен выполняться на macos, но мы запускаем его на ubuntu
+        # для экономии времени, так как TestResults.xcresult уже есть.
+        # В будущем, если тесты будут запускаться здесь, нужно будет сменить runs-on.
+        continue-on-error: true
+        run: |
+          xcrun xccov view --report --json TestResults.xcresult > coverage.json
+        
+      - name: Generate Markdown coverage report
+        uses: ./.source/.github/actions/coverage
+        with:
+          json-path: coverage.json
+          source-dir: .source
+          output-path: .site/coverage-report.md
 
       - name: Verify .site content
         run: |

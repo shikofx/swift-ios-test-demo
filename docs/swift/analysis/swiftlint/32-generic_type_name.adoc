@@ -1,0 +1,20 @@
+= Rule: Generic Type Name
+:source-highlighter: highlight.js
+
+Имена обобщенных типов (generic type) должны соответствовать определенным правилам (например, быть короткими и начинаться с заглавной буквы).
+
+*Identifier*: `generic_type_name`
+
+== Non-compliant
+
+[source,swift]
+----
+func foo<type>(bar: type) {}
+----
+
+== Compliant
+
+[source,swift]
+----
+func foo<T>(bar: T) {}
+----

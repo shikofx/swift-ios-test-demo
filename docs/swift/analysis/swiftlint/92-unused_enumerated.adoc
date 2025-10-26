@@ -1,0 +1,20 @@
+= Rule: Unused Enumerated
+:source-highlighter: highlight.js
+
+Если в цикле `for` с `enumerated()` не используется индекс или значение, его следует убрать.
+
+*Identifier*: `unused_enumerated`
+
+== Non-compliant
+
+[source,swift]
+----
+for (index, value) in array.enumerated() { print(index) }
+----
+
+== Compliant
+
+[source,swift]
+----
+for (index, _) in array.enumerated() { print(index) }
+----

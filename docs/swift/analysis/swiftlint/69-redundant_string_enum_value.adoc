@@ -1,0 +1,24 @@
+= Rule: Redundant String Enum Value
+:source-highlighter: highlight.js
+
+В перечислениях типа `String` можно опускать явное значение, если оно совпадает с именем кейса.
+
+*Identifier*: `redundant_string_enum_value`
+
+== Non-compliant
+
+[source,swift]
+----
+enum MyEnum: String {
+    case one = "one"
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+enum MyEnum: String {
+    case one
+}
+----

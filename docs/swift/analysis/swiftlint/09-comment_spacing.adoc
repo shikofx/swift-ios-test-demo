@@ -1,0 +1,20 @@
+= Rule: Comment Spacing
+:source-highlighter: highlight.js
+
+Требует наличие пробела после символов комментария (`//`).
+
+*Identifier*: `comment_spacing`
+
+== Non-compliant
+
+[source,swift]
+----
+//this is a comment
+----
+
+== Compliant
+
+[source,swift]
+----
+// this is a comment
+----

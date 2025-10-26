@@ -1,0 +1,24 @@
+= Rule: Implicit Getter
+:source-highlighter: highlight.js
+
+В вычисляемых свойствах, доступных только для чтения (`read-only`), следует опускать ключевое слово `get`.
+
+*Identifier*: `implicit_getter`
+
+== Non-compliant
+
+[source,swift]
+----
+var myVar: Int {
+    get { return 1 }
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+var myVar: Int {
+    return 1
+}
+----

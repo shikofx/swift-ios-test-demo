@@ -1,0 +1,20 @@
+= Rule: Legacy Constant
+:source-highlighter: highlight.js
+
+Предпочитает использование современных констант вместо устаревших глобальных констант в стиле C.
+
+*Identifier*: `legacy_constant`
+
+== Non-compliant
+
+[source,swift]
+----
+let min = CGFloat.min
+----
+
+== Compliant
+
+[source,swift]
+----
+let min = .leastNormalMagnitude
+----

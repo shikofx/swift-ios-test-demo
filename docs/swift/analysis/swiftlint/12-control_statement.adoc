@@ -1,0 +1,20 @@
+= Rule: Control Statement
+:source-highlighter: highlight.js
+
+Управляющие конструкции (`if`, `for`, `while` и т.д.) не должны быть обернуты в лишние круглые скобки.
+
+*Identifier*: `control_statement`
+
+== Non-compliant
+
+[source,swift]
+----
+if (foo) { ... }
+----
+
+== Compliant
+
+[source,swift]
+----
+if foo { ... }
+----

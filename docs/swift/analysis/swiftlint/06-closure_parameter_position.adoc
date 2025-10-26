@@ -1,0 +1,23 @@
+= Rule: Closure Parameter Position
+:source-highlighter: highlight.js
+
+Параметры замыкания должны находиться на той же строке, что и открывающая фигурная скобка.
+
+*Identifier*: `closure_parameter_position`
+
+== Non-compliant
+
+[source,swift]
+----
+let foo = {
+    (bar: Int) -> Int in
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+let foo = { (bar: Int) -> Int in
+}
+----

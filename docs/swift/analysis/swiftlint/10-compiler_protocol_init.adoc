@@ -1,0 +1,20 @@
+= Rule: Compiler Protocol Init
+:source-highlighter: highlight.js
+
+Инициализаторы протоколов, используемых компилятором (например, `ExpressibleByArrayLiteral`), не должны вызываться напрямую.
+
+*Identifier*: `compiler_protocol_init`
+
+== Non-compliant
+
+[source,swift]
+----
+let set: Set<Int> = .init(arrayLiteral: 1, 2)
+----
+
+== Compliant
+
+[source,swift]
+----
+let set: Set<Int> = [1, 2]
+----

@@ -1,0 +1,20 @@
+= Rule: Todo
+:source-highlighter: highlight.js
+
+Находит комментарии `TODO:` и `FIXME:`, чтобы напомнить о незавершенных задачах.
+
+*Identifier*: `todo`
+
+== Non-compliant (генерирует предупреждение)
+
+[source,swift]
+----
+// TODO: Реализовать эту функцию
+----
+
+== Compliant
+
+[source,swift]
+----
+// Эта функция полностью реализована.
+----

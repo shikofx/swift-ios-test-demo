@@ -1,0 +1,20 @@
+= Rule: Discouraged Direct Initialization
+:source-highlighter: highlight.js
+
+Запрещает прямой вызов инициализаторов для некоторых типов, для которых существуют более удобные фабричные методы или литералы.
+
+*Identifier*: `discouraged_direct_init`
+
+== Non-compliant
+
+[source,swift]
+----
+let label = UILabel.init(frame: .zero)
+----
+
+== Compliant
+
+[source,swift]
+----
+let label = UILabel(frame: .zero)
+----

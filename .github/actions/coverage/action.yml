@@ -1,0 +1,24 @@
+name: 'Create Custom Coverage Report'
+description: 'Generates a custom HTML code coverage report from xccov JSON output.'
+
+inputs:
+  json-path:
+    description: 'Path to the input coverage.json file.'
+    required: true
+  source-dir:
+    description: 'Path to the source code directory.'
+    required: true
+  output-path:
+    description: 'Path where the output Markdown report file will be created.'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Generate HTML report
+      shell: bash
+      run: |
+        python3 ${{ github.action_path }}/swift_coverage.py \
+          --json-path "${{ inputs.json-path }}" \
+          --source-dir "${{ inputs.source-dir }}" \
+          --output-path "${{ inputs.output-path }}"

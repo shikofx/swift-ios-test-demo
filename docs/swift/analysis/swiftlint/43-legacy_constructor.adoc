@@ -1,0 +1,20 @@
+= Rule: Legacy Constructor
+:source-highlighter: highlight.js
+
+Предпочитает использование современных инициализаторов Swift вместо устаревших фабричных методов в стиле C.
+
+*Identifier*: `legacy_constructor`
+
+== Non-compliant
+
+[source,swift]
+----
+let point = NSMakePoint(10, 10)
+----
+
+== Compliant
+
+[source,swift]
+----
+let point = NSPoint(x: 10, y: 10)
+----

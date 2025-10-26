@@ -1,0 +1,20 @@
+= Rule: Dynamic Inline
+:source-highlighter: highlight.js
+
+Запрещает использование атрибута `@inline(__always)` для `dynamic` функций, так как это не имеет смысла.
+
+*Identifier*: `dynamic_inline`
+
+== Non-compliant
+
+[source,swift]
+----
+@inline(__always) dynamic func foo() {}
+----
+
+== Compliant
+
+[source,swift]
+----
+dynamic func foo() {}
+----

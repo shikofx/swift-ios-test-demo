@@ -1,0 +1,24 @@
+= Rule: Static Over Final Class
+:source-highlighter: highlight.js
+
+Предпочитает использование `static` для членов `final` классов вместо `class`.
+
+*Identifier*: `static_over_final_class`
+
+== Non-compliant
+
+[source,swift]
+----
+final class MyClass {
+    class func foo() {}
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+final class MyClass {
+    static func foo() {}
+}
+----

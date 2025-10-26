@@ -1,0 +1,20 @@
+= Rule: Private over Fileprivate
+:source-highlighter: highlight.js
+
+Предпочитает использование `private` вместо `fileprivate`, если это возможно.
+
+*Identifier*: `private_over_fileprivate`
+
+== Non-compliant
+
+[source,swift]
+----
+fileprivate let myVar = 1
+----
+
+== Compliant
+
+[source,swift]
+----
+private let myVar = 1
+----

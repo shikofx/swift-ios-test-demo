@@ -1,0 +1,20 @@
+= Rule: Legacy Hashing
+:source-highlighter: highlight.js
+
+Предпочитает использование нового `Hasher` API вместо устаревшего свойства `hashValue`.
+
+*Identifier*: `legacy_hashing`
+
+== Non-compliant
+
+[source,swift]
+----
+override var hashValue: Int { ... }
+----
+
+== Compliant
+
+[source,swift]
+----
+override func hash(into hasher: inout Hasher) { ... }
+----

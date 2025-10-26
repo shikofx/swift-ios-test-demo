@@ -1,0 +1,20 @@
+= Rule: Void Return
+:source-highlighter: highlight.js
+
+Предпочитает использование `Void` вместо пустых скобок `()` для обозначения отсутствия возвращаемого значения.
+
+*Identifier*: `void_return`
+
+== Non-compliant
+
+[source,swift]
+----
+func foo() -> () {}
+----
+
+== Compliant
+
+[source,swift]
+----
+func foo() -> Void {}
+----

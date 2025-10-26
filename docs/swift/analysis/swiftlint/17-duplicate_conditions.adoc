@@ -1,0 +1,22 @@
+= Rule: Duplicate Conditions
+:source-highlighter: highlight.js
+
+Находит дублирующиеся условия в конструкциях `if-else if`.
+
+*Identifier*: `duplicate_conditions`
+
+== Non-compliant
+
+[source,swift]
+----
+if foo == 1 { ... }
+else if foo == 1 { ... }
+----
+
+== Compliant
+
+[source,swift]
+----
+if foo == 1 { ... }
+else if foo == 2 { ... }
+----

@@ -1,0 +1,21 @@
+= Rule: Function Parameter Count
+:source-highlighter: highlight.js
+
+Ограничивает количество параметров в функции. Большое количество параметров может указывать на то, что функция выполняет слишком много задач.
+
+*Identifier*: `function_parameter_count`
+
+== Non-compliant (если > 5 параметров по умолчанию)
+
+[source,swift]
+----
+func myFunc(param1: Int, param2: Int, param3: Int, param4: Int, param5: Int, param6: Int) {
+    // ...
+}
+----
+
+*Решение*: Сгруппировать связанные параметры в структуру или класс.
+
+== Конфигурация
+
+Можно изменить пороговые значения в `.swiftlint.yml`.

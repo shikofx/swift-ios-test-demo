@@ -1,0 +1,20 @@
+= Rule: Prefer Type Checking
+:source-highlighter: highlight.js
+
+Предпочитает использование оператора `is` для проверки типа вместо приведения типа и сравнения с `nil`.
+
+*Identifier*: `prefer_type_checking`
+
+== Non-compliant
+
+[source,swift]
+----
+if (foo as? MyType) != nil { ... }
+----
+
+== Compliant
+
+[source,swift]
+----
+if foo is MyType { ... }
+----

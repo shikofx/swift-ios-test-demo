@@ -1,0 +1,18 @@
+= Rule: Custom Rules
+:source-highlighter: highlight.js
+
+Это не правило, а механизм, позволяющий создавать собственные правила на основе регулярных выражений.
+
+*Identifier*: `custom_rules`
+
+== Пример конфигурации в `.swiftlint.yml`
+
+[source,yaml]
+----
+custom_rules:
+  my_custom_rule:
+    name: "My Custom Rule"
+    regex: "(bad_word)"
+    message: "Использование 'bad_word' не рекомендуется."
+    severity: warning
+----

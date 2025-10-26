@@ -1,0 +1,20 @@
+= Rule: Class Delegate Protocol
+:source-highlighter: highlight.js
+
+Протоколы делегатов должны быть ограничены только классами (`class-only`), чтобы избежать циклов сильных ссылок.
+
+*Identifier*: `class_delegate_protocol`
+
+== Non-compliant
+
+[source,swift]
+----
+protocol MyDelegate { ... }
+----
+
+== Compliant
+
+[source,swift]
+----
+protocol MyDelegate: AnyObject { ... }
+----

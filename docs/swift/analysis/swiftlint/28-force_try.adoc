@@ -1,0 +1,22 @@
+= Rule: Force Try
+:source-highlighter: highlight.js
+
+Запрещает использование `try!`, которое может привести к падению приложения, если функция выбросит ошибку.
+
+*Identifier*: `force_try`
+
+== Non-compliant
+
+[source,swift]
+----
+let result = try! doSomethingThatCanThrow()
+----
+
+== Compliant
+
+[source,swift]
+----
+do {
+    let result = try doSomethingThatCanThrow()
+} catch { ... }
+----

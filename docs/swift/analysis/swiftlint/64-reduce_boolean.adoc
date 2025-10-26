@@ -1,0 +1,22 @@
+= Rule: Reduce Boolean
+:source-highlighter: highlight.js
+
+Предпочитает более короткие и идиоматичные способы работы с булевыми значениями.
+
+*Identifier*: `reduce_boolean`
+
+== Non-compliant
+
+[source,swift]
+----
+if myBool == true { ... }
+let newBool = oldBool ? true : false
+----
+
+== Compliant
+
+[source,swift]
+----
+if myBool { ... }
+let newBool = oldBool
+----

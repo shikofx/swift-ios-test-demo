@@ -1,0 +1,18 @@
+= Rule: Self in Property Initialization
+:source-highlighter: highlight.js
+
+Запрещает использование `self` при инициализации свойств, так как это может привести к неопределенному поведению.
+
+*Identifier*: `self_in_property_initialization`
+
+== Non-compliant
+
+[source,swift]
+----
+class MyClass {
+    let a = 1
+    let b = self.a
+}
+----
+
+*Решение*: Использовать `lazy var` или вычисляемое свойство.

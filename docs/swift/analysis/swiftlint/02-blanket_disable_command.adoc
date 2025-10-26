@@ -1,0 +1,20 @@
+= Rule: Blanket Disable Command
+:source-highlighter: highlight.js
+
+Запрещает использование команд `swiftlint:disable all`, которые отключают все правила сразу.
+
+*Identifier*: `blanket_disable_command`
+
+== Non-compliant
+
+[source,swift]
+----
+// swiftlint:disable all
+----
+
+== Compliant
+
+[source,swift]
+----
+// swiftlint:disable opening_brace, colon
+----

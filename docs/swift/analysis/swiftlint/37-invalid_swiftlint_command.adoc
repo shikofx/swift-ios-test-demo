@@ -1,0 +1,20 @@
+= Rule: Invalid SwiftLint Command
+:source-highlighter: highlight.js
+
+Находит некорректные или устаревшие команды управления SwiftLint в комментариях.
+
+*Identifier*: `invalid_swiftlint_command`
+
+== Non-compliant
+
+[source,swift]
+----
+// swiftlint:disable:next force_cast
+----
+
+== Compliant
+
+[source,swift]
+----
+// swiftlint:disable:next force_cast
+----

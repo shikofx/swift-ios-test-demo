@@ -1,0 +1,20 @@
+= Rule: Mark
+:source-highlighter: highlight.js
+
+Проверяет правильность форматирования комментариев `MARK:`.
+
+*Identifier*: `mark`
+
+== Non-compliant
+
+[source,swift]
+----
+//MARK: My Mark
+----
+
+== Compliant
+
+[source,swift]
+----
+// MARK: - My Mark
+----

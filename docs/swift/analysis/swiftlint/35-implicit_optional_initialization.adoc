@@ -1,0 +1,20 @@
+= Rule: Implicit Optional Initialization
+:source-highlighter: highlight.js
+
+Запрещает явную инициализацию опциональных переменных значением `nil`.
+
+*Identifier*: `implicit_optional_initialization`
+
+== Non-compliant
+
+[source,swift]
+----
+var myVar: String? = nil
+----
+
+== Compliant
+
+[source,swift]
+----
+var myVar: String?
+----

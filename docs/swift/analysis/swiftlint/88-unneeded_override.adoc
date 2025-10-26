@@ -1,0 +1,17 @@
+= Rule: Unneeded Overridden Functions
+:source-highlighter: highlight.js
+
+Находит переопределенные функции, которые просто вызывают `super` и больше ничего не делают.
+
+*Identifier*: `unneeded_override`
+
+== Non-compliant
+
+[source,swift]
+----
+override func viewDidLoad() {
+    super.viewDidLoad()
+}
+----
+
+*Решение*: Удалить пустую переопределенную функцию.

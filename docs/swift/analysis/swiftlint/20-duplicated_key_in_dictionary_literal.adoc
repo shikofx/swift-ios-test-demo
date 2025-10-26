@@ -1,0 +1,20 @@
+= Rule: Duplicated Key in Dictionary Literal
+:source-highlighter: highlight.js
+
+Проверяет наличие дублирующихся ключей в литералах словарей.
+
+*Identifier*: `duplicated_key_in_dictionary_literal`
+
+== Non-compliant
+
+[source,swift]
+----
+let dict = ["key": 1, "key": 2]
+----
+
+== Compliant
+
+[source,swift]
+----
+let dict = ["key1": 1, "key2": 2]
+----

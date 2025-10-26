@@ -1,0 +1,20 @@
+= Rule: Block Based KVO
+:source-highlighter: highlight.js
+
+Предпочитает использование блочного KVO API вместо устаревшего.
+
+*Identifier*: `block_based_kvo`
+
+== Non-compliant
+
+[source,swift]
+----
+object.addObserver(self, forKeyPath: "key", options: .new, context: nil)
+----
+
+== Compliant
+
+[source,swift]
+----
+object.observe(\.key, options: .new) { ... }
+----

@@ -1,0 +1,21 @@
+= Rule: Returning Whitespace
+:source-highlighter: highlight.js
+
+Проверяет, что между стрелкой `->` и возвращаемым типом функции стоит один пробел.
+
+*Identifier*: `return_arrow_whitespace`
+
+== Non-compliant
+
+[source,swift]
+----
+func foo()->Int {}
+func bar() ->Int {}
+----
+
+== Compliant
+
+[source,swift]
+----
+func foo() -> Int {}
+----

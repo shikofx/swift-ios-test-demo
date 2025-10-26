@@ -1,0 +1,22 @@
+= Rule: Unneeded Synthesized Initializer
+:source-highlighter: highlight.js
+
+Запрещает пустые `init()`, которые компилятор может сгенерировать автоматически.
+
+*Identifier*: `unneeded_synthesized_initializer`
+
+== Non-compliant
+
+[source,swift]
+----
+struct MyStruct {
+    init() {}
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+struct MyStruct {}
+----

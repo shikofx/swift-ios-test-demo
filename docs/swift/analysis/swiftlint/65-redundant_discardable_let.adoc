@@ -1,0 +1,20 @@
+= Rule: Redundant Discardable Let
+:source-highlighter: highlight.js
+
+Запрещает использование `let _ =`, если результат выражения не используется. Вместо этого следует использовать `_ =`.
+
+*Identifier*: `redundant_discardable_let`
+
+== Non-compliant
+
+[source,swift]
+----
+let _ = foo()
+----
+
+== Compliant
+
+[source,swift]
+----
+_ = foo()
+----

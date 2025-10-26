@@ -1,0 +1,22 @@
+= Rule: No Fallthrough only
+:source-highlighter: highlight.js
+
+Запрещает кейсы в `switch`, которые содержат только `fallthrough`.
+
+*Identifier*: `no_fallthrough_only`
+
+== Non-compliant
+
+[source,swift]
+----
+case 1:
+    fallthrough
+----
+
+== Compliant
+
+[source,swift]
+----
+case 1, 2:
+    // ...
+----

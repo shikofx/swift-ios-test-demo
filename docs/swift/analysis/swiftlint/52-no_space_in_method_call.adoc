@@ -1,0 +1,20 @@
+= Rule: No Space in Method Call
+:source-highlighter: highlight.js
+
+Запрещает пробел между именем метода и открывающей скобкой.
+
+*Identifier*: `no_space_in_method_call`
+
+== Non-compliant
+
+[source,swift]
+----
+foo ()
+----
+
+== Compliant
+
+[source,swift]
+----
+foo()
+----

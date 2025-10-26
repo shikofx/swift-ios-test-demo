@@ -1,0 +1,23 @@
+= Rule: Unneeded Break in Switch
+:source-highlighter: highlight.js
+
+Находит и запрещает избыточные `break` в `switch`.
+
+*Identifier*: `unneeded_break_in_switch`
+
+== Non-compliant
+
+[source,swift]
+----
+case .foo:
+    bar()
+    break
+----
+
+== Compliant
+
+[source,swift]
+----
+case .foo:
+    bar()
+----

@@ -1,7 +1,7 @@
 = Урок 1: Статический анализ кода в Swift
 :sectnums:
 :source-highlighter: highlight.js
-
+https://realm.github.io/SwiftLint/rule-directory.html
 == Цели урока
 
 * Понять, что такое статический анализ и зачем он нужен.

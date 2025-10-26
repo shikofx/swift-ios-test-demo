@@ -1,0 +1,20 @@
+= Rule: Is Disjoint
+:source-highlighter: highlight.js
+
+Предпочитает использование метода `isDisjoint(with:)` для проверки отсутствия общих элементов в двух множествах (`Set`).
+
+*Identifier*: `is_disjoint`
+
+== Non-compliant
+
+[source,swift]
+----
+set1.intersection(set2).isEmpty
+----
+
+== Compliant
+
+[source,swift]
+----
+set1.isDisjoint(with: set2)
+----

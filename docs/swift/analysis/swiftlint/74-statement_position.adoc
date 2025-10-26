@@ -1,0 +1,21 @@
+= Rule: Statement Position
+:source-highlighter: highlight.js
+
+Проверяет, что `else` и `catch` находятся на той же строке, что и закрывающая скобка предыдущего блока.
+
+*Identifier*: `statement_position`
+
+== Non-compliant
+
+[source,swift]
+----
+if foo { ... }
+else { ... }
+----
+
+== Compliant
+
+[source,swift]
+----
+if foo { ... } else { ... }
+----

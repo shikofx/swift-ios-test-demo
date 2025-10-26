@@ -1,0 +1,24 @@
+= Rule: NSObject Prefer isEqual
+:source-highlighter: highlight.js
+
+При сравнении объектов, унаследованных от `NSObject`, следует переопределять и использовать `isEqual` вместо `==`.
+
+*Identifier*: `nsobject_prefer_isequal`
+
+== Non-compliant
+
+[source,swift]
+----
+class MyObject: NSObject {
+    static func == (lhs: MyObject, rhs: MyObject) -> Bool { ... }
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+class MyObject: NSObject {
+    override func isEqual(_ object: Any?) -> Bool { ... }
+}
+----

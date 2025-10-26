@@ -1,0 +1,23 @@
+= Rule: Duplicate Imports
+:source-highlighter: highlight.js
+
+Находит и запрещает дублирующиеся импорты модулей.
+
+*Identifier*: `duplicate_imports`
+
+== Non-compliant
+
+[source,swift]
+----
+import Foundation
+import UIKit
+import Foundation
+----
+
+== Compliant
+
+[source,swift]
+----
+import Foundation
+import UIKit
+----
