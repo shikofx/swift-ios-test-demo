@@ -4,11 +4,11 @@ description: 'Runs unit tests using a pre-built xctestrun file and generates an 
 runs:
   using: "composite"
   steps:
-    - name: Download build artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: xctestrun-build
-        path: build
+    # - name: Download build artifact
+    #   uses: actions/download-artifact@v4
+    #   with:
+    #     name: xctestrun-build
+    #     path: build
 
     - name: Check npx allure awesome environment
       shell: bash
@@ -25,33 +25,60 @@ runs:
           exit 1
         fi
 
-    - name: Run Unit Tests
+    # - name: Run Unit Tests
+    #   shell: bash
+    #   run: |
+    #     # Find the .xctestrun file from the downloaded artifact
+    #     XCTESTRUN_FILE=$(find build -name "*.xctestrun")
+    #     echo "Found xctestrun file at: $XCTESTRUN_FILE"
+        
+    #     DESTINATION_UDID=$(xcrun simctl list devices available | grep 'iPhone' | grep '(Shutdown)' | head -n 1 | awk -F'[()]' '{print $2}')
+    #     echo "Using destination UDID: $DESTINATION_UDID"
+
+    #     xcodebuild test-without-building \
+    #       -xctestrun "$XCTESTRUN_FILE" \
+    #       -destination "id=$DESTINATION_UDID" \
+    #       -resultBundlePath TestResults.xcresult
+
+    - name: Generate coverage.json
       shell: bash
       run: |
-        # Find the .xctestrun file from the downloaded artifact
-        XCTESTRUN_FILE=$(find build -name "*.xctestrun")
-        echo "Found xctestrun file at: $XCTESTRUN_FILE"
-        
-        DESTINATION_UDID=$(xcrun simctl list devices available | grep 'iPhone' | grep '(Shutdown)' | head -n 1 | awk -F'[()]' '{print $2}')
-        echo "Using destination UDID: $DESTINATION_UDID"
+        xcrun xccov view --report --json TestResults.xcresult > coverage.json
 
-        xcodebuild test-without-building \
-          -xctestrun "$XCTESTRUN_FILE" \
-          -destination "id=$DESTINATION_UDID" \
-          -resultBundlePath unit-tests.xcresult
-      
+    - name: Generate HTML Report
+      uses: ./.github/actions/swift-coverage-report
+      with:
+        json-path: coverage.json
+        source-dir: .
+        output-path: coverage-report.md
+
+    - name: Upload Coverage Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: unit-coverage-report
+        path: coverage-report.md
+        retention-days: 1
+
     - name: Generate Allure Report
       if: always()
       continue-on-error: true
       shell: bash
       run: |
-        npx allure awesome --output allure-report unit-tests.xcresult
+        npx allure awesome --output allure-report TestResults.xcresult
+
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: TestResults.xcresult
 
     - name: Upload Allure results
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: allure-report
+        name: unit-allure-report
         path: allure-report
         retention-days: 1
     

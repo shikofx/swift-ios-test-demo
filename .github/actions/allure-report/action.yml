@@ -10,7 +10,7 @@ runs:
       run: |
         echo "Telling Jekyll to include the Allure report directory"
         echo "" >> .site/_config.yml
-        echo "include: [\"reports/allure\", \"reports/coverage\"]" >> .site/_config.yml
+        echo "include: [\"reports/allure\"]" >> .site/_config.yml
 
     - name: Create Main Page with Allure Report
       shell: bash
