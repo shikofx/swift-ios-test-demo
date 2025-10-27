@@ -25,10 +25,19 @@ jobs:
       - name: Create Swiftlint Report
         uses: ./.github/actions/create-swiftlint-report-page
 
+  swiftformat_analysis:
+    name: Static Analysis - SwiftFormat
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create SwiftFormat Report
+        uses: ./.github/actions/create-swiftformat-report-page
+
   build_site:
     name: Build Reports Site
-    needs: [
-      swiftlint_analysis
+    needs: [swiftlint_analysis, swiftformat_analysis
       # swiftformat_analysis, 
       # unit_tests
     ]
@@ -51,12 +60,15 @@ jobs:
       - name: Verify downloaded artifacts
         run: |
           cat .artifacts/swiftlint-report/index.md
+          cat .artifacts/swiftformat-report/index.md
 
       - name: Prepare .site content
         run: |
           cp -r .source/.site/ .
           mkdir -p .site/reports/swiftlint
           mv .artifacts/swiftlint-report/index.md .site/reports/swiftlint/index.md || echo "swiftlint-report.md not found"
+          mkdir -p .site/reports/swiftformat
+          mv .artifacts/swiftformat-report/index.md .site/reports/swiftformat/index.md || echo "swiftformat-report.md not found"
 
       - name: Verify .site content
         run: |

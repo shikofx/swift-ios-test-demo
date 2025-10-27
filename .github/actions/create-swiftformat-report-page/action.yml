@@ -1,48 +1,44 @@
 name: 'Create SwiftFormat Report Page'
 description: 'Converts a SwiftFormat JSON report to a Markdown file for Jekyll.'
 
-# inputs:
-#   json-path:
-#     description: 'Path to the input swiftformat-report.json file.'
-#     required: true
-#   output-path:
-#     description: 'Path where the output swiftformat-report.md file will be created.'
-#     required: true
-
 runs:
   using: "composite"
   steps:
-    
-    - name: Generate Markdown from JSON
+    - name: 'Check for Homebrew and install if not present'
       shell: bash
       run: |
-        PAGE_FILE="swiftlint-report.md"
+        if ! command -v brew &> /dev/null; then
+          echo "Homebrew not found. Installing..."
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo "/opt/homebrew/bin" >> $GITHUB_PATH
+        else
+          echo "Homebrew is already installed."
+        fi
 
-        # Create a simple template page that will use data from _data
-        cat <<'EOF' > "$PAGE_FILE"
-        ---
-        layout: default
-        title: SwiftFormat Style Report
-        ---
-        ## SwiftFormat Style Report
+    - name: 'Install SwiftFormat'
+      shell: bash
+      run: |
+        brew install swiftformat
+        echo "SwiftFormat installed."
 
-        {% if site.data.swiftformat.size > 0 %}
-        | # | File | Location | Rule | Reason |
-        |---|------|----------|------|--------|
-        {% for item in site.data.swiftformat -%}
-        | {{ forloop.index }} | `{{ item.file }}` | `{{ item.line }}` | `{{ item.rule }}` | `{{ item.reason | escape }}` |
-        {%- endfor %}
-        {% else %}
-        No SwiftFormat violations found. Great job! ✨
-        {% endif %}
-        EOF
+    - name: Run SwiftFormat. Generate JSON data
+      shell: bash
+      continue-on-error: true
+      run: |
+        swiftformat . --lint --reporter json > ./swiftformat-report.json
 
-        echo "SwiftFormat data and page generated."
+    - name: Generate Markdown from JSON using Python
+      shell: bash
+      run: |
+        python ${{ github.action_path }}/generate_swiftformat_report.py \
+          --json-path "./swiftformat-report.json" \
+          --output-path "./index.md" \
+          --github-workspace "${{ github.workspace }}"
 
-    - name: Upload SwiftLint artifact
+    - name: Upload SwiftFormat artifact
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: swiftlint-report
-        path: swiftlint-report.json
+        name: swiftformat-report
+        path: index.md
         retention-days: 7

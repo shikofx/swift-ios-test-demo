@@ -31,8 +31,12 @@
               </a>
             </li>
 
-            {% assign swiftformat_url = '/swiftformat-report.html' | relative_url %}
-            <li {% if page.url == swiftformat_url %}class="active"{% endif %}><a href="{{ swiftformat_url }}"><img src="{{ '/assets/img/swiftformat.png' | relative_url }}" alt="SwiftFormat Icon" class="nav-icon">SwiftFormat Report</a></li>
+            {% assign swiftformat_url = '/reports/swiftformat/' | relative_url %}
+            <li {% if page.url == swiftformat_url %}class="active"{% endif %}>
+              <a href="{{ swiftformat_url }}">
+                <img src="{{ '/assets/img/swiftformat.png' | relative_url }}" alt="SwiftFormat Icon" class="nav-icon">SwiftFormat Report
+              </a>
+            </li>
 
             {% assign coverage_url = '/coverage-report.html' | relative_url %}
             <li {% if page.url == coverage_url %}class="active"{% endif %}><a href="{{ coverage_url }}"><img src="{{ '/assets/img/xcode.png' | relative_url }}" alt="Coverage Icon" class="nav-icon">Code Coverage</a></li>
