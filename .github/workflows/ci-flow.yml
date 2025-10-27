@@ -4,10 +4,10 @@ on:
   push:
     branches:
       - test
-      # - 'feature/**' # Запускать при push в feature-ветки
-  pull_request:
-    branches:
-      - main
+      - 'feature/**' # Запускать при push в feature-ветки
+  # pull_request:
+  #   branches:
+  #     - main
 
 permissions:
   contents: write
@@ -22,26 +22,122 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Verify action content
-        run: |
-          cat ./.github/actions/create-swiftformat-report-page/action.yml
-
       - name: Create Swiftlint Report
-        uses: ./.github/actions/create-swiftformat-report-page
+        uses: ./.github/actions/create-swiftlint-report-page
+
+  build_site:
+    name: Build Reports Site
+    needs: [
+      swiftlint_analysis
+      # swiftformat_analysis, 
+      # unit_tests
+    ]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure github pages
+        uses: actions/configure-pages@v5
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: .source
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: .artifacts
+
+      - name: Verify downloaded artifacts
+        run: |
+          cat .artifacts/swiftlint-report/index.md
+
+      - name: Prepare .site content
+        run: |
+          cp -r .source/.site/ .
+          mkdir -p .site/reports/swiftlint
+          mv .artifacts/swiftlint-report/index.md .site/reports/swiftlint/index.md || echo "swiftlint-report.md not found"
+
+      - name: Verify .site content
+        run: |
+          ls -R .site
+
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        env:
+          JEKYLL_VERBOSE: true
+        with:
+          source: ./.site
+          destination: ./_site
+            
+      - name: Verify result site content
+        run: |
+          ls -R ./_site
+          
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+
+#     - name: Assemble Site Structure
+#       run: |
+#         cp -r .source/.site/ .
+#         mkdir -p .site/reports
+#         mv .artifacts/swiftlint-report/swiftlint-report.json .site/reports/swiftlint-report.json || echo "swiftlint-report.json not found"
+#         mv .artifacts/swiftformat-report/swiftformat-report.json .site/reports/swiftformat-report.json || echo "swiftformat-report.json not found"
+#         mv .artifacts/allure-report/* .site/reports/allure/ || echo "allure-report not found"
+#         mv .artifacts/test-results/TestResults.xcresult . || echo "TestResults.xcresult not found"
+
+#     - name: Create Build Info Data File
+#       run: |
+#         mkdir -p .site/_data
+#         echo "branch_name: ${{ github.ref_name }}" > .site/_data/build.yml
+#         echo "run_id: ${{ github.run_id }}" >> .site/_data/build.yml
+
+#     - name: Create SwiftLint Report
+#       continue-on-error: true
+#       uses: ./.source/.github/actions/create-swiftlint-report-page
+#       with:
+#         json-path: .site/reports/swiftlint-report.json
+#         output-path: .site/swiftlint-report.md
+
+#     - name: Create SwiftFormat Report
+#       continue-on-error: true
+#       uses: ./.source/.github/actions/create-swiftformat-report-page
+#       with:
+#         json-path: .site/reports/swiftformat-report.json
+#         output-path: .site/swiftformat-report.md
+
+#     - name: Create Allure Report page
+#       uses: ./.source/.github/actions/allure-report
+      
+#     - name: Create Coverage Report page
+#       # Этот шаг должен выполняться на macos, но мы запускаем его на ubuntu
+#       # для экономии времени, так как TestResults.xcresult уже есть.
+#       # В будущем, если тесты будут запускаться здесь, нужно будет сменить runs-on.
+#       continue-on-error: true
+#       run: |
+#         xcrun xccov view --report --json TestResults.xcresult > coverage.json
+      
+#     - name: Generate Markdown coverage report
+#       uses: ./.source/.github/actions/coverage
+#       with:
+#         json-path: coverage.json
+#         source-dir: .source
+#         output-path: .site/coverage-report.md
+
 
 
   deploy_site: 
     name: Deploy Reports Site
     runs-on: ubuntu-latest
-    needs: swiftlint_analysis
+    needs: build_site
     if: always()
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Set sanitized branch name
-        id: set_vars
-        run: echo "github_branch=$(echo ${GITHUB_REF_NAME} | sed 's/\//-/g')" >> $GITHUB_ENV
+      - name: Set sanitized branch name for artifact
+        id: set_vars # This step is not currently used by deploy-pages, but might be useful for other steps.
+        run: echo "sanitized_branch=${GITHUB_REF_NAME//\//-}" >> $GITHUB_ENV
 
       - name: Deploy to GitHub Pages
         id: deployment
@@ -132,92 +228,4 @@ jobs:
   #         path: SDET-Demo-App.zip
   #         retention-days: 7
  
-  # build_site:
-  #   name: Build Reports Site
-  #   needs: [swiftlint_analysis, swiftformat_analysis, unit_tests]
-  #   if: always()
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Configure github pages
-  #       uses: actions/configure-pages@v5
-
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
-  #       with:
-  #         path: .source
-
-  #     - name: Download artifacts
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         path: .artifacts
-
-  #     - name: Verify downloaded artifacts
-  #       run: |
-  #         ls -R .artifacts
-
-  #     - name: Assemble Site Structure
-  #       run: |
-  #         cp -r .source/.site/ .
-  #         mkdir -p .site/reports
-  #         mv .artifacts/swiftlint-report/swiftlint-report.json .site/reports/swiftlint-report.json || echo "swiftlint-report.json not found"
-  #         mv .artifacts/swiftformat-report/swiftformat-report.json .site/reports/swiftformat-report.json || echo "swiftformat-report.json not found"
-  #         mv .artifacts/allure-report/* .site/reports/allure/ || echo "allure-report not found"
-  #         mv .artifacts/test-results/TestResults.xcresult . || echo "TestResults.xcresult not found"
-
-  #     - name: Create Build Info Data File
-  #       run: |
-  #         mkdir -p .site/_data
-  #         echo "branch_name: ${{ github.ref_name }}" > .site/_data/build.yml
-  #         echo "run_id: ${{ github.run_id }}" >> .site/_data/build.yml
-
-  #     - name: Create SwiftLint Report
-  #       continue-on-error: true
-  #       uses: ./.source/.github/actions/create-swiftlint-report-page
-  #       with:
-  #         json-path: .site/reports/swiftlint-report.json
-  #         output-path: .site/swiftlint-report.md
-
-  #     - name: Create SwiftFormat Report
-  #       continue-on-error: true
-  #       uses: ./.source/.github/actions/create-swiftformat-report-page
-  #       with:
-  #         json-path: .site/reports/swiftformat-report.json
-  #         output-path: .site/swiftformat-report.md
-
-  #     - name: Create Allure Report page
-  #       uses: ./.source/.github/actions/allure-report
-        
-  #     - name: Create Coverage Report page
-  #       # Этот шаг должен выполняться на macos, но мы запускаем его на ubuntu
-  #       # для экономии времени, так как TestResults.xcresult уже есть.
-  #       # В будущем, если тесты будут запускаться здесь, нужно будет сменить runs-on.
-  #       continue-on-error: true
-  #       run: |
-  #         xcrun xccov view --report --json TestResults.xcresult > coverage.json
-        
-  #     - name: Generate Markdown coverage report
-  #       uses: ./.source/.github/actions/coverage
-  #       with:
-  #         json-path: coverage.json
-  #         source-dir: .source
-  #         output-path: .site/coverage-report.md
-
-  #     - name: Verify .site content
-  #       run: |
-  #         ls -R .site
-
-  #     - name: Build with Jekyll
-  #       uses: actions/jekyll-build-pages@v1
-  #       env:
-  #         JEKYLL_VERBOSE: true
-  #       with:
-  #         source: ./.site
-  #         destination: ./_site
-           
-  #     - name: Verify result site content
-  #       run: |
-  #         ls -R ./_site
-          
-  #     - name: Upload site artifact
-  #       uses: actions/upload-pages-artifact@v3
-
+  

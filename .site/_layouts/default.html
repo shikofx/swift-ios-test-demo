@@ -24,7 +24,7 @@
               </a>
             </li>
 
-            {% assign swiftlint_url = '/swiftlint-report.html' | relative_url %}
+            {% assign swiftlint_url = '/reports/swiftlint/' | relative_url %}
             <li {% if page.url == swiftlint_url %}class="active"{% endif %}>
               <a href="{{ swiftlint_url }}">
                 <img src="{{ '/assets/img/swiftlint.png' | relative_url }}" alt="SwiftLint Icon" class="nav-icon">SwiftLint Report

@@ -1,13 +1,13 @@
 name: 'Create SwiftFormat Report Page'
 description: 'Converts a SwiftFormat JSON report to a Markdown file for Jekyll.'
 
-inputs:
-  json-path:
-    description: 'Path to the input swiftformat-report.json file.'
-    required: true
-  output-path:
-    description: 'Path where the output swiftformat-report.md file will be created.'
-    required: true
+# inputs:
+#   json-path:
+#     description: 'Path to the input swiftformat-report.json file.'
+#     required: true
+#   output-path:
+#     description: 'Path where the output swiftformat-report.md file will be created.'
+#     required: true
 
 runs:
   using: "composite"
@@ -16,10 +16,7 @@ runs:
     - name: Generate Markdown from JSON
       shell: bash
       run: |
-        JSON_FILE="${{ swiftlint-report.json }}"
-        PAGE_FILE="${{ swiftlint-report.md }}"
-        SITE_PATH=$(dirname "${{ _site }}")
-        DATA_FILE="$SITE_PATH/_data/swiftformat.json"
+        PAGE_FILE="swiftlint-report.md"
 
         # Create a simple template page that will use data from _data
         cat <<'EOF' > "$PAGE_FILE"
