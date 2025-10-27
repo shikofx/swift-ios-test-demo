@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - test
-      - 'feature/**' # Запускать при push в feature-ветки
+      # - 'feature/**' # Запускать при push в feature-ветки
   pull_request:
     branches:
       - main
