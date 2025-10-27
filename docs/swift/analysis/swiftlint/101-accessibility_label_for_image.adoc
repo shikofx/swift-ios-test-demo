@@ -1,0 +1,23 @@
+= Rule: Accessibility Label for Image
+:source-highlighter: highlight.js
+
+Требует, чтобы `UIImageView`, используемые как кнопки, имели метку доступности (`accessibilityLabel`).
+
+*Identifier*: `accessibility_label_for_image`
+
+== Non-compliant
+
+[source,swift]
+----
+let imageView = UIImageView()
+imageView.isUserInteractionEnabled = true
+----
+
+== Compliant
+
+[source,swift]
+----
+let imageView = UIImageView()
+imageView.isUserInteractionEnabled = true
+imageView.accessibilityLabel = "Добавить фото"
+----

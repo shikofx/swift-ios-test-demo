@@ -1,0 +1,20 @@
+= Rule: Fatal Error Message
+:source-highlighter: highlight.js
+
+Требует, чтобы вызовы `fatalError` содержали сообщение.
+
+*Identifier*: `fatal_error_message`
+
+== Non-compliant
+
+[source,swift]
+----
+fatalError()
+----
+
+== Compliant
+
+[source,swift]
+----
+fatalError("Неожиданное состояние")
+----

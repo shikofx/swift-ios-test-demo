@@ -1,0 +1,25 @@
+= Rule: Direct Return
+:source-highlighter: highlight.js
+
+Предпочитает прямой возврат значения вместо создания временной переменной.
+
+*Identifier*: `direct_return`
+
+== Non-compliant
+
+[source,swift]
+----
+func foo() -> Int {
+    let x = 1
+    return x
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+func foo() -> Int {
+    return 1
+}
+----

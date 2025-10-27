@@ -1,0 +1,20 @@
+= Rule: Flat Map over Map Reduce
+:source-highlighter: highlight.js
+
+Предпочитает `flatMap` вместо комбинации `map` и `reduce`.
+
+*Identifier*: `flatmap_over_map_reduce`
+
+== Non-compliant
+
+[source,swift]
+----
+let result = [[1, 2], [3, 4]].map { $0 }.reduce([], +)
+----
+
+== Compliant
+
+[source,swift]
+----
+let result = [[1, 2], [3, 4]].flatMap { $0 }
+----

@@ -1,0 +1,19 @@
+= Rule: Indentation Width
+:source-highlighter: highlight.js
+
+Проверяет, что ширина отступов соответствует заданной (например, 4 пробела).
+
+*Identifier*: `indentation_width`
+
+== Non-compliant (при ширине 4)
+
+[source,swift]
+----
+if condition {
+  print("Hello")
+}
+----
+
+== Конфигурация
+
+Можно настроить ширину отступа в `.swiftlint.yml`.

@@ -1,0 +1,20 @@
+= Rule: Legacy Objective-C Reference Type
+:source-highlighter: highlight.js
+
+Предпочитает использование современных типов Swift вместо их эквивалентов из Objective-C.
+
+*Identifier*: `legacy_objc_type`
+
+== Non-compliant
+
+[source,swift]
+----
+let rect = NSValue(cgRect: .zero)
+----
+
+== Compliant
+
+[source,swift]
+----
+let rect = CGRect.zero
+----

@@ -1,0 +1,22 @@
+= Rule: Conditional Returns on Newline
+:source-highlighter: highlight.js
+
+Требует, чтобы `return` в конструкциях `if`, `guard`, `switch` находился на новой строке.
+
+*Identifier*: `conditional_returns_on_newline`
+
+== Non-compliant
+
+[source,swift]
+----
+guard let foo = foo else { return }
+----
+
+== Compliant
+
+[source,swift]
+----
+guard let foo = foo else {
+    return
+}
+----

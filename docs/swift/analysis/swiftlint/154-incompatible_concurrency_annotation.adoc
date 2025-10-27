@@ -1,0 +1,20 @@
+= Rule: Incompatible Concurrency Annotation
+:source-highlighter: highlight.js
+
+Находит несовместимые аннотации параллелизма (например, `@MainActor` у `non-final` класса).
+
+*Identifier*: `incompatible_concurrency_annotation`
+
+== Non-compliant
+
+[source,swift]
+----
+@MainActor class MyViewModel {}
+----
+
+== Compliant
+
+[source,swift]
+----
+@MainActor final class MyViewModel {}
+----

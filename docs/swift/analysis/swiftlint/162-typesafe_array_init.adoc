@@ -1,0 +1,20 @@
+= Rule: Type-safe Array Init
+:source-highlighter: highlight.js
+
+Предпочитает использование `[Any]` вместо `[AnyObject]` для обеспечения безопасности типов.
+
+*Identifier*: `typesafe_array_init`
+
+== Non-compliant
+
+[source,swift]
+----
+let array: [AnyObject] = [1 as AnyObject, "two" as AnyObject]
+----
+
+== Compliant
+
+[source,swift]
+----
+let array: [Any] = [1, "two"]
+----

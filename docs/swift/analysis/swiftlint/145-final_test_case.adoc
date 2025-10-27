@@ -1,0 +1,20 @@
+= Rule: Final Test Case
+:source-highlighter: highlight.js
+
+Требует, чтобы классы тестов были `final`.
+
+*Identifier*: `final_test_case`
+
+== Non-compliant
+
+[source,swift]
+----
+class MyTests: XCTestCase {}
+----
+
+== Compliant
+
+[source,swift]
+----
+final class MyTests: XCTestCase {}
+----

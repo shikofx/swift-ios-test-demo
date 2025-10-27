@@ -1,0 +1,20 @@
+= Rule: Contains over First not Nil
+:source-highlighter: highlight.js
+
+Предпочитает `contains` вместо `.first(where: { ... }) != nil`.
+
+*Identifier*: `contains_over_first_not_nil`
+
+== Non-compliant
+
+[source,swift]
+----
+let result = myArray.first(where: { $0.isAwesome }) != nil
+----
+
+== Compliant
+
+[source,swift]
+----
+let result = myArray.contains { $0.isAwesome }
+----

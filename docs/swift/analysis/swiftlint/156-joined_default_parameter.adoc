@@ -1,0 +1,20 @@
+= Rule: Joined Default Parameter
+:source-highlighter: highlight.js
+
+Предпочитает использование параметра по умолчанию в `joined(separator:)`.
+
+*Identifier*: `joined_default_parameter`
+
+== Non-compliant
+
+[source,swift]
+----
+myArray.joined(separator: "")
+----
+
+== Compliant
+
+[source,swift]
+----
+myArray.joined()
+----

@@ -1,0 +1,20 @@
+= Rule: Closure Spacing
+:source-highlighter: highlight.js
+
+Проверяет наличие пробелов вокруг стрелки `->` и ключевого слова `in` в замыканиях.
+
+*Identifier*: `closure_spacing`
+
+== Non-compliant
+
+[source,swift]
+----
+let foo = { (bar: Int)->Int in return 1 }
+----
+
+== Compliant
+
+[source,swift]
+----
+let foo = { (bar: Int) -> Int in return 1 }
+----

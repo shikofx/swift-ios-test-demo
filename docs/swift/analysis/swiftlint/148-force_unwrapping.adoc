@@ -1,0 +1,20 @@
+= Rule: Force Unwrapping
+:source-highlighter: highlight.js
+
+Запрещает принудительное разворачивание опционалов (`!`).
+
+*Identifier*: `force_unwrapping`
+
+== Non-compliant
+
+[source,swift]
+----
+let name = myOptional!
+----
+
+== Compliant
+
+[source,swift]
+----
+guard let name = myOptional else { return }
+----

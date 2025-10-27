@@ -1,0 +1,20 @@
+= Rule: Last Where
+:source-highlighter: highlight.js
+
+Предпочитает `last(where:)` вместо `.filter { ... }.last`.
+
+*Identifier*: `last_where`
+
+== Non-compliant
+
+[source,swift]
+----
+let last = myArray.filter { $0.isAwesome }.last
+----
+
+== Compliant
+
+[source,swift]
+----
+let last = myArray.last { $0.isAwesome }
+----

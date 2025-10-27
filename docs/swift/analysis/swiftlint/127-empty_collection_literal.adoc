@@ -1,0 +1,20 @@
+= Rule: Empty Collection Literal
+:source-highlighter: highlight.js
+
+Предпочитает `[:]` вместо `T: U` для создания пустых словарей.
+
+*Identifier*: `empty_collection_literal`
+
+== Non-compliant
+
+[source,swift]
+----
+let myDict = String: Int
+----
+
+== Compliant
+
+[source,swift]
+----
+let myDict: [String: Int] = [:]
+----

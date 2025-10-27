@@ -1,0 +1,35 @@
+= Rule: Capture Variable
+:source-highlighter: highlight.js
+
+Внутренние переменные в замыканиях должны быть явно захвачены, чтобы избежать непреднамеренного поведения.
+
+*Identifier*: `capture_variable`
+
+== Non-compliant
+
+[source,swift]
+----
+class MyClass {
+    var myProperty = "Hello"
+    func myFunction() {
+        DispatchQueue.main.async {
+            print(myProperty) // Implicitly captures self
+        }
+    }
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+class MyClass {
+    var myProperty = "Hello"
+    func myFunction() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            print(self.myProperty)
+        }
+    }
+}
+----

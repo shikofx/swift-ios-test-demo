@@ -1,0 +1,17 @@
+= Rule: IBInspectable in Extension
+:source-highlighter: highlight.js
+
+Запрещает использование `@IBInspectable` в расширениях.
+
+*Identifier*: `ibinspectable_in_extension`
+
+== Non-compliant
+
+[source,swift]
+----
+extension MyView {
+    @IBInspectable var cornerRadius: CGFloat { get { ... } set { ... } }
+}
+----
+
+*Решение*: Перенести `@IBInspectable` свойство в основное объявление класса.

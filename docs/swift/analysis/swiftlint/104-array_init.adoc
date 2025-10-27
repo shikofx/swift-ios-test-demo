@@ -1,0 +1,21 @@
+= Rule: Array Init
+:source-highlighter: highlight.js
+
+Предпочитает использование `Array(repeating:count:)` вместо цикла для создания массива с повторяющимися элементами.
+
+*Identifier*: `array_init`
+
+== Non-compliant
+
+[source,swift]
+----
+var array: [Int] = []
+for _ in 0..<3 { array.append(0) }
+----
+
+== Compliant
+
+[source,swift]
+----
+let array = Array(repeating: 0, count: 3)
+----

@@ -1,0 +1,22 @@
+= Rule: Collection Element Alignment
+:source-highlighter: highlight.js
+
+Проверяет, что элементы коллекции, расположенные на нескольких строках, выровнены.
+
+*Identifier*: `collection_alignment`
+
+== Non-compliant
+
+[source,swift]
+----
+let array = [1,
+  2, 3]
+----
+
+== Compliant
+
+[source,swift]
+----
+let array = [1,
+             2, 3]
+----

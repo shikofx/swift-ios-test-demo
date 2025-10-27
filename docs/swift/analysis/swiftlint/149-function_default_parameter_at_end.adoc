@@ -1,0 +1,20 @@
+= Rule: Function Default Parameter at End
+:source-highlighter: highlight.js
+
+Требует, чтобы параметры со значениями по умолчанию находились в конце списка параметров функции.
+
+*Identifier*: `function_default_parameter_at_end`
+
+== Non-compliant
+
+[source,swift]
+----
+func foo(bar: Int = 0, baz: String) {}
+----
+
+== Compliant
+
+[source,swift]
+----
+func foo(baz: String, bar: Int = 0) {}
+----

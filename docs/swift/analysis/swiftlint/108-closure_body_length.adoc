@@ -1,0 +1,17 @@
+= Rule: Closure Body Length
+:source-highlighter: highlight.js
+
+Ограничивает количество строк в теле замыкания.
+
+*Identifier*: `closure_body_length`
+
+== Non-compliant (если > 30 строк по умолчанию)
+
+[source,swift]
+----
+let closure = {
+    // 40 строк кода...
+}
+----
+
+*Решение*: Вынести логику в отдельную функцию.

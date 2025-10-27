@@ -90,13 +90,13 @@ final class MyCartViewControllerTest: XCTestCase {
                 ["ProductPrice": "15.99", "ProductQuantity": 2]
             ]
         }
-        
+
         when("press button '+") { _ in
             let addButton = UIButton()
             addButton.tag = 0
             controller.addButton(addButton)
         }
-        
+
         then( "product items count and cardCount should be increased", _block: { _ in
             XCTAssertEqual(engine.cartList[0]["ProductQuantity"] as! Int, 3)
             XCTAssertEqual(engine.cartCount, 2)
@@ -121,7 +121,7 @@ final class MyCartViewControllerTest: XCTestCase {
             XCTAssertEqual(engine.cartCount, 0)
         }
     }
-    
+
     func test_subtractButton_decreases_QuantityAndCartCount() {
         given("product quantity is 3 and cart count is 3") { _ in
             let item: NSMutableDictionary = ["ProductPrice": "10.00", "ProductQuantity": 3]
@@ -141,20 +141,20 @@ final class MyCartViewControllerTest: XCTestCase {
             XCTAssertEqual(engine.cartList.count, 1, "Product list should contain only one item")
         }
     }
-    
+
     func test_deleteProduct_removesProductFromCart() {
         given("cart with one item") { _ in
             let item: NSMutableDictionary = ["ProductPrice": "10.00", "ProductQuantity": 3]
             engine.cartList = [item]
             engine.cartCount = 3
         }
-        
+
         when("priess button 'delete'") { _ in
             let mockButton = UIButton()
             mockButton.tag = 0
             controller.deleteProduct(mockButton)
         }
-        
+
         then("cart list should be empty and cart count should be 0") { _ in
             XCTAssertTrue(engine.cartList.isEmpty)
             XCTAssertEqual(engine.cartCount, 0)

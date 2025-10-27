@@ -1,0 +1,20 @@
+= Rule: Empty String
+:source-highlighter: highlight.js
+
+Предпочитает проверку `.isEmpty` вместо сравнения с пустой строкой `""`.
+
+*Identifier*: `empty_string`
+
+== Non-compliant
+
+[source,swift]
+----
+if myString == "" { ... }
+----
+
+== Compliant
+
+[source,swift]
+----
+if myString.isEmpty { ... }
+----

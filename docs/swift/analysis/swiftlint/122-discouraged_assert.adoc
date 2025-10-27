@@ -1,0 +1,15 @@
+= Rule: Discouraged Assert
+:source-highlighter: highlight.js
+
+Запрещает использование `assert`, `assertionFailure`, `precondition` и `preconditionFailure`.
+
+*Identifier*: `discouraged_assert`
+
+== Non-compliant
+
+[source,swift]
+----
+assert(1 == 1)
+----
+
+*Причина*: Это правило используется, когда команда решает полностью отказаться от этих конструкций в пользу других механизмов обработки ошибок.

@@ -1,0 +1,20 @@
+= Rule: Explicit Top Level ACL
+:source-highlighter: highlight.js
+
+Требует явного указания модификатора доступа только для объявлений верхнего уровня.
+
+*Identifier*: `explicit_top_level_acl`
+
+== Non-compliant
+
+[source,swift]
+----
+class MyClass {}
+----
+
+== Compliant
+
+[source,swift]
+----
+internal class MyClass {}
+----

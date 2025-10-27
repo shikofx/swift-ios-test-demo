@@ -1,0 +1,17 @@
+= Rule: Async Without Await
+:source-highlighter: highlight.js
+
+Находит `async` функции, которые не содержат ни одного вызова `await`.
+
+*Identifier*: `async_without_await`
+
+== Non-compliant
+
+[source,swift]
+----
+func fetchData() async -> Data {
+    return Data()
+}
+----
+
+*Решение*: Либо добавить `await`, либо убрать `async`, если он не нужен.

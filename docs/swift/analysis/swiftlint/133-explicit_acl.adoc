@@ -1,0 +1,20 @@
+= Rule: Explicit ACL
+:source-highlighter: highlight.js
+
+Требует явного указания модификатора доступа (`private`, `internal`, `public` и т.д.) для всех объявлений.
+
+*Identifier*: `explicit_acl`
+
+== Non-compliant
+
+[source,swift]
+----
+class MyClass {}
+----
+
+== Compliant
+
+[source,swift]
+----
+internal class MyClass {}
+----

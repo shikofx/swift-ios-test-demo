@@ -1,0 +1,21 @@
+= Rule: Unused Import
+:source-highlighter: highlight.js
+
+Следует избегать неиспользуемых импортов.
+
+*Identifier*: `unused_import`
+
+== Non-compliant
+
+[source,swift]
+----
+import Foundation
+import UIKit // не используется
+----
+
+== Compliant
+
+[source,swift]
+----
+import Foundation
+----

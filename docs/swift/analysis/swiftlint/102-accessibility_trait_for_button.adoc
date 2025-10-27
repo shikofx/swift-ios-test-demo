@@ -1,0 +1,22 @@
+= Rule: Accessibility Trait for Button
+:source-highlighter: highlight.js
+
+Требует, чтобы у кнопок был установлен трейт доступности `.button`.
+
+*Identifier*: `accessibility_trait_for_button`
+
+== Non-compliant
+
+[source,swift]
+----
+let button = UIButton()
+button.accessibilityTraits = .none
+----
+
+== Compliant
+
+[source,swift]
+----
+let button = UIButton()
+button.accessibilityTraits = .button
+----

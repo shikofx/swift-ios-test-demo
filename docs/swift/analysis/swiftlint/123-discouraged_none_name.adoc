@@ -1,0 +1,20 @@
+= Rule: Discouraged None Name
+:source-highlighter: highlight.js
+
+Запрещает называть кейсы `enum` словом `none`, так как это может конфликтовать с `Optional.none`.
+
+*Identifier*: `discouraged_none_name`
+
+== Non-compliant
+
+[source,swift]
+----
+enum MyEnum { case none }
+----
+
+== Compliant
+
+[source,swift]
+----
+enum MyEnum { case noValue }
+----

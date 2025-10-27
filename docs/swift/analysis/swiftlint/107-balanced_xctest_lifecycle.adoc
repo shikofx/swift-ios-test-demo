@@ -1,0 +1,25 @@
+= Rule: Balanced XCTest Life Cycle
+:source-highlighter: highlight.js
+
+Проверяет, что `setUp` и `tearDown` методы в тестах сбалансированы (оба присутствуют или оба отсутствуют).
+
+*Identifier*: `balanced_xctest_lifecycle`
+
+== Non-compliant
+
+[source,swift]
+----
+class MyTests: XCTestCase {
+    override func setUp() { super.setUp() }
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+class MyTests: XCTestCase {
+    override func setUp() { super.setUp() }
+    override func tearDown() { super.tearDown() }
+}
+----

@@ -1,0 +1,21 @@
+= Rule: Comma Inheritance Rule
+:source-highlighter: highlight.js
+
+Требует, чтобы каждый унаследованный протокол или класс находился на новой строке.
+
+*Identifier*: `comma_inheritance`
+
+== Non-compliant
+
+[source,swift]
+----
+class MyClass: UIViewController, UITableViewDataSource {}
+----
+
+== Compliant
+
+[source,swift]
+----
+class MyClass: UIViewController,
+               UITableViewDataSource {}
+----

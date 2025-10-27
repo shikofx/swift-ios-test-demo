@@ -1,0 +1,20 @@
+= Rule: Discarded Notification Center Observer
+:source-highlighter: highlight.js
+
+Наблюдатель, возвращаемый `NotificationCenter.addObserver`, должен быть сохранен для последующей отписки.
+
+*Identifier*: `discarded_notification_center_observer`
+
+== Non-compliant
+
+[source,swift]
+----
+NotificationCenter.default.addObserver(forName: .myNotification, object: nil, queue: nil) { _ in }
+----
+
+== Compliant
+
+[source,swift]
+----
+let observer = NotificationCenter.default.addObserver(forName: .myNotification, object: nil, queue: nil) { _ in }
+----

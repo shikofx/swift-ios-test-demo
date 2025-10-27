@@ -1,0 +1,20 @@
+= Rule: Implicit Return
+:source-highlighter: highlight.js
+
+Предпочитает неявный `return` в функциях, замыканиях и геттерах, состоящих из одного выражения.
+
+*Identifier*: `implicit_return`
+
+== Non-compliant
+
+[source,swift]
+----
+func foo() -> Int { return 1 }
+----
+
+== Compliant
+
+[source,swift]
+----
+func foo() -> Int { 1 }
+----

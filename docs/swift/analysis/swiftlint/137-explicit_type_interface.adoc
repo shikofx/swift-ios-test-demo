@@ -1,0 +1,20 @@
+= Rule: Explicit Type Interface
+:source-highlighter: highlight.js
+
+Требует явного указания типа для переменных и констант.
+
+*Identifier*: `explicit_type_interface`
+
+== Non-compliant
+
+[source,swift]
+----
+let myVar = 1
+----
+
+== Compliant
+
+[source,swift]
+----
+let myVar: Int = 1
+----

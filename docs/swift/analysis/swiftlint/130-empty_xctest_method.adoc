@@ -1,0 +1,17 @@
+= Rule: Empty XCTest Method
+:source-highlighter: highlight.js
+
+Находит пустые тестовые методы в `XCTestCase`.
+
+*Identifier*: `empty_xctest_method`
+
+== Non-compliant
+
+[source,swift]
+----
+func testSomething() {
+    // TODO: Implement this
+}
+----
+
+*Решение*: Либо реализовать тест, либо удалить пустой метод.

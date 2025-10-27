@@ -1,0 +1,21 @@
+= Rule: File Types Order
+:source-highlighter: highlight.js
+
+Проверяет порядок типов внутри файла (например, `class` перед `struct`, `protocol` перед `extension`).
+
+*Identifier*: `file_types_order`
+
+== Пример конфигурации в `.swiftlint.yml`
+
+[source,yaml]
+----
+file_types_order:
+  order:
+    - supporting_type
+    - main_type
+    - extension
+----
+
+* `supporting_type`: `class`, `struct`, `enum`
+* `main_type`: Тип, чье имя совпадает с именем файла
+* `extension`: Расширения

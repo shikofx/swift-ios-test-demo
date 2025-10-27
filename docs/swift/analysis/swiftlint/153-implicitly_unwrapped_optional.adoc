@@ -1,0 +1,20 @@
+= Rule: Implicitly Unwrapped Optional
+:source-highlighter: highlight.js
+
+Запрещает использование неявно разворачиваемых опционалов (`!`).
+
+*Identifier*: `implicitly_unwrapped_optional`
+
+== Non-compliant
+
+[source,swift]
+----
+var myVar: String!
+----
+
+== Compliant
+
+[source,swift]
+----
+var myVar: String?
+----

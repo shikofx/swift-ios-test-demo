@@ -1,0 +1,20 @@
+= Rule: File Name
+:source-highlighter: highlight.js
+
+Проверяет, что имя файла соответствует имени основного типа, объявленного в нем.
+
+*Identifier*: `file_name`
+
+== Non-compliant (в файле `MyView.swift`)
+
+[source,swift]
+----
+class MyViewController: UIViewController {}
+----
+
+== Compliant (в файле `MyViewController.swift`)
+
+[source,swift]
+----
+class MyViewController: UIViewController {}
+----
