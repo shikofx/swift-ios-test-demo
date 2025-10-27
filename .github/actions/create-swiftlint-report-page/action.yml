@@ -1,14 +1,6 @@
 name: 'Create SwiftLint Report Page'
 description: 'Converts a SwiftLint JSON report to a Markdown file for Jekyll.'
 
-inputs:
-  json-path:
-    description: 'Path to the input swiftlint-report.json file.'
-    required: true
-  output-path:
-    description: 'Path where the output swiftlint-report.md file will be created.'
-    required: true
-
 runs:
   using: "composite"
   steps:   
@@ -27,7 +19,7 @@ runs:
       shell: bash
       run: |
         echo "Installing tools using Brewfile..."
-        brew bundle install
+        brew swiftlint install
         echo "Tools installed successfully."
 
     - name: Run SwiftLint. Generate JSON data
@@ -40,8 +32,8 @@ runs:
     - name: Generate Markdown from JSON
       shell: bash
       run: |
-        JSON_FILE="${{ ./_site/_reports/swiftlint/_data/swiftlint-report.json }}"
-        MD_FILE="${{ ./_site/_reports/swiftlint/index.md }}"
+        JSON_FILE="./_site/_reports/swiftlint/_data/swiftlint-report.json"
+        MD_FILE="./_site/_reports/swiftlint/index.md"
         DATA_DIR=$(dirname "$MD_FILE")/_data
 
         if [ ! -f "$JSON_FILE" ]; then

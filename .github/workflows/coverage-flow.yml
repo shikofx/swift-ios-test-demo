@@ -1,6 +1,13 @@
-name: COVERAGE TEST
+name: COVERAGE-TEST
 
-on: [push]
+on:
+  push:
+    branches:
+      - test
+      - 'feature/**' # Запускать при push в feature-ветки
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write

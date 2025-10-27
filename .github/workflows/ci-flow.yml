@@ -1,4 +1,4 @@
-name: IOS-DEMO-CI
+name: IOS-DEMO
 
 on:
   push:
@@ -16,194 +16,24 @@ permissions:
 
 jobs:
   swiftlint_analysis:
-    name: SwiftLint
+    name: Static Analysis - SwiftLint
     runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Prepare Swiftlint report
+      - name: Verify action content
+        run: |
+          cat ./.github/actions/create-swiftformat-report-page/action.yml
+
+      - name: Create Swiftlint Report
         uses: ./.github/actions/create-swiftformat-report-page
 
-  swiftformat_analysis:
-    name: SwiftFormat
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Dependencies
-        uses: ./.github/actions/setup-ios-environment
-
-      - name: Run SwiftFormat (Lint Mode)
-        run: swiftformat . --reporter json > swiftformat-report.json
-        continue-on-error: true
-
-      - name: Upload SwiftFormat artifact
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: swiftformat-report
-          path: swiftformat-report.json
-          retention-days: 7
-
-  build_for_testing:
-    name: Build for Testing
-    needs: [swiftlint_analysis, swiftformat_analysis]
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Cache Xcode DerivedData
-        uses: actions/cache@v4
-        with:
-          path: build
-          key: ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('**/Podfile.lock') }}-${{ hashFiles('**/*.swift') }}
-          restore-keys: |
-            ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('**/Podfile.lock') }}-
-            ${{ runner.os }}-xcode-deriveddata-
-
-      - name: Build for Testing
-        uses: ./.github/actions/build-for-testing
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: xctestrun-build
-          path: build
-          retention-days: 1
-
-  unit_tests:
-    name: Unit Tests
-    needs: [build_for_testing]
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run tests and generate report
-        uses: ./.github/actions/test-unit
-
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: TestResults.xcresult
-
-  build_app:
-    name: Build App
-    needs: [unit_tests]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Build and Archive
-        uses: ./.github/actions/build-app
-
-      - name: Upload .app artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sdet-demo-app
-          path: SDET-Demo-App.zip
-          retention-days: 7
- 
-  build_site:
-    name: Build Reports Site
-    needs: [swiftlint_analysis, swiftformat_analysis, unit_tests]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure github pages
-        uses: actions/configure-pages@v5
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          path: .source
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: .artifacts
-
-      - name: Verify downloaded artifacts
-        run: |
-          ls -R .artifacts
-
-      - name: Assemble Site Structure
-        run: |
-          cp -r .source/.site/ .
-          mkdir -p .site/reports
-          mv .artifacts/swiftlint-report/swiftlint-report.json .site/reports/swiftlint-report.json || echo "swiftlint-report.json not found"
-          mv .artifacts/swiftformat-report/swiftformat-report.json .site/reports/swiftformat-report.json || echo "swiftformat-report.json not found"
-          mv .artifacts/allure-report/* .site/reports/allure/ || echo "allure-report not found"
-          mv .artifacts/test-results/TestResults.xcresult . || echo "TestResults.xcresult not found"
-
-      - name: Create Build Info Data File
-        run: |
-          mkdir -p .site/_data
-          echo "branch_name: ${{ github.ref_name }}" > .site/_data/build.yml
-          echo "run_id: ${{ github.run_id }}" >> .site/_data/build.yml
-
-      - name: Create SwiftLint Report
-        continue-on-error: true
-        uses: ./.source/.github/actions/create-swiftlint-report-page
-        with:
-          json-path: .site/reports/swiftlint-report.json
-          output-path: .site/swiftlint-report.md
-
-      - name: Create SwiftFormat Report
-        continue-on-error: true
-        uses: ./.source/.github/actions/create-swiftformat-report-page
-        with:
-          json-path: .site/reports/swiftformat-report.json
-          output-path: .site/swiftformat-report.md
-
-      - name: Create Allure Report page
-        uses: ./.source/.github/actions/allure-report
-        
-      - name: Create Coverage Report page
-        # Этот шаг должен выполняться на macos, но мы запускаем его на ubuntu
-        # для экономии времени, так как TestResults.xcresult уже есть.
-        # В будущем, если тесты будут запускаться здесь, нужно будет сменить runs-on.
-        continue-on-error: true
-        run: |
-          xcrun xccov view --report --json TestResults.xcresult > coverage.json
-        
-      - name: Generate Markdown coverage report
-        uses: ./.source/.github/actions/coverage
-        with:
-          json-path: coverage.json
-          source-dir: .source
-          output-path: .site/coverage-report.md
-
-      - name: Verify .site content
-        run: |
-          ls -R .site
-
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
-        env:
-          JEKYLL_VERBOSE: true
-        with:
-          source: ./.site
-          destination: ./_site
-           
-      - name: Verify result site content
-        run: |
-          ls -R ./_site
-          
-      - name: Upload site artifact
-        uses: actions/upload-pages-artifact@v3
 
   deploy_site: 
     name: Deploy Reports Site
     runs-on: ubuntu-latest
-    needs: build_site
+    needs: swiftlint_analysis
     if: always()
     environment:
       name: github-pages
@@ -216,3 +46,178 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+  # swiftformat_analysis:
+  #   name: SwiftFormat
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Install Dependencies
+  #       uses: ./.github/actions/setup-ios-environment
+
+  #     - name: Run SwiftFormat (Lint Mode)
+  #       run: swiftformat . --reporter json > swiftformat-report.json
+  #       continue-on-error: true
+
+  #     - name: Upload SwiftFormat artifact
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: swiftformat-report
+  #         path: swiftformat-report.json
+  #         retention-days: 7
+
+  # build_for_testing:
+  #   name: Build for Testing
+  #   needs: [swiftlint_analysis, swiftformat_analysis]
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Cache Xcode DerivedData
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: build
+  #         key: ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('**/Podfile.lock') }}-${{ hashFiles('**/*.swift') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('**/Podfile.lock') }}-
+  #           ${{ runner.os }}-xcode-deriveddata-
+
+  #     - name: Build for Testing
+  #       uses: ./.github/actions/build-for-testing
+
+  #     - name: Upload artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: xctestrun-build
+  #         path: build
+  #         retention-days: 1
+
+  # unit_tests:
+  #   name: Unit Tests
+  #   needs: [build_for_testing]
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Run tests and generate report
+  #       uses: ./.github/actions/test-unit
+
+  #     - name: Upload Test Results
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: test-results
+  #         path: TestResults.xcresult
+
+  # build_app:
+  #   name: Build App
+  #   needs: [unit_tests]
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Build and Archive
+  #       uses: ./.github/actions/build-app
+
+  #     - name: Upload .app artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: sdet-demo-app
+  #         path: SDET-Demo-App.zip
+  #         retention-days: 7
+ 
+  # build_site:
+  #   name: Build Reports Site
+  #   needs: [swiftlint_analysis, swiftformat_analysis, unit_tests]
+  #   if: always()
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Configure github pages
+  #       uses: actions/configure-pages@v5
+
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+  #       with:
+  #         path: .source
+
+  #     - name: Download artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         path: .artifacts
+
+  #     - name: Verify downloaded artifacts
+  #       run: |
+  #         ls -R .artifacts
+
+  #     - name: Assemble Site Structure
+  #       run: |
+  #         cp -r .source/.site/ .
+  #         mkdir -p .site/reports
+  #         mv .artifacts/swiftlint-report/swiftlint-report.json .site/reports/swiftlint-report.json || echo "swiftlint-report.json not found"
+  #         mv .artifacts/swiftformat-report/swiftformat-report.json .site/reports/swiftformat-report.json || echo "swiftformat-report.json not found"
+  #         mv .artifacts/allure-report/* .site/reports/allure/ || echo "allure-report not found"
+  #         mv .artifacts/test-results/TestResults.xcresult . || echo "TestResults.xcresult not found"
+
+  #     - name: Create Build Info Data File
+  #       run: |
+  #         mkdir -p .site/_data
+  #         echo "branch_name: ${{ github.ref_name }}" > .site/_data/build.yml
+  #         echo "run_id: ${{ github.run_id }}" >> .site/_data/build.yml
+
+  #     - name: Create SwiftLint Report
+  #       continue-on-error: true
+  #       uses: ./.source/.github/actions/create-swiftlint-report-page
+  #       with:
+  #         json-path: .site/reports/swiftlint-report.json
+  #         output-path: .site/swiftlint-report.md
+
+  #     - name: Create SwiftFormat Report
+  #       continue-on-error: true
+  #       uses: ./.source/.github/actions/create-swiftformat-report-page
+  #       with:
+  #         json-path: .site/reports/swiftformat-report.json
+  #         output-path: .site/swiftformat-report.md
+
+  #     - name: Create Allure Report page
+  #       uses: ./.source/.github/actions/allure-report
+        
+  #     - name: Create Coverage Report page
+  #       # Этот шаг должен выполняться на macos, но мы запускаем его на ubuntu
+  #       # для экономии времени, так как TestResults.xcresult уже есть.
+  #       # В будущем, если тесты будут запускаться здесь, нужно будет сменить runs-on.
+  #       continue-on-error: true
+  #       run: |
+  #         xcrun xccov view --report --json TestResults.xcresult > coverage.json
+        
+  #     - name: Generate Markdown coverage report
+  #       uses: ./.source/.github/actions/coverage
+  #       with:
+  #         json-path: coverage.json
+  #         source-dir: .source
+  #         output-path: .site/coverage-report.md
+
+  #     - name: Verify .site content
+  #       run: |
+  #         ls -R .site
+
+  #     - name: Build with Jekyll
+  #       uses: actions/jekyll-build-pages@v1
+  #       env:
+  #         JEKYLL_VERBOSE: true
+  #       with:
+  #         source: ./.site
+  #         destination: ./_site
+           
+  #     - name: Verify result site content
+  #       run: |
+  #         ls -R ./_site
+          
+  #     - name: Upload site artifact
+  #       uses: actions/upload-pages-artifact@v3
+
