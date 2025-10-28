@@ -134,10 +134,11 @@ violations:
 <script>
   function resizeIframe() {
     const iframe = document.getElementById('report-iframe');
-    const headerHeight = document.querySelector('header').offsetHeight;
-    const h3Height = document.querySelector('h3').offsetHeight;
-    const availableHeight = window.innerHeight - headerHeight - h3Height - 150; // 150px for paddings/margins
-    iframe.style.height = Math.max(availableHeight, 400) + 'px'; // Minimum height of 400px
+    if (iframe) {
+      const iframeTop = iframe.getBoundingClientRect().top;
+      const availableHeight = window.innerHeight - iframeTop - 20; // 20px for bottom padding
+      iframe.style.height = Math.max(availableHeight, 400) + 'px'; // Minimum height of 400px
+    }
   }
   document.addEventListener('DOMContentLoaded', resizeIframe);
   window.addEventListener('resize', resizeIframe);

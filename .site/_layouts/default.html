@@ -12,34 +12,33 @@
   <body>
     <div class="wrapper">
       <header>
-        <h1><a href="{{ "/" | absolute_url }}">{{ site.title }}</a></h1>
-        <p>{{ site.description }}</p>
+        <h1><a href="{{ site.github.repository_url }}">{{ site.title | default: "Project Quality Report" }}</a></h1>
         
         <nav>
           <ul class="nav-menu">
             {% assign home_url = '/' | relative_url %}
             <li {% if page.url == home_url or page.url == '/index.html' %}class="active"{% endif %}>
               <a href="{{ home_url }}">
-                <img src="{{ '/assets/img/allure.svg' | relative_url }}" alt="Allure Icon" class="nav-icon">Allure
+                <img src="{{ '/assets/img/allure.svg' | relative_url }}" alt="Allure Icon" class="nav-icon">Allure Report
               </a>
             </li>
 
             {% assign swiftlint_url = '/reports/swiftlint/' | relative_url %}
             <li {% if page.url == swiftlint_url %}class="active"{% endif %}>
               <a href="{{ swiftlint_url }}">
-                <img src="{{ '/assets/img/swiftlint.png' | relative_url }}" alt="SwiftLint Icon" class="nav-icon">SwiftLint Report
+                <img src="{{ '/assets/img/swiftlint.png' | relative_url }}" alt="SwiftLint Icon" class="nav-icon">SwiftLint
               </a>
             </li>
 
             {% assign swiftformat_url = '/reports/swiftformat/' | relative_url %}
             <li {% if page.url == swiftformat_url %}class="active"{% endif %}>
               <a href="{{ swiftformat_url }}">
-                <img src="{{ '/assets/img/swiftformat.png' | relative_url }}" alt="SwiftFormat Icon" class="nav-icon">SwiftFormat Report
+                <img src="{{ '/assets/img/swiftformat.png' | relative_url }}" alt="SwiftFormat Icon" class="nav-icon">SwiftFormat
               </a>
             </li>
 
             {% assign coverage_url = '/reports/coverage/' | relative_url %}
-            <li {% if page.url == coverage_url %}class="active"{% endif %}><a href="{{ coverage_url }}"><img src="{{ '/assets/img/xcode.png' | relative_url }}" alt="Coverage Icon" class="nav-icon">Code Coverage</a></li>
+            <li {% if page.url == coverage_url %}class="active"{% endif %}><a href="{{ coverage_url }}"><img src="{{ '/assets/img/xcode.png' | relative_url }}" alt="Coverage Icon" class="nav-icon">Coverage</a></li>
           </ul>
         </nav>
       </header>
@@ -47,20 +46,10 @@
         {{ content }}
       </section>
       <footer>
-        {% if site.github.is_project_page %}
-        <p class="view"><a href="{{ site.github.repository_url }}">View the Project on GitHub <small>{{ site.github.repository_nwo }}</small></a></p>
-        {% endif %}
-        <p>Branch: 
-          <strong>
-            {%- assign branch_name = site.data.build.branch_name | default: 'local' -%}
-            {%- if branch_name != 'local' -%}
-              <a href="{{ site.github.repository_url }}/tree/{{ branch_name }}" target="_blank" rel="noopener noreferrer">{{ branch_name }}</a>
-            {%- else -%}
-              {{ branch_name }}
-            {%- endif -%}
-          </strong>
-        </p>
-        <p>Build time: {{ "now" | date: "%Y-%m-%d %H:%M:%S" }}</p>
+        <span>Build: <a href="{{ site.github.repository_url }}/actions/runs/{{ site.github.run_id }}" target="_blank">{{ site.github.run_number }}</a></span>
+        <span><a href="{{ site.github.repository_url }}/tree/{{ site.github.ref_name }}" target="_blank">{{ site.github.ref_name }}</a></span>
+        <span><a href="https://github.com/{{ site.github.actor }}" target="_blank">@{{ site.github.actor }}</a> {{ site.github.event_name }} <a href="{{ site.github.repository_url }}/commit/{{ site.github.sha }}" target="_blank">{{ site.github.sha | truncate: 7, "" }}</a></span>
+        <span>{{ site.time | date: "%d-%m-%Y %H:%M:%S" }}</span>
       </footer>
     </div>
   </body>

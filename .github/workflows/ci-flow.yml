@@ -146,10 +146,22 @@ jobs:
           mv .artifacts/coverage-report/* .site/reports/coverage/ || echo "coverage-report directory not found"
           mkdir -p .site/reports/allure
           mv .artifacts/allure-report/* .site/reports/allure/ || echo "allure-report not found"
-          mv .artifacts/./index-page-with-allure/index.md .site/index.md || echo "/site-main-page/index.md not found"          
-          sed -i 's/90vh/85vh/g' .artifacts/index-page-with-allure/index.md
-          mv .artifacts/index-page-with-allure/index.md .site/index.md || echo "/site-main-page/index.md not found"
+          mv .artifacts/index-page-with-allure/index.md .site/index.md || echo "index.md not found"
           cat .artifacts/index-page-with-allure/_config.yml >> .site/_config.yml || echo "_config.yml not found"
+
+      - name: Inject GitHub metadata into Jekyll config
+        run: |
+          echo "Adding GitHub metadata to .site/_config.yml"
+          echo "" >> .site/_config.yml
+          echo "timezone: Europe/Minsk" >> .site/_config.yml
+          echo "github:" >> .site/_config.yml
+          echo "  repository_url: ${{ github.server_url }}/${{ github.repository }}" >> .site/_config.yml
+          echo "  actor: ${{ github.actor }}" >> .site/_config.yml
+          echo "  event_name: ${{ github.event_name }}" >> .site/_config.yml
+          echo "  ref_name: ${{ github.ref_name }}" >> .site/_config.yml
+          echo "  sha: ${{ github.sha }}" >> .site/_config.yml
+          echo "  run_id: ${{ github.run_id }}" >> .site/_config.yml
+          echo "  run_number: ${{ github.run_number }}" >> .site/_config.yml
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1

@@ -7,11 +7,11 @@ import sys
 CSS_STYLES = """
 <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; }
-    .coverage-report-container { max-width: 1200px; margin: 20px auto; padding: 20px; }
-    .report-summary { display: flex; justify-content: space-around; margin-bottom: 20px; background-color: #f9f9f9; padding: 20px; border-radius: 5px; border: 1px solid #ddd; }
+    .coverage-report-container { max-width: 1200px; margin: 5px auto; padding: 5px 20px; }
+    .report-summary { display: flex; justify-content: space-around; margin-bottom: 20px; background-color: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #ddd; }
     .summary-item { text-align: center; }
-    .summary-item h3 { margin: 0 0 10px 0; font-size: 16px; color: #555; }
-    .summary-item p { margin: 0; font-size: 24px; font-weight: bold; }
+    .summary-item h3 { margin: 0 0 5px 0; font-size: 14px; color: #555; }
+    .summary-item p { margin: 0; font-size: 20px; font-weight: bold; }
     details { border: 1px solid #ddd; border-radius: 5px; margin-bottom: 5px; overflow: hidden; }
     summary { display: flex; justify-content: space-between; align-items: center; padding: 10px; font-weight: bold; cursor: pointer; background-color: #f9f9f9; }
     summary:hover { background-color: #f1f1f1; }
@@ -29,8 +29,8 @@ CSS_STYLES = """
     .line-content { white-space: pre; }
     .covered { background-color: #e6ffed; }
     .not-covered { background-color: #ffebe9; }
-    .sort-container { margin-bottom: 20px; text-align: right; }
-    .sort-container select { padding: 5px; font-size: 14px; border-radius: 4px; }
+    .sort-container { margin-bottom: 10px; text-align: right; }
+    .sort-container select { padding: 4px; font-size: 12px; border-radius: 4px; }
 </style>
 """
 
@@ -228,7 +228,7 @@ def main(json_path, source_dir, output_path, repo_root):
 </head>
 <body>
     <div class="coverage-report-container">
-        <h1>Code Coverage Report</h1>
+        <h4>Code Coverage Report</h4>
         <div class="report-summary">
             <div class="summary-item">
                 <h3>Real App Coverage</h3>

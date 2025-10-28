@@ -181,12 +181,11 @@ violations:
 
   function resizeIframe() {
     const iframe = document.getElementById('report-iframe');
-    const headerHeight = document.querySelector('header').offsetHeight;
-    const buttonsHeight = document.querySelector('.filter-buttons').offsetHeight;
-    const h3Height = document.querySelector('h3').offsetHeight;
-    // 150px is an approximate offset for paddings and margins
-    const availableHeight = window.innerHeight - headerHeight - buttonsHeight - h3Height - 150; 
-    iframe.style.height = Math.max(availableHeight, 400) + 'px'; // Minimum height of 400px
+    if (iframe) {
+      const iframeTop = iframe.getBoundingClientRect().top;
+      const availableHeight = window.innerHeight - iframeTop - 20; // 20px for bottom padding
+      iframe.style.height = Math.max(availableHeight, 400) + 'px'; // Minimum height of 400px
+    }
   }
 
   document.addEventListener("DOMContentLoaded", function() {
