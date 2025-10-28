@@ -76,12 +76,51 @@ jobs:
       - name: Run tests and generate report
         uses: ./.github/actions/test-unit
 
+  generate_coverage_report:
+    name: Report - Coverage
+    needs: unit_tests
+    if: always()
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download raw test results
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: .
+
+      - name: Generate HTML Report
+        uses: ./.github/actions/swift-coverage-report
+        with: 
+          test-results-path: TestResults.xcresult
+
+  generate_allure_report:
+    name: Report - Test
+    needs: unit_tests
+    if: always()
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: .
+
+      - name: Create Allure Report page
+        uses: ./.github/actions/allure-report
+        with:
+          test-results-path: TestResults.xcresult
+
   build_site:
     name: Build Reports Site
     needs: [
-      swiftlint_analysis, 
-      swiftformat_analysis,
-      unit_tests
+      generate_coverage_report,
+      generate_allure_report
     ]
     if: always()
     runs-on: ubuntu-latest
@@ -91,8 +130,6 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          path: .source
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -101,18 +138,18 @@ jobs:
 
       - name: Prepare .site content
         run: |
-          cp -r .source/.site/ .
           mkdir -p .site/reports/swiftlint
           mv .artifacts/swiftlint-report/index.md .site/reports/swiftlint/index.md || echo "swiftlint-report.md not found"
           mkdir -p .site/reports/swiftformat
           mv .artifacts/swiftformat-report/index.md .site/reports/swiftformat/index.md || echo "swiftformat-report.md not found"
-          mkdir -p .site/reports/unit-coverage
-          mv .artifacts/unit-coverage-report/coverage-report.md .site/reports/unit-coverage/index.md || echo "/unit-coverage-report/index.md not found"
+          mkdir -p .site/reports/coverage
+          mv .artifacts/coverage-report/* .site/reports/coverage/ || echo "coverage-report directory not found"
           mkdir -p .site/reports/allure
-          mv .artifacts/unit-allure-report/* .site/reports/allure/ || echo "unit-allure-report directory not found"
-      
-      - name: Create Allure Report page
-        uses: ./.source/.github/actions/allure-report
+          mv .artifacts/allure-report/* .site/reports/allure/ || echo "allure-report not found"
+          mv .artifacts/./index-page-with-allure/index.md .site/index.md || echo "/site-main-page/index.md not found"          
+          sed -i 's/90vh/85vh/g' .artifacts/index-page-with-allure/index.md
+          mv .artifacts/index-page-with-allure/index.md .site/index.md || echo "/site-main-page/index.md not found"
+          cat .artifacts/index-page-with-allure/_config.yml >> .site/_config.yml || echo "_config.yml not found"
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
@@ -122,33 +159,8 @@ jobs:
           source: ./.site
           destination: ./_site
             
-      - name: Verify result site content
-        run: |
-          ls -R ./_site
-          
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
-
-#     - name: Assemble Site Structure
-#       run: |
-#         cp -r .source/.site/ .
-#         mkdir -p .site/reports
-#         mv .artifacts/swiftlint-report/swiftlint-report.json .site/reports/swiftlint-report.json || echo "swiftlint-report.json not found"
-#         mv .artifacts/swiftformat-report/swiftformat-report.json .site/reports/swiftformat-report.json || echo "swiftformat-report.json not found"
-#         mv .artifacts/allure-report/* .site/reports/allure/ || echo "allure-report not found"
-#         mv .artifacts/test-results/TestResults.xcresult . || echo "TestResults.xcresult not found"
-
-#     - name: Create Build Info Data File
-#       run: |
-#         mkdir -p .site/_data
-#         echo "branch_name: ${{ github.ref_name }}" > .site/_data/build.yml
-#         echo "run_id: ${{ github.run_id }}" >> .site/_data/build.yml
-
-
-
-    
-
-
 
   deploy_site: 
     name: Deploy Reports Site
@@ -160,7 +172,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Set sanitized branch name for artifact
-        id: set_vars # This step is not currently used by deploy-pages, but might be useful for other steps.
+        id: set_vars 
         run: echo "sanitized_branch=${GITHUB_REF_NAME//\//-}" >> $GITHUB_ENV
 
       - name: Deploy to GitHub Pages

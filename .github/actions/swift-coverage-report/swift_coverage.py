@@ -4,6 +4,36 @@ import argparse
 import html
 import sys
 
+CSS_STYLES = """
+<style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; }
+    .coverage-report-container { max-width: 1200px; margin: 20px auto; padding: 20px; }
+    .report-summary { display: flex; justify-content: space-around; margin-bottom: 20px; background-color: #f9f9f9; padding: 20px; border-radius: 5px; border: 1px solid #ddd; }
+    .summary-item { text-align: center; }
+    .summary-item h3 { margin: 0 0 10px 0; font-size: 16px; color: #555; }
+    .summary-item p { margin: 0; font-size: 24px; font-weight: bold; }
+    details { border: 1px solid #ddd; border-radius: 5px; margin-bottom: 5px; overflow: hidden; }
+    summary { display: flex; justify-content: space-between; align-items: center; padding: 10px; font-weight: bold; cursor: pointer; background-color: #f9f9f9; }
+    summary:hover { background-color: #f1f1f1; }
+    .summary-left { display: flex; align-items: center; }
+    .file-name-link { font-weight: normal; font-size: 14px; text-decoration: none; color: #267CB9; }
+    .file-name-link:hover { text-decoration: underline; }
+    .summary-right { display: flex; align-items: center; }
+    .coverage-bar { display: inline-block; height: 12px; background-color: #ccc; border-radius: 3px; overflow: hidden; width: 100px; vertical-align: middle; margin-left: 10px; }
+    .coverage-fill { height: 100%; display: block; }
+    .coverage-percent { min-width: 60px; text-align: right; font-family: monospace; }
+    .code-container { border-top: 1px solid #ddd; padding: 10px; background-color: #f9f9f9; overflow-x: auto; }
+    .code-container pre { margin: 0; }
+    .line { display: flex; line-height: 1.2; }
+    .line-number { min-width: 40px; color: #999; text-align: right; padding-right: 10px; user-select: none; }
+    .line-content { white-space: pre; }
+    .covered { background-color: #e6ffed; }
+    .not-covered { background-color: #ffebe9; }
+    .sort-container { margin-bottom: 20px; text-align: right; }
+    .sort-container select { padding: 5px; font-size: 14px; border-radius: 4px; }
+</style>
+"""
+
 JS_SCRIPT = """
 <script defer>
     function sortFiles(sortBy) {
@@ -83,14 +113,20 @@ def generate_code_view_html(file_info, source_dir, repo_url, branch):
 
     return code_html + "</pre></div>"
 
-def main(json_path, source_dir, output_path):
+def main(json_path, source_dir, output_path, repo_root):
+    print("--- Starting Coverage Report Generation ---")
+    print(f"JSON Path: {json_path}")
+    print(f"Source Directory: {source_dir}")
+    print(f"Output Path: {output_path}")
+    print(f"Repo Root (raw): {repo_root}")
+
     with open(json_path, 'r') as f:
         coverage_data = json.load(f)
 
     repo_url = f"https://github.com/{os.getenv('GITHUB_REPOSITORY', '')}"
     branch = os.getenv('GITHUB_REF_NAME', 'main')
 
-    app_target = next((t for t in coverage_data['targets'] if t['name'].endswith('.app')), None)
+    app_target = next((t for t in coverage_data.get('targets', []) if t['name'].endswith('.app')), None)
     if not app_target:
         print("Warning: Could not find main application target in coverage data.")
         return
@@ -99,12 +135,45 @@ def main(json_path, source_dir, output_path):
     total_app_executable_lines = 0
     files_html_blocks = []
 
-    for file_info in sorted(app_target['files'], key=lambda x: x['path']):
-        relative_path = os.path.relpath(file_info['path'], start=source_dir)
+    # Convert repo_root to an absolute path for reliable comparison
+    absolute_repo_root = os.path.abspath(repo_root) if repo_root else None
+    print(f"Repo Root (absolute): {absolute_repo_root}")
 
-        if ".." in relative_path or "Pods/" in file_info['path']:
+    # Get the repository name (e.g., 'swift-ios-test-demo') to help find the project root in paths
+    repo_name = os.getenv('GITHUB_REPOSITORY', '').split('/')[-1]
+    print(f"Repository Name: {repo_name}")
+
+    print(f"\nFound app target: '{app_target['name']}' with {len(app_target['files'])} files.")
+
+    for file_info in sorted(app_target['files'], key=lambda x: x['path']):
+        original_path = file_info['path']
+        print(f"\nProcessing file: {original_path}")
+
+        if "Pods/" in original_path:
+            print(" -> Skipping: File is in 'Pods/' directory.")
             continue
 
+        # --- RESTRUCTURED LOGIC TO FIX PATHS ---
+        # Try to find the repo name in the original path to determine the project-relative path
+        path_parts = original_path.split(os.sep)
+        try:
+            # Find the index of the directory that is the repo name
+            repo_name_index = path_parts.index(repo_name)
+            # The relative path starts from the directory *after* the repo name
+            project_relative_path = os.path.join(*path_parts[repo_name_index+1:])
+            # Construct the absolute path on the runner
+            path_on_runner = os.path.join(absolute_repo_root, project_relative_path)
+            
+            print(f" -> Found repo '{repo_name}' in path. Relative path: {project_relative_path}")
+            print(f" -> Constructed runner path: {path_on_runner}")
+            # IMPORTANT: Update the path in file_info to the correct runner path
+            file_info['path'] = path_on_runner
+            relative_path = project_relative_path # Use this for display
+        except ValueError:
+            print(f" -> Skipping: Could not find repo name '{repo_name}' in path '{original_path}'.")
+            continue
+        # --- END OF RESTRUCTURED LOGIC ---
+        
         total_app_covered_lines += file_info['coveredLines']
         total_app_executable_lines += file_info['executableLines']
 
@@ -112,6 +181,9 @@ def main(json_path, source_dir, output_path):
         color = '#4CAF50' if coverage > 70 else ('#FFC107' if coverage > 40 else '#F44336')
         
         code_view_html = generate_code_view_html(file_info, source_dir, repo_url, branch)
+        if code_view_html is None:
+            print(f" -> Skipping: Could not generate code view (file not found at '{file_info['path']}'?).")
+            continue
 
         file_html = f"""
         <details data-name="{html.escape(relative_path)}" data-coverage="{coverage}">
@@ -131,24 +203,33 @@ def main(json_path, source_dir, output_path):
         """
         files_html_blocks.append(file_html)
 
+    # This check is important. If no files were processed, we should know.
+    if not files_html_blocks:
+        print("\n--- WARNING ---")
+        print("No source files were processed. The generated report will be empty.")
+        print("This is likely due to a path mismatch between the coverage.json file and the repository structure on the runner.")
+
     real_coverage = (total_app_covered_lines / total_app_executable_lines * 100) if total_app_executable_lines > 0 else 0
     real_coverage_color = '#4CAF50' if real_coverage > 70 else ('#FFC107' if real_coverage > 40 else '#F44336')
 
-    # Jekyll Front Matter
-    md_content = f"""---
-layout: page
-title: Code Coverage Report
----
+    print("\n--- Report Summary ---")
+    print(f"Total App Covered Lines: {total_app_covered_lines}")
+    print(f"Total App Executable Lines: {total_app_executable_lines}")
+    print(f"Final Calculated Coverage: {real_coverage:.2f}%")
 
-{{% comment %}}
-This file is autogenerated. Do not edit it manually.
-{{% endcomment %}}
-
-<link rel="stylesheet" href="{{ '/assets/css/swift-coverage-report.css' | relative_url }}">
-{JS_SCRIPT}
-
-<div class="coverage-report-container">
-    <div class="report-summary">
+    html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Coverage Report</title>
+    {CSS_STYLES}
+    {JS_SCRIPT}
+</head>
+<body>
+    <div class="coverage-report-container">
+        <h1>Code Coverage Report</h1>
+        <div class="report-summary">
             <div class="summary-item">
                 <h3>Real App Coverage</h3>
                 <p style="color: {real_coverage_color};">{real_coverage:.2f}%</p>
@@ -163,29 +244,32 @@ This file is autogenerated. Do not edit it manually.
             </div>
         </div>
 
-    <div class="sort-container">
-        <select onchange="sortFiles(this.value)">
-            <option value="name_asc">Sort by Name (A-Z)</option>
-            <option value="name_desc">Sort by Name (Z-A)</option>
-            <option value="coverage_asc">Sort by Coverage (Low to High)</option>
-            <option value="coverage_desc">Sort by Coverage (High to Low)</option>
-        </select>
+        <div class="sort-container">
+            <select onchange="sortFiles(this.value)">
+                <option value="name_asc">Sort by Name (A-Z)</option>
+                <option value="name_desc">Sort by Name (Z-A)</option>
+                <option value="coverage_asc">Sort by Coverage (Low to High)</option>
+                <option value="coverage_desc">Sort by Coverage (High to Low)</option>
+            </select>
+        </div>
+        <div id="files-container">
+            {''.join(files_html_blocks)}
+        </div>
     </div>
-    <div id="files-container">
-        {''.join(files_html_blocks)}
-    </div>
-</div>
+</body>
+</html>
     """
     with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(md_content)
+        f.write(html_content)
     
-    print(f"Markdown report generated at {output_path}")
+    print(f"\nHTML report generated at {output_path}")
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding='utf-8')
-    parser = argparse.ArgumentParser(description="Generate HTML coverage report from xccov JSON.")
+    parser = argparse.ArgumentParser(description="Generate a standalone HTML coverage report from xccov JSON.")
     parser.add_argument("--json-path", required=True, help="Path to the input coverage.json file.")
     parser.add_argument("--source-dir", required=True, help="Path to the source code directory.")
-    parser.add_argument("--output-path", required=True, help="Path where the output Markdown report file will be created.")
+    parser.add_argument("--output-path", required=True, help="Path where the output HTML report file will be created.")
+    parser.add_argument("--repo-root", required=False, help="The root of the repository, for making paths relative in CI.")
     args = parser.parse_args()
-    main(args.json_path, args.source_dir, args.output_path)
+    main(args.json_path, args.source_dir, args.output_path, args.repo_root)

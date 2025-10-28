@@ -38,7 +38,7 @@
               </a>
             </li>
 
-            {% assign coverage_url = '/reports/unit-coverage/' | relative_url %}
+            {% assign coverage_url = '/reports/coverage/' | relative_url %}
             <li {% if page.url == coverage_url %}class="active"{% endif %}><a href="{{ coverage_url }}"><img src="{{ '/assets/img/xcode.png' | relative_url }}" alt="Coverage Icon" class="nav-icon">Code Coverage</a></li>
           </ul>
         </nav>

@@ -1,5 +1,5 @@
 name: 'Run Unit Tests'
-description: 'Runs unit tests using a pre-built xctestrun file and generates an Allure report.'
+description: 'Runs unit tests, generates raw coverage data and test results.'
 
 runs:
   using: "composite"
@@ -9,21 +9,6 @@ runs:
     #   with:
     #     name: xctestrun-build
     #     path: build
-
-    - name: Check npx allure awesome environment
-      shell: bash
-      run: |
-        node -v
-        npm -v
-        npx -v
-
-        echo "--- Verifying npx allure awesome command ---"
-        if npx allure awesome -h; then
-          echo "npx allure awesome command is accessible and executable."
-        else
-          echo "Error: npx allure awesome command failed to execute. This might indicate an issue with Node.js, npm, npx, or the allure-awesome package itself."
-          exit 1
-        fi
 
     # - name: Run Unit Tests
     #   shell: bash
@@ -40,45 +25,11 @@ runs:
     #       -destination "id=$DESTINATION_UDID" \
     #       -resultBundlePath TestResults.xcresult
 
-    - name: Generate coverage.json
-      shell: bash
-      run: |
-        xcrun xccov view --report --json TestResults.xcresult > coverage.json
-
-    - name: Generate HTML Report
-      uses: ./.github/actions/swift-coverage-report
-      with:
-        json-path: coverage.json
-        source-dir: .
-        output-path: coverage-report.md
-
-    - name: Upload Coverage Report
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: unit-coverage-report
-        path: coverage-report.md
-        retention-days: 1
-
-    - name: Generate Allure Report
-      if: always()
-      continue-on-error: true
-      shell: bash
-      run: |
-        npx allure awesome --output allure-report TestResults.xcresult
-
     - name: Upload Test Results
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: test-results
         path: TestResults.xcresult
-
-    - name: Upload Allure results
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: unit-allure-report
-        path: allure-report
         retention-days: 1
     

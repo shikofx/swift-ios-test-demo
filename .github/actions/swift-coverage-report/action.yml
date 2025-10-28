@@ -2,23 +2,51 @@ name: 'Create Custom Coverage Report'
 description: 'Generates a custom HTML code coverage report from xccov JSON output.'
 
 inputs:
-  json-path:
-    description: 'Path to the input coverage.json file.'
-    required: true
-  source-dir:
-    description: 'Path to the source code directory.'
-    required: true
-  output-path:
-    description: 'Path where the output Markdown report file will be created.'
+  test-results-path:
+    description: 'Path to TestResults.xcresult'
     required: true
 
 runs:
   using: "composite"
   steps:
+    - name: Generate coverage.json
+      shell: bash
+      run: |
+        xcrun xccov view --report --json "${{ inputs.test-results-path }}" > coverage.json
+
+    - name: Create output directory
+      shell: bash
+      run: |
+        mkdir -p "coverage-report"
+
     - name: Generate HTML report
       shell: bash
       run: |
         python3 ${{ github.action_path }}/swift_coverage.py \
-          --json-path "${{ inputs.json-path }}" \
-          --source-dir "${{ inputs.source-dir }}" \
-          --output-path "${{ inputs.output-path }}"
+          --json-path coverage.json \
+          --source-dir . \
+          --output-path "coverage-report/coverage-report.html" \
+          --repo-root .
+
+    - name: verify coverage-report.html content
+      shell: bash 
+      run: |
+        cat ./coverage-report/coverage-report.html
+
+    - name: Create md page for the report
+      shell: bash
+      run: |
+        cat <<EOF > "coverage-report/index.md"
+        ---
+        layout: default
+        ---
+        <iframe src="coverage-report.html" style="width: 100%; height: 85vh; border: none;"></iframe>
+        EOF
+
+    - name: Upload Coverage Report Artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: coverage-report
+        path: coverage-report
+        retention-days: 1
