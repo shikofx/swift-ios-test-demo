@@ -24,6 +24,9 @@ def generate_swiftformat_html_report(json_path, output_path, github_workspace):
 
     total_violations = len(violations)
 
+    # Collect unique rules for the filter dropdown
+    unique_rules = sorted(list(set(v['rule_id'] for v in violations)))
+
     # Build table rows from violations
     table_rows_html = []
     for i, violation in enumerate(violations):
@@ -34,7 +37,7 @@ def generate_swiftformat_html_report(json_path, output_path, github_workspace):
         reason = escape(violation['reason'])
 
         row = f"""
-        <tr>
+        <tr data-rule="{escape(rule_id)}">
           <td>{i + 1}</td>
           <td class="copyable" onclick="copyToClipboard(this)">{path_text}</td>
           <td>
@@ -51,20 +54,51 @@ def generate_swiftformat_html_report(json_path, output_path, github_workspace):
     if not violations:
         body_content = "<h3>SwiftFormat Style Violations</h3>\n<p>No SwiftFormat violations found. Your code is perfectly formatted! ✨</p>"
     else:
+        # Create dropdown options for rules
+        rule_options = '<option value="all">All Rules</option>'
+        for rule in unique_rules:
+            rule_options += f'<option value="{escape(rule)}">{camel_to_title(rule)}</option>'
+
         body_content = f"""
-        <h3>SwiftFormat Style Violations ({total_violations})</h3>
-        <table class="lint-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Path (click to copy)</th>
-                    <th>Reason</th>
-                </tr>
-            </thead>
-            <tbody>
-                {''.join(table_rows_html)}
-            </tbody>
-        </table>
+        <div class="header-controls">
+            <h3>SwiftFormat Style Violations ({total_violations})</h3>
+            <div class="filter-container">
+                <label for="rule-filter">Filter by rule:</label>
+                <select id="rule-filter" onchange="applyRuleFilter(this.value)">
+                    {rule_options}
+                </select>
+            </div>
+        </div>
+        <iframe id="report-iframe" srcdoc="{escape(f'''
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; }}
+    .lint-table {{ width: 100%; border-collapse: collapse; font-size: 12px; }}
+    .lint-table th, .lint-table td {{ border-bottom: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }}
+    .lint-table th {{ background-color: #f2f2f2; font-weight: bold; position: sticky; top: 0; }}
+    .lint-table th:nth-child(1), .lint-table td:nth-child(1) {{ width: 5%; }}
+    .lint-table th:nth-child(2), .lint-table td:nth-child(2) {{ width: 40%; }}
+    .lint-table th:nth-child(3), .lint-table td:nth-child(3) {{ width: 55%; }}
+    .lint-rule {{ font-weight: bold; }}
+    .lint-reason {{ font-style: italic; }}
+    .copyable {{ cursor: pointer; font-weight: bold; }}
+    .copyable:hover {{ background-color: #f0f0f0; }}
+</style>
+</head>
+<body>
+    <table class="lint-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Path (click to copy)</th>
+                <th>Reason</th>
+            </tr>
+        </thead>
+        <tbody>{''.join(table_rows_html)}</tbody></table>
+</body>
+</html>''')}" style="width: 100%; height: 80vh; border: 1px solid #ddd; border-radius: 5px;"></iframe>
         """
 
     html_content = f"""
@@ -75,16 +109,13 @@ def generate_swiftformat_html_report(json_path, output_path, github_workspace):
 <title>SwiftFormat Style Report</title>
 <style>
     body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; margin: 20px; }}
-    .lint-table {{ width: 100%; border-collapse: collapse; font-size: 12px; }}
-    .lint-table th, .lint-table td {{ border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }}
-    .lint-table th:nth-child(1), .lint-table td:nth-child(1) {{ width: 5%; }}
-    .lint-table th:nth-child(2), .lint-table td:nth-child(2) {{ width: 40%; }}
-    .lint-table th:nth-child(3), .lint-table td:nth-child(3) {{ width: 55%; }}
-    .lint-rule {{ font-weight: bold; }}
-    .lint-reason {{ font-style: italic; }}
-    .lint-table th {{ background-color: #f2f2f2; }}
-    .copyable {{ cursor: pointer; }}
-    .copyable:hover {{ background-color: #f0f0f0; }}
+    .header-controls {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }}
+    .filter-container label {{ margin-right: 5px; font-size: 14px; }}
+    .filter-container select {{
+        padding: 5px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }}
 </style>
 <script>
     function copyToClipboard(element) {{
@@ -97,6 +128,17 @@ def generate_swiftformat_html_report(json_path, output_path, github_workspace):
             console.error('Could not copy text: ', err);
             element.innerText = 'Copy Failed!';
             setTimeout(function() {{ element.innerText = originalText; }}, 500);
+        }});
+    }}
+
+    function applyRuleFilter(rule) {{
+        const iframe = document.getElementById('report-iframe');
+        if (!iframe) return;
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        const rows = iframeDoc.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {{
+            row.style.display = (rule === 'all' || row.dataset.rule === rule) ? '' : 'none';
         }});
     }}
 </script>

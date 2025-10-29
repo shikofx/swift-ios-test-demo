@@ -34,6 +34,9 @@ def generate_swiftlint_html_report(json_path, output_path, github_workspace):
 
     total_files = len(unique_files)
 
+    # Collect unique rules for the filter dropdown
+    unique_rules = sorted(list(set(v['rule_id'] for v in violations)))
+
     # Build table rows from violations
     table_rows_html = []
     for i, violation in enumerate(violations):
@@ -47,7 +50,7 @@ def generate_swiftlint_html_report(json_path, output_path, github_workspace):
         reason = escape(violation['reason'])
 
         row = f"""
-        <tr data-severity="{violation['severity'].lower()}">
+        <tr data-severity="{violation['severity'].lower()}" data-rule="{escape(rule_id)}">
           <td class="{severity_class}">{i + 1}</td>
           <td class="copyable" onclick="copyToClipboard(this)">{path_text}</td>
           <td>
@@ -65,12 +68,24 @@ def generate_swiftlint_html_report(json_path, output_path, github_workspace):
         body_content = "<h3>SwiftLint Style Violations</h3>\n<p>No SwiftLint violations found. Your code is clean! ✨</p>"
         js_script = ""
     else:
+        # Create dropdown options for rules
+        rule_options = '<option value="all">All Rules</option>'
+        for rule in unique_rules:
+            rule_options += f'<option value="{escape(rule)}">{snake_to_title(rule)}</option>'
+
         body_content = f"""
-        <h3>SwiftLint Style Violations</h3>
-        <div class="filter-buttons">
-            <button id="filter-all" class="active" onclick="applyFilter('all')">All ({total_warnings + total_errors})</button>
-            <button id="filter-warning" onclick="applyFilter('warning')">Warnings ({total_warnings})</button>
-            <button id="filter-error" onclick="applyFilter('error')">Errors ({total_errors})</button>
+        <div class="header-controls">
+            <h3>SwiftLint Style Violations</h3>
+            <div class="filters-container">
+                <div class="filter-buttons">
+                    <button id="filter-severity-all" class="active" onclick="applyFilters('all', null)">All ({total_warnings + total_errors})</button>
+                    <button id="filter-severity-warning" onclick="applyFilters('warning', null)">Warnings ({total_warnings})</button>
+                    <button id="filter-severity-error" onclick="applyFilters('error', null)">Errors ({total_errors})</button>
+                </div>
+                <select id="rule-filter" onchange="applyFilters(null, this.value)">
+                    {rule_options}
+                </select>
+            </div>
         </div>
         <iframe id="report-iframe" srcdoc="{escape(f'''
             <!DOCTYPE html>
@@ -111,9 +126,11 @@ def generate_swiftlint_html_report(json_path, output_path, github_workspace):
 <title>SwiftLint Style Report</title>
 <style>
     body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; margin: 20px; }}
-    .filter-buttons {{ text-align: right; margin-bottom: 10px; }}
+    .header-controls {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }}
+    .filters-container {{ display: flex; align-items: center; gap: 20px; }}
     .filter-buttons button {{ margin-left: 5px; padding: 5px 10px; cursor: pointer; border: 1px solid #ccc; background-color: #f0f0f0; border-radius: 4px; }}
     .filter-buttons button.active {{ background-color: #007bff; color: white; border-color: #007bff; }}
+    #rule-filter {{ padding: 5px; border-radius: 4px; border: 1px solid #ccc; }}
 </style>
 <script>
     function copyToClipboard(element) {{
@@ -129,18 +146,31 @@ def generate_swiftlint_html_report(json_path, output_path, github_workspace):
         }});
     }}
 
-    function applyFilter(filter) {{
+    function applyFilters(severityFilter, ruleFilter) {{
         const iframe = document.getElementById('report-iframe');
         if (!iframe) return;
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
         const rows = iframeDoc.querySelectorAll('tbody tr');
+
+        // Determine current filters
+        const currentSeverity = severityFilter !== null 
+            ? severityFilter 
+            : document.querySelector('.filter-buttons button.active').id.replace('filter-severity-', '');
         
+        const currentRule = ruleFilter !== null
+            ? ruleFilter
+            : document.getElementById('rule-filter').value;
+
         rows.forEach(row => {{
-            row.style.display = (filter === 'all' || row.dataset.severity === filter) ? '' : 'none';
+            const severityMatch = currentSeverity === 'all' || row.dataset.severity === currentSeverity;
+            const ruleMatch = currentRule === 'all' || row.dataset.rule === currentRule;
+            row.style.display = (severityMatch && ruleMatch) ? '' : 'none';
         }});
 
-        document.querySelectorAll('.filter-buttons button').forEach(btn => btn.classList.remove('active'));
-        document.getElementById('filter-' + filter).classList.add('active');
+        if (severityFilter !== null) {{
+            document.querySelectorAll('.filter-buttons button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('filter-severity-' + severityFilter).classList.add('active');
+        }}
     }}
 </script>
 </head>
