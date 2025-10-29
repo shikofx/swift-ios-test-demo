@@ -27,18 +27,33 @@ runs:
       run: |
         swiftlint --reporter json > ./swiftlint-report.json
    
-    - name: Generate Markdown from JSON using Python
+    - name: Create output directory
+      shell: bash
+      run: mkdir -p swiftlint-artifact
+
+    - name: Generate HTML from JSON using Python
       shell: bash
       run: |
         python ${{ github.action_path }}/generate_swiftlint_report.py \
           --json-path "./swiftlint-report.json" \
-          --output-path "./index.md" \
+          --output-path "./swiftlint-artifact/swiftlint-report.html" \
           --github-workspace "${{ github.workspace }}"
+
+    - name: Create md page for the report
+      shell: bash
+      run: |
+        cat <<EOF > "swiftlint-artifact/index.md"
+        ---
+        layout: default
+        title: SwiftLint Style Report
+        ---
+        <iframe src="swiftlint-report.html" style="width: 100%; height: calc(93vh); border: none;"></iframe>
+        EOF
 
     - name: Upload SwiftLint artifact
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: swiftlint-report
-        path: index.md
+        path: swiftlint-artifact
         retention-days: 7

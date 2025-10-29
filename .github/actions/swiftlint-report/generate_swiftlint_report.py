@@ -1,18 +1,17 @@
 import json
 import os
 import argparse
-import html
-import re
+from html import escape
 
 def snake_to_title(name):
     """Converts a snake_case string to a Title Case string."""
     return name.replace('_', ' ').title()
 
-def generate_swiftlint_report(json_path, output_path, github_workspace):
+def generate_swiftlint_html_report(json_path, output_path, github_workspace):
     """
-    Generates a Markdown report from a SwiftLint JSON output.
+    Generates a standalone HTML report from a SwiftLint JSON output.
     The report includes a summary and a detailed list of violations,
-    formatted for Jekyll with Front Matter.
+    with filtering and copy-to-clipboard functionality.
     """
     if not os.path.exists(json_path):
         print(f"::warning::SwiftLint report not found at {json_path}. Skipping page generation.")
@@ -35,176 +34,126 @@ def generate_swiftlint_report(json_path, output_path, github_workspace):
 
     total_files = len(unique_files)
 
-    # Start building the Markdown content with Jekyll Front Matter
-    md_content = f"""---
-layout: default
-title: SwiftLint Style Report
-total_files: {total_files}
-total_warnings: {total_warnings}
-total_errors: {total_errors}
-violations:
-"""
-
-    # Process each violation and append to the Front Matter as a YAML list of JSON strings
-    for violation in violations:
-        # Strip GITHUB_WORKSPACE prefix
-        # Using os.path.relpath for more robust path handling
+    # Build table rows from violations
+    table_rows_html = []
+    for i, violation in enumerate(violations):
         relative_file_path = os.path.relpath(violation['file'], start=github_workspace)
-        
-        # Additionally strip "SDET Demo App/" if present, as per original jq logic
-        # This assumes "SDET Demo App" is a fixed part of the path to be removed.
-        # Using replace with count=1 to only replace the first occurrence
         relative_file_path = relative_file_path.replace("SDET Demo App/", "", 1)
 
-        processed_violation = {
-            "file": relative_file_path,
-            "line": violation['line'],
-            "character": violation['character'],
-            "severity": violation['severity'],
-            "type": violation['rule_id'], # Using rule_id as type for consistency
-            "type_display": snake_to_title(violation['rule_id']),
-            "reason": violation['reason']
-        }
-        # Serialize the dictionary to a JSON string and prepend with "- " for YAML list format
-        md_content += f"- {json.dumps(processed_violation)}\n"
+        severity_class = f"severity-{violation['severity'].lower()}"
+        path_text = f"{escape(relative_file_path)}:{violation['line']}"
+        rule_id = violation['rule_id']
+        rule_display = snake_to_title(rule_id)
+        reason = escape(violation['reason'])
 
-    # Append the rest of the Jekyll template (HTML table and JavaScript for filtering)
-    # This part is directly copied from the original action.yml
-    md_content += """
----
-### SwiftLint Style Violations
-
-{% if page.violations.size > 0 %}
-<div class="filter-buttons">
-  <button id="filter-all" onclick="applyFilter('all')">All ({{ page.total_warnings | plus: page.total_errors }})</button>
-  <button id="filter-warning" onclick="applyFilter('warning')">Warnings ({{ page.total_warnings }})</button>
-  <button id="filter-error" onclick="applyFilter('error')">Errors ({{ page.total_errors }})</button>
-</div>
-{% capture table_html %}
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <style>
-      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; }
-      .lint-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-      .lint-table th, .lint-table td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
-      /* SwiftLint specific column widths */
-      .lint-table th:nth-child(1), .lint-table td:nth-child(1) { width: 5%; }
-      .lint-table th:nth-child(2), .lint-table td:nth-child(2) { width: 40%; }
-      .lint-table th:nth-child(3), .lint-table td:nth-child(3) { width: 55%; }
-      
-      .lint-type, .lint-rule { font-weight: bold; }
-      .lint-reason { font-style: italic; }
-      .lint-table th { background-color: #f2f2f2; }
-      .severity-warning { background-color: #FFD700; } /* Gold */
-      .severity-error { background-color: #FF4136; color: white; } /* Red */
-      .copyable { cursor: pointer; }
-      .copyable:hover { background-color: #f0f0f0; }
-    </style>
-    <script>
-      function copyToClipboard(element) {
-        const originalText = element.innerText;
-        navigator.clipboard.writeText(originalText).then(function() {
-          console.log('Copied to clipboard: ' + originalText);
-          element.innerText = 'Copied';
-          setTimeout(function() {
-            element.innerText = originalText;
-          }, 500);
-        }, function(err) {
-          console.error('Could not copy text: ', err);
-          element.innerText = 'Copy Failed!';
-          setTimeout(function() {
-            element.innerText = originalText;
-          }, 500);
-        });
-      }
-    </script>
-  </head>
-  <body>
-    <table class="lint-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Path (click to copy)</th>
-          <th>Reason</th>                  
-        </tr>
-      </thead>
-      <tbody>
-        {% for item_str in page.violations -%}
-        {%- assign item = item_str | from_json -%}
-        {%- assign severity_class = "severity-" | append: item.severity | downcase -%}
-        <tr>
-          <td class="{{ severity_class }}">{{ forloop.index }}</td>
-          <td class="copyable" onclick="copyToClipboard(this)">{{ item.file }}:{{ item.line }}</td>
+        row = f"""
+        <tr data-severity="{violation['severity'].lower()}">
+          <td class="{severity_class}">{i + 1}</td>
+          <td class="copyable" onclick="copyToClipboard(this)">{path_text}</td>
           <td>
-                    <div class="lint-type">
-                      <a href="https://realm.github.io/SwiftLint/{{ item.type }}.html" target="_blank">{{ item.type_display }}</a>
-                    </div>
-            <div class="lint-reason">{{ item.reason | escape }}</div>
+            <div class="lint-type">
+              <a href="https://realm.github.io/SwiftLint/{rule_id}.html" target="_blank">{rule_display}</a>
+            </div>
+            <div class="lint-reason">{reason}</div>
           </td>
         </tr>
-        {%- endfor %}
-      </tbody>
-    </table>
-  </body>
-  </html>
-{% endcapture %}
-<iframe id="report-iframe" srcdoc="{{ table_html | escape }}" style="width: 100%; border: 1px solid #ddd; border-radius: 5px;"></iframe>
+        """
+        table_rows_html.append(row)
 
+    # Construct the final HTML content
+    if not violations:
+        body_content = "<h3>SwiftLint Style Violations</h3>\n<p>No SwiftLint violations found. Your code is clean! ✨</p>"
+        js_script = ""
+    else:
+        body_content = f"""
+        <h3>SwiftLint Style Violations</h3>
+        <div class="filter-buttons">
+            <button id="filter-all" class="active" onclick="applyFilter('all')">All ({total_warnings + total_errors})</button>
+            <button id="filter-warning" onclick="applyFilter('warning')">Warnings ({total_warnings})</button>
+            <button id="filter-error" onclick="applyFilter('error')">Errors ({total_errors})</button>
+        </div>
+        <iframe id="report-iframe" srcdoc="{escape(f'''
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <style>
+                body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; }}
+                .lint-table {{ width: 100%; border-collapse: collapse; font-size: 12px; }}
+                .lint-table th, .lint-table td {{ border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }}
+                .lint-table th:nth-child(1), .lint-table td:nth-child(1) {{ width: 5%; }}
+                .lint-table th:nth-child(2), .lint-table td:nth-child(2) {{ width: 40%; }}
+                .lint-table th:nth-child(3), .lint-table td:nth-child(3) {{ width: 55%; }}
+                .lint-type, .lint-rule {{ font-weight: bold; }}
+                .lint-reason {{ font-style: italic; }}
+                .lint-table th {{ background-color: #f2f2f2; }}
+                .severity-warning {{ background-color: #FFD700; }}
+                .severity-error {{ background-color: #FF4136; color: white; }}
+                .copyable {{ cursor: pointer; }}
+                .copyable:hover {{ background-color: #f0f0f0; }}
+            </style>
+            </head>
+            <body>
+                <table class="lint-table">
+                    <tbody>
+                        {''.join(table_rows_html)}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        ''')}" style="width: 100%; height: 80vh; border: 1px solid #ddd; border-radius: 5px;"></iframe>
+        """
+
+    html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>SwiftLint Style Report</title>
+<style>
+    body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; margin: 20px; }}
+    .filter-buttons {{ text-align: right; margin-bottom: 10px; }}
+    .filter-buttons button {{ margin-left: 5px; padding: 5px 10px; cursor: pointer; border: 1px solid #ccc; background-color: #f0f0f0; border-radius: 4px; }}
+    .filter-buttons button.active {{ background-color: #007bff; color: white; border-color: #007bff; }}
+</style>
 <script>
-  function applyFilter(filter) {
-    const iframe = document.querySelector('iframe');
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    const rows = iframeDoc.querySelectorAll('.lint-table tbody tr');
+    function copyToClipboard(element) {{
+        const originalText = element.innerText;
+        navigator.clipboard.writeText(originalText).then(function() {{
+            console.log('Copied to clipboard: ' + originalText);
+            element.innerText = 'Copied';
+            setTimeout(function() {{ element.innerText = originalText; }}, 500);
+        }}, function(err) {{
+            console.error('Could not copy text: ', err);
+            element.innerText = 'Copy Failed!';
+            setTimeout(function() {{ element.innerText = originalText; }}, 500);
+        }});
+    }}
 
-    rows.forEach(row => {
-      const severityCell = row.querySelector('td:first-child');
-      if (filter === 'all') {
-        row.style.display = '';
-      } else if (severityCell) {
-        if (severityCell.classList.contains('severity-' + filter)) {
-          row.style.display = '';
-        } else {
-          row.style.display = 'none';
-        }
-      }
-    });
+    function applyFilter(filter) {{
+        const iframe = document.getElementById('report-iframe');
+        if (!iframe) return;
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        const rows = iframeDoc.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {{
+            row.style.display = (filter === 'all' || row.dataset.severity === filter) ? '' : 'none';
+        }});
 
-    // Update URL and button styles
-    const url = new URL(window.location);
-    url.searchParams.set('filter', filter);
-    window.history.pushState({}, '', url);
-    
-    document.querySelectorAll('.filter-buttons button').forEach(btn => btn.classList.remove('active'));
-    document.getElementById('filter-' + filter).classList.add('active');
-  }
-
-  function resizeIframe() {
-    const iframe = document.getElementById('report-iframe');
-    if (iframe) {
-      const iframeTop = iframe.getBoundingClientRect().top;
-      const availableHeight = window.innerHeight - iframeTop - 20; // 20px for bottom padding
-      iframe.style.height = Math.max(availableHeight, 400) + 'px'; // Minimum height of 400px
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", function() {
-    const params = new URLSearchParams(window.location.search);
-    const filter = params.get('filter') || 'all';
-    applyFilter(filter);
-    resizeIframe();
-  });
-  window.addEventListener('resize', resizeIframe);
+        document.querySelectorAll('.filter-buttons button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('filter-' + filter).classList.add('active');
+    }}
 </script>
-{% else %}
-No SwiftLint violations found. Your code is clean! ✨
-{% endif %}
+</head>
+<body>
+    {body_content}
+</body>
+</html>
 """
 
     with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(md_content)
-    
-    print(f"SwiftLint Markdown page generated at {output_path}")
+        f.write(html_content)
+
+    print(f"SwiftLint HTML report generated at {output_path}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate SwiftLint Markdown report.")
@@ -212,4 +161,4 @@ if __name__ == "__main__":
     parser.add_argument("--output-path", required=True, help="Path to the output Markdown file.")
     parser.add_argument("--github-workspace", required=True, help="GitHub workspace path to strip from file paths.")
     args = parser.parse_args()
-    generate_swiftlint_report(args.json_path, args.output_path, args.github_workspace)
+    generate_swiftlint_html_report(args.json_path, args.output_path, args.github_workspace)

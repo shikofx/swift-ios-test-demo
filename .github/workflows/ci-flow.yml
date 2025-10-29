@@ -139,9 +139,8 @@ jobs:
       - name: Prepare .site content
         run: |
           mkdir -p .site/reports/swiftlint
-          mv .artifacts/swiftlint-report/index.md .site/reports/swiftlint/index.md || echo "swiftlint-report.md not found"
-          mkdir -p .site/reports/swiftformat
-          mv .artifacts/swiftformat-report/index.md .site/reports/swiftformat/index.md || echo "swiftformat-report.md not found"
+          mv .artifacts/swiftlint-report/* .site/reports/swiftlint/ || echo "swiftlint-report not found"
+          mkdir -p .site/reports/swiftformat && mv .artifacts/swiftformat-report/* .site/reports/swiftformat/ || echo "swiftformat-report not found"
           mkdir -p .site/reports/coverage
           mv .artifacts/coverage-report/* .site/reports/coverage/ || echo "coverage-report directory not found"
           mkdir -p .site/reports/allure

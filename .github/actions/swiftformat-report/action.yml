@@ -27,18 +27,33 @@ runs:
       run: |
         swiftformat . --lint --reporter json > ./swiftformat-report.json
 
-    - name: Generate Markdown from JSON using Python
+    - name: Create output directory
+      shell: bash
+      run: mkdir -p swiftformat-artifact
+
+    - name: Generate HTML from JSON using Python
       shell: bash
       run: |
         python ${{ github.action_path }}/generate_swiftformat_report.py \
           --json-path "./swiftformat-report.json" \
-          --output-path "./index.md" \
+          --output-path "./swiftformat-artifact/swiftformat-report.html" \
           --github-workspace "${{ github.workspace }}"
+
+    - name: Create md page for the report
+      shell: bash
+      run: |
+        cat <<EOF > "swiftformat-artifact/index.md"
+        ---
+        layout: default
+        title: SwiftFormat Style Report
+        ---
+        <iframe src="swiftformat-report.html" style="width: 100%; height: calc(93vh); border: none;"></iframe>
+        EOF
 
     - name: Upload SwiftFormat artifact
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: swiftformat-report
-        path: index.md
+        path: swiftformat-artifact
         retention-days: 7
