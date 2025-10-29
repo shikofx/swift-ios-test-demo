@@ -46,8 +46,7 @@ runs:
         ---
         layout: default
         title: SwiftFormat Style Report
-        iframe_src: swiftformat-report.html
-        iframe_scrollable: "no"
+        iframe_path: swiftformat-report.html
         ---
         EOF
 

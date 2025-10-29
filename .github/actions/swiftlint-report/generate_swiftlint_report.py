@@ -153,34 +153,33 @@ def generate_swiftlint_html_report(json_path, output_path, github_workspace):
     #rule-filter {{ padding: 5px; border-radius: 4px; border: 1px solid #ccc; }}
 </style>
 <script>
-    let currentSeverityFilter = 'all';
-    let currentRuleFilter = 'all';
-
-    function applyFilters(severityFilter, ruleFilter) {{
-        if (severityFilter !== null) {{
-            currentSeverityFilter = severityFilter;
-            document.querySelectorAll('.filter-buttons button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('filter-severity-' + severityFilter).classList.add('active');
-        }}
-        if (ruleFilter !== null) {{
-            currentRuleFilter = ruleFilter;
-        }}
-
-        const iframe = document.getElementById('report-iframe');
-        if (!iframe) return;
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        const rows = iframeDoc.querySelectorAll('tbody tr');
-
-        rows.forEach(row => {{
-            const severityMatch = currentSeverityFilter === 'all' || row.dataset.severity === currentSeverityFilter;
-            const ruleMatch = currentRuleFilter === 'all' || row.dataset.rule === currentRuleFilter;
-            row.style.display = (severityMatch && ruleMatch) ? '' : 'none';
-        }});
-    }}
-
-    // Initialize filters on load
     document.addEventListener('DOMContentLoaded', () => {{
-        applyFilters(null, null); // Apply initial filters based on default values
+        let currentSeverityFilter = 'all';
+        let currentRuleFilter = 'all';
+
+        window.applyFilters = function(severityFilter, ruleFilter) {{
+            if (severityFilter !== null) {{
+                currentSeverityFilter = severityFilter;
+                document.querySelectorAll('.filter-buttons button').forEach(btn => btn.classList.remove('active'));
+                document.getElementById('filter-severity-' + severityFilter).classList.add('active');
+            }}
+            if (ruleFilter !== null) {{
+                currentRuleFilter = ruleFilter;
+            }}
+
+            const iframe = document.getElementById('report-iframe');
+            if (!iframe) return;
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            const rows = iframeDoc.querySelectorAll('tbody tr');
+
+            rows.forEach(row => {{
+                const severityMatch = currentSeverityFilter === 'all' || row.dataset.severity === currentSeverityFilter;
+                const ruleMatch = currentRuleFilter === 'all' || row.dataset.rule === currentRuleFilter;
+                row.style.display = (severityMatch && ruleMatch) ? '' : 'none';
+            }});
+        }}
+
+        applyFilters(null, null);
     }});
 </script>
 </head>

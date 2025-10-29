@@ -33,11 +33,12 @@ CSS_STYLES = """
     .sort-container select { padding: 4px; font-size: 12px; border-radius: 4px; }
 </style>
 """
-
 JS_SCRIPT = """
-<script defer>
-    function sortFiles(sortBy) {
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    window.sortFiles = function(sortBy) {
         const container = document.getElementById('files-container');
+        if (!container) return;
         const files = Array.from(container.getElementsByTagName('details'));
 
         let sortedFiles;
@@ -54,13 +55,10 @@ JS_SCRIPT = """
             case 'coverage_desc':
                 sortedFiles = files.sort((a, b) => parseFloat(b.dataset.coverage) - parseFloat(a.dataset.coverage));
                 break;
-            default:
-                sortedFiles = files;
         }
-
-        // Re-append sorted elements
         sortedFiles.forEach(file => container.appendChild(file));
     }
+});
 </script>
 """
 

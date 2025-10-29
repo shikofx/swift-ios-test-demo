@@ -46,8 +46,7 @@ runs:
         ---
         layout: default
         title: SwiftLint Style Report
-        iframe_src: swiftlint-report.html
-        iframe_scrollable: "no"
+        iframe_path: swiftlint-report.html
         ---
         EOF
 

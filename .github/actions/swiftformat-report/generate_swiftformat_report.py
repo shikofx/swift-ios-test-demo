@@ -130,16 +130,20 @@ def generate_swiftformat_html_report(json_path, output_path, github_workspace):
     }}
 </style>
 <script>
-    function applyRuleFilter(rule) {{
-        const iframe = document.getElementById('report-iframe');
-        if (!iframe) return;
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        const rows = iframeDoc.querySelectorAll('tbody tr');
+    document.addEventListener('DOMContentLoaded', () => {{
+        window.applyRuleFilter = function(rule) {{
+            const iframe = document.getElementById('report-iframe');
+            if (!iframe) return;
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            const rows = iframeDoc.querySelectorAll('tbody tr');
 
-        rows.forEach(row => {{
-            row.style.display = (rule === 'all' || row.dataset.rule === rule) ? '' : 'none';
-        }});
-    }}
+            rows.forEach(row => {{
+                row.style.display = (rule === 'all' || row.dataset.rule === rule) ? '' : 'none';
+            }});
+        }}
+
+        applyRuleFilter('all');
+    }});
 </script>
 </head>
 <body>
