@@ -46,8 +46,9 @@ runs:
         ---
         layout: default
         title: SwiftLint Style Report
+        iframe_src: swiftlint-report.html
+        iframe_scrollable: "no"
         ---
-        <iframe src="swiftlint-report.html" style="width: 100%; height: calc(93vh); border: none;"></iframe>
         EOF
 
     - name: Upload SwiftLint artifact

@@ -45,9 +45,10 @@ runs:
         cat <<'EOF' > ./index-page-with-allure/index.md
         ---
         layout: default
-        title: Allure Test Report
+        title: Allure Test Report 
+        iframe_src: /reports/allure/index.html
+        iframe_scrollable: "no"
         ---
-        <iframe id="allure-frame" src="{{ '/reports/allure/index.html' | relative_url }}" style="width: 100%; border: 1px solid #ddd; border-radius: 5px; height: calc(95vh); transition: height 0.2s ease-out;" scrolling="no"></iframe>
         <script>
           document.addEventListener("DOMContentLoaded", function() {
             const iframe = document.getElementById('allure-frame');

@@ -39,8 +39,10 @@ runs:
         cat <<EOF > "coverage-report/index.md"
         ---
         layout: default
+        title: Swift Coverage Report
+        iframe_src: coverage-report.html
+        iframe_scrollable: "no"
         ---
-        <iframe src="coverage-report.html" style="width: 100%; height: calc(93vh); border: none;"></iframe>
         EOF
 
     - name: Upload Coverage Report Artifact

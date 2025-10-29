@@ -63,7 +63,6 @@ def generate_swiftformat_html_report(json_path, output_path, github_workspace):
         <div class="header-controls">
             <h3>SwiftFormat Style Violations ({total_violations})</h3>
             <div class="filter-container">
-                <label for="rule-filter">Filter by rule:</label>
                 <select id="rule-filter" onchange="applyRuleFilter(this.value)">
                     {rule_options}
                 </select>
@@ -76,46 +75,15 @@ def generate_swiftformat_html_report(json_path, output_path, github_workspace):
 <style>
     body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; }}
     .lint-table {{ width: 100%; border-collapse: collapse; font-size: 12px; }}
-    .lint-table th, .lint-table td {{ border-bottom: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }}
+    .lint-table th, .lint-table td {{ border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }}
     .lint-table th {{ background-color: #f2f2f2; font-weight: bold; position: sticky; top: 0; }}
     .lint-table th:nth-child(1), .lint-table td:nth-child(1) {{ width: 5%; }}
     .lint-table th:nth-child(2), .lint-table td:nth-child(2) {{ width: 40%; }}
     .lint-table th:nth-child(3), .lint-table td:nth-child(3) {{ width: 55%; }}
     .lint-rule {{ font-weight: bold; }}
     .lint-reason {{ font-style: italic; }}
-    .copyable {{ cursor: pointer; font-weight: bold; }}
+    .copyable {{ cursor: pointer; }}
     .copyable:hover {{ background-color: #f0f0f0; }}
-</style>
-</head>
-<body>
-    <table class="lint-table">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Path (click to copy)</th>
-                <th>Reason</th>
-            </tr>
-        </thead>
-        <tbody>{''.join(table_rows_html)}</tbody></table>
-</body>
-</html>''')}" style="width: 100%; height: 80vh; border: 1px solid #ddd; border-radius: 5px;"></iframe>
-        """
-
-    html_content = f"""
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>SwiftFormat Style Report</title>
-<style>
-    body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; margin: 20px; }}
-    .header-controls {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }}
-    .filter-container label {{ margin-right: 5px; font-size: 14px; }}
-    .filter-container select {{
-        padding: 5px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-    }}
 </style>
 <script>
     function copyToClipboard(element) {{
@@ -130,7 +98,38 @@ def generate_swiftformat_html_report(json_path, output_path, github_workspace):
             setTimeout(function() {{ element.innerText = originalText; }}, 500);
         }});
     }}
+</script>
+</head>
+<body>
+    <table class="lint-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Path (click to copy)</th>
+                <th>Reason</th>
+            </tr>
+        </thead>
+        <tbody>{''.join(table_rows_html)}</tbody></table>
+</body>
+</html>''')}" style="width: 100%; height: 100vh; border: 1px solid #ddd; border-radius: 5px;"></iframe>
+        """
 
+    html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>SwiftFormat Style Report</title>
+<style>
+    body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; margin: 20px; }}
+    .header-controls {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }}
+    .filter-container select {{
+        padding: 5px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }}
+</style>
+<script>
     function applyRuleFilter(rule) {{
         const iframe = document.getElementById('report-iframe');
         if (!iframe) return;

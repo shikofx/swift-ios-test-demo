@@ -46,8 +46,9 @@ runs:
         ---
         layout: default
         title: SwiftFormat Style Report
+        iframe_src: swiftformat-report.html
+        iframe_scrollable: "no"
         ---
-        <iframe src="swiftformat-report.html" style="width: 100%; height: 95vh; border: none;"></iframe>
         EOF
 
     - name: Upload SwiftFormat artifact

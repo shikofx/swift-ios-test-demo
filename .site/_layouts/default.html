@@ -43,7 +43,12 @@
         </nav>
       </header>
       <section class="main-content">
-        {{ content }}
+        {% if page.iframe_src %}
+          {% assign scrolling = page.iframe_scrollable | default: "no" %}
+            <iframe src="{{ page.iframe_src | relative_url }}" style="width: 100%; border: none; border-radius: 5px; height: 95vh;" scrolling="{{ scrolling }}"></iframe>
+        {% else %}
+          {{ content }}
+        {% endif %}
       </section>
       <footer>
         <span>Build: <a href="{{ site.github.repository_url }}/actions/runs/{{ site.github.run_id }}" target="_blank">{{ site.github.run_number }}</a></span>

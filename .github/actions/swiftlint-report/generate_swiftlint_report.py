@@ -66,7 +66,6 @@ def generate_swiftlint_html_report(json_path, output_path, github_workspace):
     # Construct the final HTML content
     if not violations:
         body_content = "<h3>SwiftLint Style Violations</h3>\n<p>No SwiftLint violations found. Your code is clean! ✨</p>"
-        js_script = ""
     else:
         # Create dropdown options for rules
         rule_options = '<option value="all">All Rules</option>'
@@ -92,7 +91,7 @@ def generate_swiftlint_html_report(json_path, output_path, github_workspace):
             <html>
             <head>
             <style>
-                body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; }}
+              body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; }}
                 .lint-table {{ width: 100%; border-collapse: collapse; font-size: 12px; }}
                 .lint-table th, .lint-table td {{ border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }}
                 .lint-table th:nth-child(1), .lint-table td:nth-child(1) {{ width: 5%; }}
@@ -106,16 +105,37 @@ def generate_swiftlint_html_report(json_path, output_path, github_workspace):
                 .copyable {{ cursor: pointer; }}
                 .copyable:hover {{ background-color: #f0f0f0; }}
             </style>
+            <script>
+                function copyToClipboard(element) {{
+                    const originalText = element.innerText;
+                    navigator.clipboard.writeText(originalText).then(function() {{
+                        console.log('Copied to clipboard: ' + originalText);
+                        element.innerText = 'Copied';
+                        setTimeout(function() {{ element.innerText = originalText; }}, 500);
+                    }}, function(err) {{
+                        console.error('Could not copy text: ', err);
+                        element.innerText = 'Copy Failed!';
+                        setTimeout(function() {{ element.innerText = originalText; }}, 500);
+                    }});
+                }}
+            </script>
             </head>
             <body>
                 <table class="lint-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Path (click to copy)</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         {''.join(table_rows_html)}
                     </tbody>
                 </table>
             </body>
             </html>
-        ''')}" style="width: 100%; height: 80vh; border: 1px solid #ddd; border-radius: 5px;"></iframe>
+        ''')}" style="width: 100%; height: 100vh; border: 1px solid #ddd; border-radius: 5px;"></iframe>
         """
 
     html_content = f"""
@@ -133,45 +153,35 @@ def generate_swiftlint_html_report(json_path, output_path, github_workspace):
     #rule-filter {{ padding: 5px; border-radius: 4px; border: 1px solid #ccc; }}
 </style>
 <script>
-    function copyToClipboard(element) {{
-        const originalText = element.innerText;
-        navigator.clipboard.writeText(originalText).then(function() {{
-            console.log('Copied to clipboard: ' + originalText);
-            element.innerText = 'Copied';
-            setTimeout(function() {{ element.innerText = originalText; }}, 500);
-        }}, function(err) {{
-            console.error('Could not copy text: ', err);
-            element.innerText = 'Copy Failed!';
-            setTimeout(function() {{ element.innerText = originalText; }}, 500);
-        }});
-    }}
+    let currentSeverityFilter = 'all';
+    let currentRuleFilter = 'all';
 
     function applyFilters(severityFilter, ruleFilter) {{
+        if (severityFilter !== null) {{
+            currentSeverityFilter = severityFilter;
+            document.querySelectorAll('.filter-buttons button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('filter-severity-' + severityFilter).classList.add('active');
+        }}
+        if (ruleFilter !== null) {{
+            currentRuleFilter = ruleFilter;
+        }}
+
         const iframe = document.getElementById('report-iframe');
         if (!iframe) return;
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
         const rows = iframeDoc.querySelectorAll('tbody tr');
 
-        // Determine current filters
-        const currentSeverity = severityFilter !== null 
-            ? severityFilter 
-            : document.querySelector('.filter-buttons button.active').id.replace('filter-severity-', '');
-        
-        const currentRule = ruleFilter !== null
-            ? ruleFilter
-            : document.getElementById('rule-filter').value;
-
         rows.forEach(row => {{
-            const severityMatch = currentSeverity === 'all' || row.dataset.severity === currentSeverity;
-            const ruleMatch = currentRule === 'all' || row.dataset.rule === currentRule;
+            const severityMatch = currentSeverityFilter === 'all' || row.dataset.severity === currentSeverityFilter;
+            const ruleMatch = currentRuleFilter === 'all' || row.dataset.rule === currentRuleFilter;
             row.style.display = (severityMatch && ruleMatch) ? '' : 'none';
         }});
-
-        if (severityFilter !== null) {{
-            document.querySelectorAll('.filter-buttons button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('filter-severity-' + severityFilter).classList.add('active');
-        }}
     }}
+
+    // Initialize filters on load
+    document.addEventListener('DOMContentLoaded', () => {{
+        applyFilters(null, null); // Apply initial filters based on default values
+    }});
 </script>
 </head>
 <body>
