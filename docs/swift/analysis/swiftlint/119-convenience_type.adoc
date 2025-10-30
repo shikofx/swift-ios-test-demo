@@ -1,0 +1,23 @@
+= Rule: Convenience Type
+:source-highlighter: highlight.js
+
+Типы, используемые для удобства (например, в расширениях), должны быть вложенными, чтобы не загрязнять глобальное пространство имен.
+
+*Identifier*: `convenience_type`
+
+== Non-compliant
+
+[source,swift]
+----
+struct MyTypeConvenience {}
+extension MyType {}
+----
+
+== Compliant
+
+[source,swift]
+----
+extension MyType {
+    struct Convenience {}
+}
+----

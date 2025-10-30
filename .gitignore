@@ -1,5 +1,5 @@
 # Xcode
-.DS_Store
+**/.DS_Store
 /build/
 *.pbxuser
 !default.pbxuser
@@ -15,8 +15,23 @@ xcuserdata
 DerivedData
 *.hmap
 *.ipa
+*.app.dSYM/
 *.app
 
 # CocoaPods
 /Pods/
-/My Demo App.xcworkspace
+
+# Workspace
+/*.xcworkspace
+
+# Dependencies
+vendor/
+.bundle/
+
+# Build artifacts & Reports
+.allure
+allure-report/
+test-reports/
+xcov_report/
+*.zip
+# /**/*.xcresult

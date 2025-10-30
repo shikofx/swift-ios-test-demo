@@ -1,0 +1,25 @@
+= Rule: Contrasted Opening Brace
+:source-highlighter: highlight.js
+
+Требует, чтобы открывающая скобка в `catch` и `else` была на той же строке.
+
+*Identifier*: `contrasted_opening_brace`
+
+== Non-compliant
+
+[source,swift]
+----
+if condition {
+}
+else {
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+if condition {
+} else {
+}
+----

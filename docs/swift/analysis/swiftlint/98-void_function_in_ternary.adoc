@@ -1,0 +1,20 @@
+= Rule: Void Function in Ternary
+:source-highlighter: highlight.js
+
+Запрещает вызов функций, возвращающих `Void`, внутри тернарного оператора.
+
+*Identifier*: `void_function_in_ternary`
+
+== Non-compliant
+
+[source,swift]
+----
+foo ? bar() : baz()
+----
+
+== Compliant
+
+[source,swift]
+----
+if foo { bar() } else { baz() }
+----

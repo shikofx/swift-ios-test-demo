@@ -1,0 +1,54 @@
+= Локальная настройка
+:sectnums:
+:source-highlighter: highlight.js
+
+Перед интеграцией Allure в CI полезно научиться генерировать и просматривать отчеты локально. Это поможет быстрее отлаживать процесс и понимать структуру данных.
+
+== Шаг 1: Использование Allure CLI через NPX
+
+Чтобы не устанавливать Allure CLI глобально, мы будем использовать `npx`. Эта утилита автоматически скачает и запустит нужную версию пакета `allure`, что гарантирует использование актуального инструмента без засорения системы.
+
+== Шаг 2: Запуск тестов и генерация отчета
+
+1.  **Запустите тесты** с помощью `xcodebuild`, чтобы получить `.xcresult` бандл.
+
+[source,bash]
+----
+# Запустите тесты и сохраните результаты в Test.xcresult
+xcodebuild test \
+  -workspace "SDET Demo App.xcworkspace" \
+  -scheme "Demo AppTests" \
+  -destination "platform=iOS Simulator,name=iPhone 16,OS=18.4" \
+  -resultBundlePath "./TestResults/Test.xcresult"
+----
+
+2.  **Сгенериruйте HTML-отчет** с помощью команды `allure awesome`. Она напрямую обработает `.xcresult`.
+`awesome` — это псевдоним для `generate --report-type awesome`.
+
+[source,bash]
+----
+npx allure awesome ./TestResults/Test.xcresult --output allure-report
+----
+
+3.  **Просмотрите отчет**, используя ту же утилиту.
+
+[source,bash]
+----
+npx allure open allure-report
+----
+
+== Шаг 3: Работа с историей (Trends)
+
+=== Генерация с явным указанием истории
+
+В CI или для ручного управления историей используется флаг `--history-path`. Он должен указывать на директорию `history` из *предыдущего* отчета. Эта директория обычно находится по пути `<предыдущий_отчет>/history`.
+
+[source,bash]
+----
+# Генерируем отчет №1
+npx allure awesome ./TestResults/Test-1.xcresult --output ./allure-report/1
+
+# Генерируем отчет №2, используя историю из отчета №1.
+# Обратите внимание, что путь указывает на папку history, а не на конкретный файл.
+npx allure awesome ./TestResults/Test-2.xcresult --output ./allure-report/2 --history-path ./allure-report/1/history
+----

@@ -1,0 +1,52 @@
+:doctype: book
+:encoding: utf-8
+:lang: ru
+:toc: left
+:toclevels: 4
+:sectnums:
+= Интеграция Allure 3 с Jenkins
+
+В этом документе описывается, как интегрировать Allure 3 в Jenkins Pipeline для автоматической генерации и публикации отчетов о тестировании.
+
+== Обзор процесса
+
+Интеграция с Jenkins включает в себя настройку стадий (stages) для сборки, тестирования и генерации отчета. Для публикации HTML-отчета можно использовать плагин `HTML Publisher`.
+
+== Пример Jenkins Pipeline
+
+Ниже приведен пример декларативного пайплайна (`Jenkinsfile`), который выполняет сборку, запуск тестов и публикацию отчета Allure.
+
+[source,groovy]
+----
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                sh 'yarn install'
+                sh 'yarn build'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'yarn test'
+            }
+            post {
+                always {
+                    sh 'npx allure generate ./allure-results -o ./allure-report'
+                    publishHTML(target: [
+                        reportDir: './allure-report',
+                        reportFiles: 'index.html',
+                        reportName: 'Allure Report'
+                    ])
+                }
+            }
+        }
+    }
+}
+----
+
+Этот пайплайн:
+1.  На стадии `Build` устанавливает зависимости и собирает проект.
+2.  На стадии `Test` запускает тесты.
+3.  В секции `post` (которая выполняется всегда после стадии `Test`) генерирует отчет Allure и публикует его с помощью плагина `HTML Publisher`.

@@ -1,0 +1,20 @@
+= Rule: Shorthand Operator
+:source-highlighter: highlight.js
+
+Предпочитает использование сокращенных операторов (`+=`, `-=`, `*=`, `/=`).
+
+*Identifier*: `shorthand_operator`
+
+== Non-compliant
+
+[source,swift]
+----
+foo = foo + 1
+----
+
+== Compliant
+
+[source,swift]
+----
+foo += 1
+----

@@ -1,0 +1,20 @@
+= Rule: Empty Count
+:source-highlighter: highlight.js
+
+Предпочитает проверку `.isEmpty` вместо `.count == 0`.
+
+*Identifier*: `empty_count`
+
+== Non-compliant
+
+[source,swift]
+----
+if myArray.count == 0 { ... }
+----
+
+== Compliant
+
+[source,swift]
+----
+if myArray.isEmpty { ... }
+----

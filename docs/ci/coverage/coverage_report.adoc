@@ -1,0 +1,62 @@
+= Локальная генерация отчета о покрытии кода
+
+Этот документ описывает, как настроить и запустить стандартную утилиту Xcode `xccov` для генерации отчета о покрытии кода тестами. Это полезно для отладки CI-задач или для проверки покрытия перед отправкой кода.
+
+== Предварительные требования
+
+. *Xcode Command Line Tools*: Убедитесь, что они установлены.
+
+== Шаг 1: Генерация данных о покрытии
+
+`xccov` анализирует `.xcresult` бандл, который Xcode создает во время тестового прогона. Чтобы сгенерировать этот файл локально, выполните следующие команды в корне проекта.
+
+. *Очистка (опционально, но рекомендуется):*
+Удаляет старые артефакты сборки и отчеты.
++
+[source,bash]
+----
+rm -rf build TestResults
+----
+
+. *Сборка проекта для тестирования:*
+Компилирует приложение и тестовые таргеты.
++
+[source,bash]
+----
+xcodebuild build-for-testing \
+  -workspace "SDET Demo App.xcworkspace" \
+  -scheme "SDET Demo App" \
+  -destination 'platform=iOS Simulator,name=iPhone 15 Pro' \
+  -derivedDataPath build
+----
+
+. *Запуск тестов со сбором покрытия:*
+Эта команда запускает тесты и создает `TestResults.xcresult` с данными о покрытии.
++
+[source,bash]
+----
+xcodebuild test-without-building \
+  -xctestrun "$(find build -name "*.xctestrun")" \
+  -destination 'platform=iOS Simulator,name=iPhone 15 Pro' \
+  -enableCodeCoverage YES \
+  -resultBundlePath TestResults
+----
+
+== Шаг 2: Создание и просмотр отчета
+
+Теперь, когда у вас есть `TestResults.xcresult`, вы можете сгенерировать и просмотреть HTML-отчет.
+
+. *Создайте отчет о покрытии:*
+Эта команда запускает `xccov` для анализа данных о покрытии и создания HTML-отчета.
++
+[source,bash]
+----
+xcrun xccov view --report --html TestResults.xcresult
+----
+
+. *Просмотрите отчет:*
+После выполнения команды будет создана директория `index.html`. Откройте файл `index.html/index.html` в вашем браузере, чтобы увидеть отчет.
+
+== Устранение распространенных проблем
+
+* *Ошибка `There are no test bundles available to test`*: Убедитесь, что вы правильно выполнили все команды из Шага 1.

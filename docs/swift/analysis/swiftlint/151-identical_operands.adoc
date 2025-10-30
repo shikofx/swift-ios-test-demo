@@ -1,0 +1,15 @@
+= Rule: Identical Operands
+:source-highlighter: highlight.js
+
+Находит операции, где оба операнда идентичны (например, `foo == foo`).
+
+*Identifier*: `identical_operands`
+
+== Non-compliant
+
+[source,swift]
+----
+if x == x { ... }
+----
+
+*Причина*: Это почти всегда является ошибкой или опечаткой в коде.

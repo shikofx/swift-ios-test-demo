@@ -1,0 +1,22 @@
+= Rule: Deployment Target
+:source-highlighter: highlight.js
+
+Проверяет, что в коде не используются API, недоступные для вашей целевой версии ОС, без соответствующих проверок (`@available` или `#available`).
+
+*Identifier*: `deployment_target`
+
+== Non-compliant (при таргете < iOS 13)
+
+[source,swift]
+----
+let window = UIWindow(windowScene: scene) // UIWindowScene доступен с iOS 13
+----
+
+== Compliant
+
+[source,swift]
+----
+if #available(iOS 13.0, *) {
+    let window = UIWindow(windowScene: scene)
+}
+----

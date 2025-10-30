@@ -1,0 +1,79 @@
+:doctype: book
+:encoding: utf-8
+:lang: ru
+:toc: left
+:toclevels: 4
+:sectnums:
+= Интеграция Allure 3 с GitHub Actions
+
+В этом документе описывается, как интегрировать Allure 3 в рабочие процессы (workflows) GitHub Actions для автоматической генерации и публикации отчетов о тестировании.
+
+== Обзор процесса
+
+Интеграция с GitHub Actions обычно включает следующие шаги:
+
+. **Настройка окружения:** Установка Node.js и зависимостей проекта.
+. **Запуск тестов:** Выполнение команды для запуска тестов, которая генерирует результаты в директорию `allure-results`.
+. **Генерация отчета:** Использование Allure CLI для создания HTML-отчета из `allure-results`.
+. **Публикация отчета:** Размещение сгенерированного отчета, например, на GitHub Pages.
+
+image::../../../../.docs/assets/allure3-github-actions-workflow.png[GitHub Actions Workflow]
+
+== Пример Workflow
+
+Ниже приведен пример полного workflow для сборки, тестирования и публикации отчета Allure на GitHub Pages.
+
+[source,yaml]
+----
+name: Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'yarn'
+
+    - name: Install dependencies
+      run: yarn install --immutable
+
+    - name: Run tests
+      run: yarn test
+
+    - name: Generate Allure Report
+      run: npx allure generate ./allure-results -o ./allure-report
+
+    - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./allure-report
+        publish_branch: gh-pages
+----
+
+== Условная публикация
+
+Чтобы избежать публикации отчета при каждом коммите в feature-ветки, можно использовать условие `if`. В примере выше отчет публикуется только при сборке ветки `main`.
+
+[source,yaml]
+----
+- name: Deploy to GitHub Pages
+  if: github.ref == 'refs/heads/main'
+  # ...
+----
+
+Это позволяет экономить ресурсы и хранить в истории публикаций только отчеты для основных сборок.

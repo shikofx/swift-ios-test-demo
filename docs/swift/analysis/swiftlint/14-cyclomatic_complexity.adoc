@@ -1,0 +1,22 @@
+= Rule: Cyclomatic Complexity
+:source-highlighter: highlight.js
+
+Ограничивает цикломатическую сложность функций. Высокая сложность указывает на то, что функцию трудно понять и тестировать.
+
+*Identifier*: `cyclomatic_complexity`
+
+== Non-compliant (если порог сложности превышен)
+
+[source,swift]
+----
+func complexFunction() {
+    if a { ... }
+    if b { ... }
+    for i in 0..<10 {
+        if c { ... }
+    }
+    // ... и так далее
+}
+----
+
+*Решение*: Разбить сложную функцию на несколько более простых и понятных.

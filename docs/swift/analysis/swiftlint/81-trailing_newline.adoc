@@ -1,0 +1,19 @@
+= Rule: Trailing Newline
+:source-highlighter: highlight.js
+
+Проверяет, что файлы заканчиваются одной пустой строкой.
+
+*Identifier*: `trailing_newline`
+
+== Non-compliant
+
+----
+// Последняя строка файла без перевода строки в конце
+----
+
+== Compliant
+
+----
+// Последняя строка файла
+
+----

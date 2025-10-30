@@ -1,0 +1,24 @@
+= Rule: Protocol Property Accessors Order
+:source-highlighter: highlight.js
+
+Проверяет порядок геттеров и сеттеров в объявлениях свойств протокола. По умолчанию `get` должен идти перед `set`.
+
+*Identifier*: `protocol_property_accessors_order`
+
+== Non-compliant
+
+[source,swift]
+----
+protocol MyProtocol {
+    var foo: Int { set get }
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+protocol MyProtocol {
+    var foo: Int { get set }
+}
+----

@@ -1,0 +1,16 @@
+= Rule: Superfluous Disable Command
+:source-highlighter: highlight.js
+
+Находит команды `swiftlint:disable`, которые не отключают ни одного нарушения в коде.
+
+*Identifier*: `superfluous_disable_command`
+
+== Non-compliant
+
+[source,swift]
+----
+// swiftlint:disable force_cast
+let foo = "bar" // Здесь нет force_cast
+----
+
+*Решение*: Удалить ненужную команду `disable`.

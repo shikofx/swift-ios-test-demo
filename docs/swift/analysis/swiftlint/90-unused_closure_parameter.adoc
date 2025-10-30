@@ -1,0 +1,20 @@
+= Rule: Unused Closure Parameter
+:source-highlighter: highlight.js
+
+Неиспользуемые параметры в замыканиях должны быть заменены на `_`.
+
+*Identifier*: `unused_closure_parameter`
+
+== Non-compliant
+
+[source,swift]
+----
+foo.map { element in 1 }
+----
+
+== Compliant
+
+[source,swift]
+----
+foo.map { _ in 1 }
+----

@@ -1,0 +1,30 @@
+---
+layout: default
+title: 5. Развертывание на GitHub Pages
+parent: Jekyll & GitHub Pages
+nav_order: 6
+---
+
+== 5. Развертывание на GitHub Pages
+
+Публикация вашего Jekyll-сайта на GitHub Pages — это простой процесс, особенно если вы используете GitHub Actions.
+
+=== Автоматическое развертывание с GitHub Actions
+
+Вы уже используете GitHub Actions для сборки и развертывания вашего сайта. Вот ключевые шаги, которые обычно выполняются в таком workflow:
+
+1. *Checkout кода:* Получение исходного кода вашего репозитория.
+2. *Настройка окружения:* Установка Ruby, Bundler и всех необходимых гемов (включая Jekyll и вашу тему) с помощью `bundle install`.
+3. *Сборка Jekyll-сайта:* Запуск `jekyll build` (или использование `actions/jekyll-build-pages@v1`), который генерирует статические HTML-файлы в папке `_site`.
+4. *Публикация на GitHub Pages:* Использование `actions/upload-pages-artifact@v3` для загрузки сгенерированных файлов и `actions/deploy-pages@v4` для их развертывания на GitHub Pages.
+
+Ваш текущий workflow `deploy-github-pages.yml` уже реализует эти шаги.
+
+=== Доступ к сайту
+
+После успешного развертывания ваш сайт будет доступен по адресу:
+
+* Для пользовательских/организационных страниц: `https://<USERNAME>.github.io` или `https://<ORGANIZATION>.github.io`
+* Для страниц проекта: `https://<USERNAME>.github.io/<REPOSITORY-NAME>`
+
+В вашем случае, если репозиторий называется `swift-ios-test-demo` и принадлежит пользователю `d.parkheychuk`, адрес будет `https://d.parkheychuk.github.io/swift-ios-test-demo`.

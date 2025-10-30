@@ -1,0 +1,21 @@
+= Rule: NSNumber Init as Function Reference
+:source-highlighter: highlight.js
+
+Запрещает передачу `NSNumber.init` в качестве ссылки на функцию, так как это может привести к неоднозначности.
+
+*Identifier*: `ns_number_init_as_function_reference`
+
+== Non-compliant
+
+[source,swift]
+----
+let myInts: [Int] = [1, 2, 3]
+let myNumbers = myInts.map(NSNumber.init)
+----
+
+== Compliant
+
+[source,swift]
+----
+let myNumbers = myInts.map { NSNumber(value: $0) }
+----

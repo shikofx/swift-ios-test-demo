@@ -1,0 +1,18 @@
+= Rule: File Header
+:source-highlighter: highlight.js
+
+Проверяет наличие и корректность заголовка в каждом файле.
+
+*Identifier*: `file_header`
+
+== Пример конфигурации в `.swiftlint.yml`
+
+[source,yaml]
+----
+file_header:
+  required_string: |
+    //
+    //  MyAwesomeApp
+    //  Copyright © 2024 MyCompany. All rights reserved.
+    //
+----

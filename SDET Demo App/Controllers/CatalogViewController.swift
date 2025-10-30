@@ -20,7 +20,7 @@ class CatalogViewController: UIViewController {
     @IBOutlet weak var nameAscendingBtn: UIButton!
     @IBOutlet weak var nameDescendingBtn: UIButton!
     @IBOutlet weak var priceAscendingBtn: UIButton!
-    @IBOutlet weak var priceDecendingButton: UIButton!
+    @IBOutlet weak var priceDescendingBtn: UIButton!
     @IBOutlet weak var sortBtn: UIButton!
     
     var mySortedDic = [NSMutableDictionary]()
@@ -119,8 +119,12 @@ class CatalogViewController: UIViewController {
         sortBtn.setImage(iconImage, for: UIControl.State.normal)
         
         let productDic = Engine.sharedInstance.productList
-        Engine.sharedInstance.productList = productDic.sorted(by: {(str1, str2)  -> Bool in
-            return ((str1 as NSDictionary).value(forKey: "ProductPrice") as! String) < ((str2 as NSDictionary).value(forKey: "ProductPrice") as! String)
+        Engine.sharedInstance.productList = productDic.sorted(by: { (dict1, dict2) -> Bool in
+            guard let priceStr1 = dict1.value(forKey: "ProductPrice") as? String,
+                  let priceStr2 = dict2.value(forKey: "ProductPrice") as? String,
+                  let price1 = Double(priceStr1),
+                  let price2 = Double(priceStr2) else { return false }
+            return price1 < price2
           })
         
         productsCV.reloadData()
@@ -135,8 +139,12 @@ class CatalogViewController: UIViewController {
         sortBtn.setImage(iconImage, for: UIControl.State.normal)
         
         let productDic = Engine.sharedInstance.productList
-        Engine.sharedInstance.productList = productDic.sorted(by: {(str1, str2)  -> Bool in
-            return ((str1 as NSDictionary).value(forKey: "ProductPrice") as! String) > ((str2 as NSDictionary).value(forKey: "ProductPrice") as! String)
+        Engine.sharedInstance.productList = productDic.sorted(by: { (dict1, dict2) -> Bool in
+            guard let priceStr1 = dict1.value(forKey: "ProductPrice") as? String,
+                  let priceStr2 = dict2.value(forKey: "ProductPrice") as? String,
+                  let price1 = Double(priceStr1),
+                  let price2 = Double(priceStr2) else { return false }
+            return price1 > price2
           })
         productsCV.reloadData()
         
@@ -165,7 +173,7 @@ class CatalogViewController: UIViewController {
         self.nameAscendingBtn.isSelected = false
         self.nameDescendingBtn.isSelected = false
         self.priceAscendingBtn.isSelected = false
-        self.priceDecendingButton.isSelected = false
+        self.priceDescendingBtn.isSelected = false
         
         button.isSelected = true
     }

@@ -1,0 +1,23 @@
+= Rule: Orphaned Doc Comment
+:source-highlighter: highlight.js
+
+Находит "осиротевшие" комментарии документации, которые не привязаны ни к какому объявлению.
+
+*Identifier*: `orphaned_doc_comment`
+
+== Non-compliant
+
+[source,swift]
+----
+/// My great function
+
+func bar() {}
+----
+
+== Compliant
+
+[source,swift]
+----
+/// My great function
+func bar() {}
+----

@@ -1,0 +1,21 @@
+= Rule: Closing Brace Spacing
+:source-highlighter: highlight.js
+
+Закрывающие фигурные скобки должны находиться на новой строке и иметь тот же отступ, что и объявление, которое они закрывают.
+
+*Identifier*: `closing_brace`
+
+== Non-compliant
+
+[source,swift]
+----
+if foo { bar() }
+----
+
+== Compliant
+
+[source,swift]
+----
+if foo { bar()
+}
+----

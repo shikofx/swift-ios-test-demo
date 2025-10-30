@@ -1,0 +1,20 @@
+= Rule: Contains over Range Comparison to Nil
+:source-highlighter: highlight.js
+
+Предпочитает `contains` вместо `range(of:) != nil`.
+
+*Identifier*: `contains_over_range_nil_comparison`
+
+== Non-compliant
+
+[source,swift]
+----
+let result = "hello".range(of: "he") != nil
+----
+
+== Compliant
+
+[source,swift]
+----
+let result = "hello".contains("he")
+----

@@ -1,0 +1,38 @@
+:doctype: book
+:encoding: utf-8
+:lang: ru
+:toc: left
+:toclevels: 4
+:sectnums:
+= allure history
+
+Команда `allure history` генерирует или обновляет данные истории из указанной директории с результатами Allure. Эти данные используются для отображения трендов выполнения тестов в отчетах.
+
+== Синтаксис
+
+[source,bash]
+----
+$ allure history [options] <путь_к_директории_с_результатами>
+----
+
+== Опции
+
+`--history-path, -h <путь>`::
+Путь к файлу истории, который будет создан или обновлен.
+
+`--report-name, --name <имя>`::
+Имя отчета, которое будет ассоциировано с этой записью в истории.
+
+== Примеры
+
+.Сгенерировать историю из директории `./allure-results`:
+[source,bash]
+----
+$ allure history ./allure-results
+----
+
+.Сгенерировать историю из `./allure-results` и сохранить ее в файл `custom-history.jsonl`:
+[source,bash]
+----
+$ allure history ./allure-results --history-path custom-history.jsonl
+----

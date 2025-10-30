@@ -1,0 +1,35 @@
+:doctype: book
+:encoding: utf-8
+:lang: ru
+:toc: left
+:toclevels: 4
+:sectnums:
+= allure known-issue
+
+Команда `allure known-issue` генерирует файл со списком известных проблем из указанной директории с результатами Allure. Этот файл можно использовать для последующей генерации отчетов, чтобы пометить тесты, упавшие по известным причинам.
+
+== Синтаксис
+
+[source,bash]
+----
+$ allure known-issue [options] <путь_к_директории_с_результатами>
+----
+
+== Опции
+
+`--output, -o <путь>`::
+Имя выходного файла. Также принимаются абсолютные пути.
+
+== Примеры
+
+.Сгенерировать список известных проблем из директории `./allure-results`:
+[source,bash]
+----
+$ allure known-issue ./allure-results
+----
+
+.Сгенерировать список известных проблем из `./allure-results` и сохранить его в файл `custom-issues.json`:
+[source,bash]
+----
+$ allure known-issue ./allure-results --output custom-issues.json
+----

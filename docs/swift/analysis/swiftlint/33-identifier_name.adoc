@@ -1,0 +1,21 @@
+= Rule: Identifier Name
+:source-highlighter: highlight.js
+
+Проверяет, что имена идентификаторов (переменных, констант и т.д.) соответствуют стилю Swift (например, `camelCase`).
+
+*Identifier*: `identifier_name`
+
+== Non-compliant
+
+[source,swift]
+----
+let my_variable = 1
+let MyVariable = 2
+----
+
+== Compliant
+
+[source,swift]
+----
+let myVariable = 1
+----

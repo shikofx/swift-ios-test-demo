@@ -1,0 +1,38 @@
+:doctype: book
+:encoding: utf-8
+:lang: ru
+:toc: left
+:toclevels: 4
+:sectnums:
+= allure login
+
+Команда `allure login` выполняет вход в Allure Service, используя данные из файла конфигурации Allure.
+
+== Синтаксис
+
+[source,bash]
+----
+$ allure login [options]
+----
+
+== Опции
+
+`--config, -c <путь>`::
+Путь к файлу конфигурации Allure.
+
+`--cwd <путь>`::
+Рабочая директория для запуска команды. По умолчанию используется текущая рабочая директория.
+
+== Примеры
+
+.Выполнить вход в Allure Service, используя конфигурацию по умолчанию:
+[source,bash]
+----
+$ allure login
+----
+
+.Выполнить вход в Allure Service, используя кастомный файл конфигурации:
+[source,bash]
+----
+$ allure login --config custom-config.js
+----

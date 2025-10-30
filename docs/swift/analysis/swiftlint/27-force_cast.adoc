@@ -1,0 +1,20 @@
+= Rule: Force Cast
+:source-highlighter: highlight.js
+
+Запрещает принудительное приведение типов (`as!`), которое может привести к падению приложения.
+
+*Identifier*: `force_cast`
+
+== Non-compliant
+
+[source,swift]
+----
+let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") as! MyCell
+----
+
+== Compliant
+
+[source,swift]
+----
+guard let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") as? MyCell else { ... }
+----

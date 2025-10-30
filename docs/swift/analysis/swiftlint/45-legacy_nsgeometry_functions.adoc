@@ -1,0 +1,20 @@
+= Rule: Legacy NSGeometry Functions
+:source-highlighter: highlight.js
+
+Предпочитает использование современных методов и свойств `NSGeometry` вместо устаревших C-функций.
+
+*Identifier*: `legacy_nsgeometry_functions`
+
+== Non-compliant
+
+[source,swift]
+----
+let rect = NSMakeRect(0, 0, 100, 100)
+----
+
+== Compliant
+
+[source,swift]
+----
+let rect = NSRect(x: 0, y: 0, width: 100, height: 100)
+----

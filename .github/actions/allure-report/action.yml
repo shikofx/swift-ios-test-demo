@@ -1,0 +1,67 @@
+name: 'Generate Allure Report'
+description: 'Checks environment and generates an Allure report from test results.'
+
+inputs:
+  test-results-path:
+    description: 'Path to the TestResults.xcresult file.'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check npx allure awesome environment
+      shell: bash
+      run: |
+        node -v
+        npm -v
+        npx -v
+
+        echo "--- Verifying npx allure awesome command ---"
+        if npx allure awesome -h; then
+          echo "npx allure awesome command is accessible and executable."
+        else
+          echo "Error: npx allure awesome command failed to execute. This might indicate an issue with Node.js, npm, npx, or the allure-awesome package itself."
+          exit 1
+        fi
+
+    - name: Generate Allure Report
+      if: always()
+      continue-on-error: true
+      shell: bash
+      run: |
+        npx allure awesome --output allure-report ${{ inputs.test-results-path }}
+
+    - name: Include Allure Report in Jekyll Config
+      shell: bash
+      run: |
+        mkdir -p index-page-with-allure
+        echo "Telling Jekyll to include the Allure report directory"
+        echo "" > ./index-page-with-allure/_config.yml
+        echo "include: [\"reports/allure\"]" >> ./index-page-with-allure/_config.yml
+
+    - name: Create Allure Page
+      shell: bash
+      run: |
+        cat <<'EOF' > ./index-page-with-allure/index.md
+        ---
+        layout: swift-allure-main-page
+        title: Allure Test Report 
+        iframe_path: /reports/allure/index.html
+        ---
+        EOF
+
+    - name: Upload Allure Report Artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: allure-report
+        path: allure-report
+        retention-days: 1
+
+    - name: Upload Allure Report Site
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: index-page-with-allure
+        path: ./index-page-with-allure/
+        retention-days: 1

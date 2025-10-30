@@ -1,0 +1,59 @@
+name: 'Create SwiftLint Report Page'
+description: 'Converts a SwiftLint JSON report to a Markdown file for Jekyll.'
+
+runs:
+  using: "composite"
+  steps:   
+    - name: 'Check for Homebrew and install if not present'
+      shell: bash
+      run: |
+        if ! command -v brew &> /dev/null; then
+          echo "Homebrew not found. Installing..."
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo "/opt/homebrew/bin" >> $GITHUB_PATH
+        else
+          echo "Homebrew is already installed."
+        fi
+
+    - name: 'Install tools from Brewfile'
+      shell: bash
+      run: |
+        brew install swiftlint
+        echo "Tools installed."
+
+    - name: Run SwiftLint. Generate JSON data
+      shell: bash
+      continue-on-error: true
+      run: |
+        swiftlint --reporter json > ./swiftlint-report.json
+   
+    - name: Create output directory
+      shell: bash
+      run: mkdir -p swiftlint-artifact
+
+    - name: Generate HTML from JSON using Python
+      shell: bash
+      run: |
+        python ${{ github.action_path }}/generate_swiftlint_report.py \
+          --json-path "./swiftlint-report.json" \
+          --output-path "./swiftlint-artifact/swiftlint-report.html" \
+          --github-workspace "${{ github.workspace }}"
+
+    - name: Create md page for the report
+      shell: bash
+      run: |
+        cat <<EOF > "swiftlint-artifact/index.md"
+        ---
+        layout: swift-dashboard
+        title: SwiftLint Style Report
+        iframe_path: swiftlint-report.html
+        ---
+        EOF
+
+    - name: Upload SwiftLint artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: swiftlint-report
+        path: swiftlint-artifact
+        retention-days: 7

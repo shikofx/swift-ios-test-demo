@@ -1,0 +1,24 @@
+= Rule: Notification Center Detachment
+:source-highlighter: highlight.js
+
+Объект должен отписываться от `NotificationCenter` только в `deinit`.
+
+*Identifier*: `notification_center_detachment`
+
+== Non-compliant
+
+[source,swift]
+----
+func viewWillDisappear() {
+    NotificationCenter.default.removeObserver(self)
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+deinit {
+    NotificationCenter.default.removeObserver(self)
+}
+----

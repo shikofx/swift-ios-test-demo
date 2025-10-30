@@ -1,0 +1,21 @@
+= Rule: Colon Spacing
+:source-highlighter: highlight.js
+
+Проверяет правильность расстановки пробелов вокруг двоеточия. Двоеточие должно примыкать к идентификатору слева и иметь один пробел справа.
+
+*Identifier*: `colon`
+
+== Non-compliant
+
+[source,swift]
+----
+let foo: Int
+let foo : Int
+----
+
+== Compliant
+
+[source,swift]
+----
+let foo: Int
+----

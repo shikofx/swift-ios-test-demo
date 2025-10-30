@@ -1,0 +1,53 @@
+name: 'Create Custom Coverage Report'
+description: 'Generates a custom HTML code coverage report from xccov JSON output.'
+
+inputs:
+  test-results-path:
+    description: 'Path to TestResults.xcresult'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Generate coverage.json
+      shell: bash
+      run: |
+        xcrun xccov view --report --json "${{ inputs.test-results-path }}" > coverage.json
+
+    - name: Create output directory
+      shell: bash
+      run: |
+        mkdir -p "coverage-report"
+
+    - name: Generate HTML report
+      shell: bash
+      run: |
+        python3 ${{ github.action_path }}/swift_coverage.py \
+          --json-path coverage.json \
+          --source-dir . \
+          --output-path "coverage-report/coverage-report.html" \
+          --repo-root .
+
+    - name: verify coverage-report.html content
+      shell: bash 
+      run: |
+        cat ./coverage-report/coverage-report.html
+
+    - name: Create md page for the report
+      shell: bash
+      run: |
+        cat <<EOF > "coverage-report/index.md"
+        ---
+        layout: swift-dashboard
+        title: Swift Coverage Report
+        iframe_path: coverage-report.html
+        ---
+        EOF
+
+    - name: Upload Coverage Report Artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: coverage-report
+        path: coverage-report
+        retention-days: 7

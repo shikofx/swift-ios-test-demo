@@ -1,0 +1,20 @@
+= Rule: Redundant @objc Attribute
+:source-highlighter: highlight.js
+
+Находит избыточные атрибуты `@objc`, которые не требуются.
+
+*Identifier*: `redundant_objc_attribute`
+
+== Non-compliant
+
+[source,swift]
+----
+@objc private func foo() {}
+----
+
+== Compliant
+
+[source,swift]
+----
+private func foo() {}
+----

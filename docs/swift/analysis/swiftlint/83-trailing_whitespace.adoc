@@ -1,0 +1,20 @@
+= Rule: Trailing Whitespace
+:source-highlighter: highlight.js
+
+Находит и запрещает пробелы в конце строк.
+
+*Identifier*: `trailing_whitespace`
+
+== Non-compliant
+
+[source,swift]
+----
+let foo = 1 // <--- здесь есть лишний пробел
+----
+
+== Compliant
+
+[source,swift]
+----
+let foo = 1
+----

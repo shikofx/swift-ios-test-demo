@@ -1,0 +1,66 @@
+---
+layout: default
+title: 4. Фильтры Liquid
+parent: Liquid Templating Language
+nav_order: 5
+---
+
+== 4. Фильтры Liquid
+
+Фильтры используются для изменения вывода объектов Liquid. Они применяются к объекту с помощью символа `|` (вертикальная черта). Вы можете применять несколько фильтров к одному объекту, они будут выполняться слева направо.
+
+=== Примеры часто используемых фильтров
+
+1.  *`date`*: Форматирует дату.
+
+    [source,liquid]
+    ----
+    {{ "now" | date: "%Y-%m-%d %H:%M:%S" }}
+    ----
+
+2.  *`capitalize`*, *`upcase`*, *`downcase`*: Изменяют регистр текста.
+
+    [source,liquid]
+    ----
+    {{ "hello world" | capitalize }}  // Hello world
+    {{ "hello world" | upcase }}      // HELLO WORLD
+    {{ "HELLO WORLD" | downcase }}    // hello world
+    ----
+
+3.  *`append`*, *`prepend`*: Добавляют текст к строке.
+
+    [source,liquid]
+    ----
+    {{ "world" | prepend: "Hello " }} // Hello world
+    {{ "Hello" | append: " world" }}  // Hello world
+    ----
+
+4.  *`size`*: Возвращает количество элементов в массиве или символов в строке.
+
+    [source,liquid]
+    ----
+    {% assign fruits = "apple,banana,orange" | split: "," %}
+    Количество фруктов: {{ fruits | size }} // 3
+    ----
+
+5.  *`split`*: Разделяет строку на массив по заданному разделителю.
+
+    [source,liquid]
+    ----
+    {% assign tags = "jekyll,liquid,github" | split: "," %}
+    {% for tag in tags %}
+      - {{ tag }}
+    {% endfor %}
+    ----
+
+6.  *`where`*: Фильтрует массив объектов по заданному свойству.
+
+    [source,liquid]
+    ----
+    {% assign products = site.data.products | where: "category", "electronics" %}
+    {% for product in products %}
+      - {{ product.name }}
+    {% endfor %}
+    ----
+
+Это лишь малая часть доступных фильтров. Полный список можно найти в документации Liquid.

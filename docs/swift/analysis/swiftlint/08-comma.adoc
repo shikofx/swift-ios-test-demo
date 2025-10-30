@@ -1,0 +1,20 @@
+= Rule: Comma Spacing
+:source-highlighter: highlight.js
+
+Проверяет, что перед запятой нет пробела, а после неё — один.
+
+*Identifier*: `comma`
+
+== Non-compliant
+
+[source,swift]
+----
+foo(bar: 1 , baz: 2)
+----
+
+== Compliant
+
+[source,swift]
+----
+foo(bar: 1, baz: 2)
+----

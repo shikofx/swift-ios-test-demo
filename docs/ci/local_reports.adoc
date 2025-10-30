@@ -1,0 +1,86 @@
+= Локальная генерация отчетов
+
+Этот документ описывает, как генерировать различные отчеты (SwiftLint, SwiftFormat, Allure) локально для отладки и проверки перед отправкой кода.
+
+== Предварительные требования
+
+* *Homebrew*: Установщик пакетов для macOS.
+* *Xcode Command Line Tools*: Убедитесь, что они установлены.
+
+== Отчет SwiftLint
+
+Отчет о нарушениях стиля кода, найденных SwiftLint.
+
+. *Установите SwiftLint (если не сделано ранее):*
++
+[source,bash]
+----
+brew install swiftlint
+----
+
+. *Сгенерируйте отчет:*
+Эта команда проанализирует проект и создаст файл `swiftlint-report.json`.
++
+[source,bash]
+----
+swiftlint lint --reporter json > swiftlint-report.json
+----
+
+== Отчет SwiftFormat
+
+Отчет о проблемах форматирования кода, найденных SwiftFormat.
+
+. *Установите SwiftFormat (если не сделано ранее):*
++
+[source,bash]
+----
+brew install swiftformat
+----
+
+. *Сгенерируйте отчет:*
+Эта команда проанализирует проект и создаст файл `swiftformat-report.json`.
++
+[source,bash]
+----
+swiftformat . --reporter json > swiftformat-report.json
+----
+
+== Отчет Allure
+
+Детальный отчет о результатах выполнения тестов.
+
+. *Установите Allure (если не сделано ранее):*
++
+[source,bash]
+----
+brew install allure
+----
+
+. *Запустите тесты:*
+Выполните шаги 1 и 2 из документации по настройке Slather, чтобы сгенерировать `TestResults.xcresult`. См. `link:slather/slather.adoc[Локальная настройка и отладка Slather]`.
+
+. *Сгенерируйте отчет:*
+Эта команда преобразует результаты тестов из `.xcresult` в HTML-отчет Allure.
++
+[source,bash]
+----
+allure generate TestResults.xcresult -o allure-report --clean
+----
+
+После выполнения команды откройте `allure-report/index.html` в браузере.
+
+== Отчет о покрытии кода (альтернатива Slather)
+
+Встроенная утилита `xccov` также может генерировать отчет о покрытии. Этот отчет менее детализирован, чем у Slather, но создается быстрее.
+
+. *Запустите тесты:*
+Выполните шаги 1 и 2 из документации по настройке Slather, чтобы сгенерировать `TestResults.xcresult`. См. `link:slather/slather.adoc[Локальная настройка и отладка Slather]`.
+
+. *Сгенерируйте HTML-отчет:*
++
+[source,bash]
+----
+xcrun xccov view --report --html TestResults.xcresult
+----
+
+Эта команда создаст директорию `index.html`, содержащую отчет.

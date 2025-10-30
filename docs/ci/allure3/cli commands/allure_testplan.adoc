@@ -1,0 +1,35 @@
+:doctype: book
+:encoding: utf-8
+:lang: ru
+:toc: left
+:toclevels: 4
+:sectnums:
+= allure testplan
+
+Команда `allure testplan` генерирует файл `testplan.json` на основе предоставленных результатов Allure. Этот файл можно использовать для запуска только определенных тестов.
+
+== Синтаксис
+
+[source,bash]
+----
+$ allure testplan [options] <путь_к_директории_с_результатами>
+----
+
+== Опции
+
+`--output, -o <путь>`::
+Имя выходного файла. Также принимаются абсолютные пути.
+
+== Примеры
+
+.Сгенерировать файл `testplan.json` из директории `./allure-results`:
+[source,bash]
+----
+$ allure testplan ./allure-results
+----
+
+.Сгенерировать файл `custom-testplan.json` из директории `./allure-results`:
+[source,bash]
+----
+$ allure testplan ./allure-results --output custom-testplan.json
+----

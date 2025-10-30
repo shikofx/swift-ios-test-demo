@@ -1,0 +1,20 @@
+= Rule: First Where
+:source-highlighter: highlight.js
+
+Предпочитает `first(where:)` вместо `.filter { ... }.first`.
+
+*Identifier*: `first_where`
+
+== Non-compliant
+
+[source,swift]
+----
+let first = myArray.filter { $0.isAwesome }.first
+----
+
+== Compliant
+
+[source,swift]
+----
+let first = myArray.first { $0.isAwesome }
+----

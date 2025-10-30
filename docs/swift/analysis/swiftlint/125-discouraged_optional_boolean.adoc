@@ -1,0 +1,15 @@
+= Rule: Discouraged Optional Boolean
+:source-highlighter: highlight.js
+
+Запрещает использование опциональных булевых значений (`Bool?`), так как они имеют три состояния (`true`, `false`, `nil`), что усложняет логику.
+
+*Identifier*: `discouraged_optional_boolean`
+
+== Non-compliant
+
+[source,swift]
+----
+let myVar: Bool?
+----
+
+*Решение*: Использовать `enum` с тремя состояниями для большей ясности.

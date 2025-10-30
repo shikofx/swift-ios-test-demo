@@ -1,0 +1,25 @@
+= Rule: Unused Declaration
+:source-highlighter: highlight.js
+
+Объявления должны использоваться.
+
+*Identifier*: `unused_declaration`
+
+== Non-compliant
+
+[source,swift]
+----
+private func myFunction() { // не используется
+    // ...
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+private func myFunction() {
+    // ...
+}
+myFunction()
+----

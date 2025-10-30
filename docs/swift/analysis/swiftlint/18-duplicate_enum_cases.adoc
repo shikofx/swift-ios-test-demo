@@ -1,0 +1,24 @@
+= Rule: Duplicate Enum Cases
+:source-highlighter: highlight.js
+
+Проверяет наличие дублирующихся кейсов в перечислениях (`enum`).
+
+*Identifier*: `duplicate_enum_cases`
+
+== Non-compliant
+
+[source,swift]
+----
+enum MyEnum {
+    case one, two, one
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+enum MyEnum {
+    case one, two, three
+}
+----

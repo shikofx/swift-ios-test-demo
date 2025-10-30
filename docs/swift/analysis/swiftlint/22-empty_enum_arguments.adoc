@@ -1,0 +1,20 @@
+= Rule: Empty Enum Arguments
+:source-highlighter: highlight.js
+
+Кейсы `enum` без ассоциированных значений не должны иметь пустых скобок.
+
+*Identifier*: `empty_enum_arguments`
+
+== Non-compliant
+
+[source,swift]
+----
+case .myCase()
+----
+
+== Compliant
+
+[source,swift]
+----
+case .myCase
+----

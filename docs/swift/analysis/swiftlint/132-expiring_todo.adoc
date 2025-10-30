@@ -1,0 +1,20 @@
+= Rule: Expiring Todo
+:source-highlighter: highlight.js
+
+Требует, чтобы комментарии `TODO` имели дату истечения срока.
+
+*Identifier*: `expiring_todo`
+
+== Non-compliant
+
+[source,swift]
+----
+// TODO: Refactor this
+----
+
+== Compliant
+
+[source,swift]
+----
+// TODO(2024-12-31): Refactor this
+----

@@ -1,0 +1,44 @@
+:doctype: book
+:encoding: utf-8
+:lang: ru
+:toc: left
+:toclevels: 4
+:sectnums:
+= allure results unpack
+
+Команда `allure results unpack` извлекает результаты тестов из `.zip` архивов в указанную директорию.
+
+== Синтаксис
+
+[source,bash]
+----
+$ allure results unpack [options] <архив_1.zip> [<архив_2.zip>...]
+----
+
+== Опции
+
+`--output <путь>`::
+Директория для вывода, куда будут распакованы архивы. По умолчанию `./allure-results`.
+
+`--cwd <путь>`::
+Рабочая директория для запуска команды. По умолчанию используется текущая рабочая директория.
+
+== Примеры
+
+.Распаковать результаты из `allure-results.zip` в директорию по умолчанию (`./allure-results`):
+[source,bash]
+----
+$ allure results unpack allure-results.zip
+----
+
+.Распаковать результаты из нескольких архивов в директорию по умолчанию:
+[source,bash]
+----
+$ allure results unpack results1.zip results2.zip results3.zip
+----
+
+.Распаковать результаты из нескольких архивов в указанную директорию `./mydir`:
+[source,bash]
+----
+$ allure results unpack --output ./mydir results1.zip results2.zip results3.zip
+----

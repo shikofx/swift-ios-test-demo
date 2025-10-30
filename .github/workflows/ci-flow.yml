@@ -1,40 +1,212 @@
-name: IOS-DEMO-CI
+name: IOS-DEMO
 
 on:
   push:
     branches:
-      - main
+      - test
+      - 'feature/**' # Запускать при push в feature-ветки
   pull_request:
     branches:
       - main
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
 jobs:
-  analysis:
-    name: Code Analysis
-    uses: ./.github/workflows/static-analysis.yml
+  swiftlint_analysis:
+    name: Static Analysis - SwiftLint
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  build_for_testing:
-    name: Build
-    needs: [analysis]
-    uses: ./.github/workflows/build-for-testing.yml
+      - name: Create Swiftlint Report
+        uses: ./.github/actions/swiftlint-report
+
+  swiftformat_analysis:
+    name: Static Analysis - SwiftFormat
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create SwiftFormat Report
+        uses: ./.github/actions/swiftformat-report
+
+# build_for_testing:
+  #   name: Build for Testing
+  #   needs: [swiftlint_analysis, swiftformat_analysis]
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Cache Xcode DerivedData
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: build
+  #         key: ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('**/Podfile.lock') }}-${{ hashFiles('**/*.swift') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('**/Podfile.lock') }}-
+  #           ${{ runner.os }}-xcode-deriveddata-
+
+  #     - name: Build for Testing
+  #       uses: ./.github/actions/build-for-testing
+
+  #     - name: Upload artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: xctestrun-build
+  #         path: build
+  #         retention-days: 1
 
   unit_tests:
     name: Unit Tests
-    needs: [build_for_testing]
-    uses: ./.github/workflows/unit-tests.yml
+    needs: [
+      swiftlint_analysis, 
+      swiftformat_analysis
+    ]
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  build_app:
-    name: Build
-    needs: [unit_tests]
-    uses: ./.github/workflows/build-archive.yml
+      - name: Run tests and generate report
+        uses: ./.github/actions/test-unit
 
-  deploy_reports:
-    name: Reports
-    needs: [unit_tests]
+  generate_coverage_report:
+    name: Report - Coverage
+    needs: unit_tests
     if: always()
-    uses: ./.github/workflows/deploy-reports.yml
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download raw test results
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: .
+
+      - name: Generate HTML Report
+        uses: ./.github/actions/swift-coverage-report
+        with: 
+          test-results-path: TestResults.xcresult
+
+  generate_allure_report:
+    name: Report - Test
+    needs: unit_tests
+    if: always()
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: .
+
+      - name: Create Allure Report page
+        uses: ./.github/actions/allure-report
+        with:
+          test-results-path: TestResults.xcresult
+
+  build_site:
+    name: Build Reports Site
+    needs: [
+      generate_coverage_report,
+      generate_allure_report
+    ]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure github pages
+        uses: actions/configure-pages@v5
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: .artifacts
+
+      - name: Prepare .site content
+        run: |
+          mkdir -p .site/reports/swiftlint
+          mv .artifacts/swiftlint-report/* .site/reports/swiftlint/ || echo "swiftlint-report not found"
+          mkdir -p .site/reports/swiftformat && mv .artifacts/swiftformat-report/* .site/reports/swiftformat/ || echo "swiftformat-report not found"
+          mkdir -p .site/reports/coverage
+          mv .artifacts/coverage-report/* .site/reports/coverage/ || echo "coverage-report directory not found"
+          mkdir -p .site/reports/allure
+          mv .artifacts/allure-report/* .site/reports/allure/ || echo "allure-report not found"
+          mv .artifacts/index-page-with-allure/index.md .site/index.md || echo "index.md not found"
+          cat .artifacts/index-page-with-allure/_config.yml >> .site/_config.yml || echo "_config.yml not found"
+
+      - name: Inject GitHub metadata into Jekyll config
+        run: |
+          echo "Adding GitHub metadata to .site/_config.yml"
+          echo "" >> .site/_config.yml
+          echo "timezone: Europe/Minsk" >> .site/_config.yml
+          echo "github:" >> .site/_config.yml
+          echo "  repository_url: ${{ github.server_url }}/${{ github.repository }}" >> .site/_config.yml
+          echo "  actor: ${{ github.actor }}" >> .site/_config.yml
+          echo "  event_name: ${{ github.event_name }}" >> .site/_config.yml
+          echo "  ref_name: ${{ github.ref_name }}" >> .site/_config.yml
+          echo "  sha: ${{ github.sha }}" >> .site/_config.yml
+          echo "  run_id: ${{ github.run_id }}" >> .site/_config.yml
+          echo "  run_number: ${{ github.run_number }}" >> .site/_config.yml
+
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        env:
+          JEKYLL_VERBOSE: true
+        with:
+          source: ./.site
+          destination: ./_site
+            
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+
+  deploy_site: 
+    name: Deploy Reports Site
+    runs-on: ubuntu-latest
+    needs: build_site
+    if: always()
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Set sanitized branch name for artifact
+        id: set_vars 
+        run: echo "sanitized_branch=${GITHUB_REF_NAME//\//-}" >> $GITHUB_ENV
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # build_app:
+  #   name: Build App
+  #   needs: [unit_tests]
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Build and Archive
+  #       uses: ./.github/actions/build-app
+
+  #     - name: Upload .app artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: sdet-demo-app
+  #         path: SDET-Demo-App.zip
+  #         retention-days: 7
+ 
+  

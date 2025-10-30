@@ -1,0 +1,24 @@
+= Rule: Anonymous Argument in Multiline Closure
+:source-highlighter: highlight.js
+
+Запрещает использование анонимных аргументов (`$0`, `$1` и т.д.) в многострочных замыканиях.
+
+*Identifier*: `anonymous_argument_in_multiline_closure`
+
+== Non-compliant
+
+[source,swift]
+----
+foo.bar {
+    print($0)
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+foo.bar { element in
+    print(element)
+}
+----

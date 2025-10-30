@@ -1,0 +1,21 @@
+= Rule: Legacy Random
+:source-highlighter: highlight.js
+
+Предпочитает использование `Int.random(in:)` вместо устаревших функций `arc4random()`.
+
+*Identifier*: `legacy_random`
+
+== Non-compliant
+
+[source,swift]
+----
+arc4random()
+arc4random_uniform(10)
+----
+
+== Compliant
+
+[source,swift]
+----
+Int.random(in: 0...10)
+----

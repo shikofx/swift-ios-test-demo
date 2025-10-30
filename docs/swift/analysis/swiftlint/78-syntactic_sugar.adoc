@@ -1,0 +1,22 @@
+= Rule: Syntactic Sugar
+:source-highlighter: highlight.js
+
+Предпочитает использование синтаксического сахара для типов (например, `[Int]` вместо `Array<Int>`).
+
+*Identifier*: `syntactic_sugar`
+
+== Non-compliant
+
+[source,swift]
+----
+let array: Array<Int>
+let dict: Dictionary<String, Int>
+----
+
+== Compliant
+
+[source,swift]
+----
+let array: [Int]
+let dict: [String: Int]
+----

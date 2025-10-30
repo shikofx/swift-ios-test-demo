@@ -1,0 +1,17 @@
+= Rule: Unused Setter Value
+:source-highlighter: highlight.js
+
+Находит неиспользуемое значение `newValue` в сеттерах.
+
+*Identifier*: `unused_setter_value`
+
+== Non-compliant
+
+[source,swift]
+----
+var foo: Int {
+    set { _foo = 1 }
+}
+----
+
+*Решение*: Использовать `newValue` или удалить сеттер.

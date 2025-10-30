@@ -1,0 +1,20 @@
+= Rule: Redundant Sendable
+:source-highlighter: highlight.js
+
+Находит избыточные объявления соответствия протоколу `Sendable`.
+
+*Identifier*: `redundant_sendable`
+
+== Non-compliant
+
+[source,swift]
+----
+class MyActor: Actor, Sendable {}
+----
+
+== Compliant
+
+[source,swift]
+----
+class MyActor: Actor {}
+----

@@ -1,0 +1,100 @@
+= Интеграция статического анализа в CI
+:source-highlighter: highlight.js
+
+== Цели урока:
+
+* Научиться добавлять статические анализаторы (SwiftLint, SwiftFormat) в CI/CD пайплайн.
+* Понять, как запускать задачи (jobs) параллельно для ускорения обратной связи.
+* Использовать переиспользуемые workflow для модульности.
+* Сохранять отчеты анализаторов как артефакты.
+
+---
+
+== Теория
+
+После создания базового пайплайна, следующим шагом является добавление автоматических проверок качества кода. Чтобы сделать CI-конфигурацию чистой и модульной, мы вынесем логику статического анализа в отдельный **переиспользуемый workflow** — `.github/workflows/static-analysis.yml`.
+
+Этот workflow будет вызываться из основного пайплайна (`ci-flow.yml`) и будет содержать две параллельные задачи для анализа кода.
+
+[source,yaml]
+----
+name: Static Analysis
+
+on:
+  workflow_call: # <1>
+
+jobs:
+  swiftlint_analysis:
+    name: SwiftLint
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        uses: ./.github/actions/setup-ios-environment # <2>
+
+      - name: Run SwiftLint
+        run: swiftlint lint --reporter html > swiftlint-report.html
+        continue-on-error: true # <3>
+
+  swiftformat_analysis:
+    name: SwiftFormat
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        uses: ./.github/actions/setup-ios-environment
+
+      - name: Run SwiftFormat (Lint Mode)
+        run: |
+          swiftformat . --reporter json > swiftformat-report.json
+        continue-on-error: true
+----
+
+<1> `on: workflow_call:` указывает, что этот workflow является переиспользуемым и может быть вызван из другого workflow.
+<2> `uses: ./.github/actions/setup-ios-environment` — это вызов нашего собственного **Composite Action**, который инкапсулирует всю логику установки зависимостей (Homebrew, CocoaPods и др.). Это избавляет от дублирования кода.
+<3> `continue-on-error: true`: Этот флаг говорит GitHub Actions, что, даже если команда анализатора завершится с ошибкой (найдет нарушения), шаг следует считать успешным и продолжать выполнение. Это позволяет нам загрузить отчет о найденных проблемах.
+
+=== Параллельное выполнение задач
+
+В этом workflow определены две задачи верхнего уровня: `swiftlint_analysis` и `swiftformat_analysis`. По умолчанию GitHub Actions запускает все задачи одного уровня **параллельно**. Это значит, что проверка стиля с помощью SwiftLint и форматирования с помощью SwiftFormat будут выполняться одновременно, что значительно сокращает общее время выполнения пайплайна.
+
+=== Задача `swiftlint_analysis`
+
+Эта задача отвечает за проверку стиля кода с помощью SwiftLint.
+
+. `- name: Install Dependencies`: Устанавливает все необходимые зависимости, включая SwiftLint, с помощью нашего Composite Action.
+. `- name: Run SwiftLint`: Запускает анализатор и перенаправляет его вывод в HTML-файл.
+. `- name: Upload SwiftLint artifact`: Загружает сгенерированный HTML-отчет как артефакт.
+
+=== Задача `swiftformat_analysis`
+
+Эта задача отвечает за проверку форматирования кода.
+
+. `- name: Install Dependencies`: Устанавливает все необходимые зависимости, включая SwiftFormat.
+. `- name: Run SwiftFormat (Lint Mode)`: Запускает `swiftformat` в режиме `lint` и сохраняет результат в JSON-файл.
+. `- name: Upload SwiftFormat artifact`: Загружает JSON-отчет как артефакт.
+
+==== Разбор команды
+
+Давайте подробно разберем команду, которая запускает `swiftformat`:
+
+[source,bash]
+----
+swiftformat . --reporter json > swiftformat-report.json
+----
+
+*   **`swiftformat .`**: Это вызов самого инструмента. Точка (`.`) указывает, что `swiftformat` должен обработать все Swift-файлы в текущей директории и всех ее поддиректориях (то есть, во всем проекте).
+*   **`--reporter json`**: Эта опция указывает, в каком формате выводить результат. `json` означает, что отчет о найденных проблемах форматирования будет сгенерирован в виде **JSON**-файла. Это очень удобно для CI/CD, так как JSON — это машиночитаемый формат, который легко обрабатывать в последующих шагах.
+*   **`> swiftformat-report.json`**: Оператор `>` — это стандартное **перенаправление вывода**. Он берет все, что команда слева обычно выводит на экран, и вместо этого записывает в файл с именем `swiftformat-report.json`.
+
+Вся команда целиком означает: «Запустить `swiftformat` для всего проекта, сгенерировать отчет о проблемах в формате JSON и сохранить этот отчет в файл `swiftformat-report.json`».
+
+=== Что дальше?
+
+Теперь у нас есть пайплайн, который выполняет статический анализ кода. Однако результаты этого анализа (отчеты) пока доступны только в логах.
+
+В следующем уроке мы научимся скачивать эти артефакты в другой задаче и публиковать их на веб-странице с помощью GitHub Pages.

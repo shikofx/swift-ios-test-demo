@@ -1,0 +1,20 @@
+= Rule: Empty Parameters
+:source-highlighter: highlight.js
+
+Предпочитает использование `()` вместо `(Void)` для обозначения отсутствия параметров в функциях и замыканиях.
+
+*Identifier*: `empty_parameters`
+
+== Non-compliant
+
+[source,swift]
+----
+func foo(bar: (Void) -> Void) {}
+----
+
+== Compliant
+
+[source,swift]
+----
+func foo(bar: () -> Void) {}
+----

@@ -1,0 +1,26 @@
+= Rule: Computed Accessors Order
+:source-highlighter: highlight.js
+
+Проверяет порядок геттеров и сеттеров в вычисляемых свойствах. По умолчанию `get` должен идти перед `set`.
+
+*Identifier*: `computed_accessors_order`
+
+== Non-compliant
+
+[source,swift]
+----
+var foo: Int {
+    set { _foo = newValue }
+    get { return _foo }
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+var foo: Int {
+    get { return _foo }
+    set { _foo = newValue }
+}
+----

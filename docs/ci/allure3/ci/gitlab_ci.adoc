@@ -1,0 +1,59 @@
+:doctype: book
+:encoding: utf-8
+:lang: ru
+:toc: left
+:toclevels: 4
+:sectnums:
+= Интеграция Allure 3 с GitLab CI
+
+В этом документе описывается, как интегрировать Allure 3 в GitLab CI для автоматической генерации и публикации отчетов о тестировании с помощью GitLab Pages.
+
+== Обзор процесса
+
+Интеграция с GitLab CI включает настройку стадий (stages) в файле `.gitlab-ci.yml` для сборки, тестирования и развертывания отчета.
+
+. **Сборка (`build`):** Установка зависимостей и сборка проекта. Артефакты (например, `node_modules`) передаются на следующую стадию.
+. **Тестирование (`test`):** Запуск тестов и генерация `allure-results`. Результаты также сохраняются как артефакты.
+. **Публикация (`report`):** Генерация HTML-отчета из `allure-results` и его развертывание на GitLab Pages.
+
+== Пример .gitlab-ci.yml
+
+[source,yaml]
+----
+stages:
+  - build
+  - test
+  - report
+
+build:
+  stage: build
+  script:
+    - yarn install
+    - yarn build
+  artifacts:
+    paths:
+      - node_modules/
+
+test:
+  stage: test
+  script:
+    - yarn test
+  artifacts:
+    paths:
+      - allure-results/
+
+pages: # Специальное имя для публикации на GitLab Pages
+  stage: report
+  script:
+    - npx allure generate ./allure-results -o ./public
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
+----
+
+В этом примере:
+- Задание `pages` является специальным в GitLab CI и используется для публикации контента на GitLab Pages.
+- Отчет Allure генерируется в директорию `public`, которая является стандартной для GitLab Pages.
+- Публикация происходит только для коммитов в ветку `main`.

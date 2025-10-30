@@ -1,0 +1,20 @@
+= Rule: Redundant Access Control for Setter
+:source-highlighter: highlight.js
+
+Запрещает избыточные модификаторы доступа для сеттеров, если они совпадают с доступом самого свойства.
+
+*Identifier*: `redundant_set_access_control`
+
+== Non-compliant
+
+[source,swift]
+----
+public private(set) var foo: Int
+----
+
+== Compliant
+
+[source,swift]
+----
+private(set) public var foo: Int
+----

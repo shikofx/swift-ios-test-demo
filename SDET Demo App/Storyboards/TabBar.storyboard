@@ -1758,7 +1758,7 @@ Fits in comfortably a laptop up to 15 inch. Never leave a thing behind and forge
                         <outlet property="nameAscendingBtn" destination="Srz-NK-a9W" id="yeN-9H-Gx1"/>
                         <outlet property="nameDescendingBtn" destination="8fb-Qb-JIn" id="Fhu-IQ-Foo"/>
                         <outlet property="priceAscendingBtn" destination="UVV-nI-jHz" id="c3P-zE-XQ3"/>
-                        <outlet property="priceDecendingButton" destination="qDt-VI-d88" id="bxO-d7-JpA"/>
+                        <outlet property="priceDescendingBtn" destination="qDt-VI-d88" id="5yS-a7-c5q"/>
                         <outlet property="productsCV" destination="4KV-Hh-Xdg" id="BPz-fl-xfH"/>
                         <outlet property="sortBtn" destination="F6K-Ab-dHq" id="6Ms-Uh-Kzs"/>
                         <outlet property="sortPopUpView" destination="Bqb-ot-KjK" id="Ix0-Rd-xGb"/>

@@ -1,0 +1,20 @@
+= Rule: Discouraged Object Literal
+:source-highlighter: highlight.js
+
+Запрещает использование литералов объектов (например, `#colorLiteral`).
+
+*Identifier*: `discouraged_object_literal`
+
+== Non-compliant
+
+[source,swift]
+----
+let color = #colorLiteral(red: 1, green: 0, blue: 0, alpha: 1)
+----
+
+== Compliant
+
+[source,swift]
+----
+let color = UIColor(red: 1, green: 0, blue: 0, alpha: 1)
+----

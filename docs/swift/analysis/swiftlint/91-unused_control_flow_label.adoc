@@ -1,0 +1,20 @@
+= Rule: Unused Control Flow Label
+:source-highlighter: highlight.js
+
+Находит неиспользуемые метки в управляющих конструкциях.
+
+*Identifier*: `unused_control_flow_label`
+
+== Non-compliant
+
+[source,swift]
+----
+myLabel: while true { break }
+----
+
+== Compliant
+
+[source,swift]
+----
+myLabel: while true { break myLabel }
+----

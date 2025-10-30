@@ -1,0 +1,20 @@
+= Rule: Attribute Name Spacing
+:source-highlighter: highlight.js
+
+Проверяет наличие правильного пробела вокруг имен атрибутов.
+
+*Identifier*: `attribute_name_spacing`
+
+== Non-compliant
+
+[source,swift]
+----
+@objc (name)
+----
+
+== Compliant
+
+[source,swift]
+----
+@objc(name)
+----

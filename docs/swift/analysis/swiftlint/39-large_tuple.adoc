@@ -1,0 +1,24 @@
+= Rule: Large Tuple
+:source-highlighter: highlight.js
+
+Ограничивает количество элементов в кортеже (`tuple`). Большие кортежи трудно читать; лучше использовать `struct`.
+
+*Identifier*: `large_tuple`
+
+== Non-compliant (если > 2 элементов по умолчанию)
+
+[source,swift]
+----
+let myTuple: (Int, String, Bool)
+----
+
+== Compliant
+
+[source,swift]
+----
+struct MyData {
+    let intValue: Int
+    let stringValue: String
+    let boolValue: Bool
+}
+----

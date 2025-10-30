@@ -1,0 +1,21 @@
+= Rule: Leading Whitespace
+:source-highlighter: highlight.js
+
+Проверяет, что в начале файлов нет пустых строк.
+
+*Identifier*: `leading_whitespace`
+
+== Non-compliant
+
+[source,swift]
+----
+
+import Foundation
+----
+
+== Compliant
+
+[source,swift]
+----
+import Foundation
+----

@@ -1,0 +1,20 @@
+= Rule: Multiple Closures with Trailing Closure
+:source-highlighter: highlight.js
+
+Запрещает использование `trailing closure` синтаксиса, если функция принимает несколько замыканий в качестве параметров.
+
+*Identifier*: `multiple_closures_with_trailing_closure`
+
+== Non-compliant
+
+[source,swift]
+----
+foo(bar: { $0 }) { $0 + 1 }
+----
+
+== Compliant
+
+[source,swift]
+----
+foo(bar: { $0 }, baz: { $0 + 1 })
+----

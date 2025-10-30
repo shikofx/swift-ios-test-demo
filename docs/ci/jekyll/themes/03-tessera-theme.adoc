@@ -1,0 +1,165 @@
+---
+layout: default
+title: Тема Tessera
+parent: Темы Jekyll
+grand_parent: Jekyll & GitHub Pages
+nav_order: 3
+---
+
+= Тема Tessera
+
+Tessera — это тема Jekyll, разработанная с учетом потребностей создателей контента, но, как и любая другая тема Jekyll, ее может использовать кто угодно.
+
+link:https://itszariep.github.io/Tessera-Hugo/[Вариант для Hugo]
+
+Tessera состоит из трех основных компонентов: двух боковых панелей и центральной области контента. Тема очень модульная, что позволяет легко настраивать любой компонент путем переопределения `_includes`.
+
+== Пример
+
+См. link:https://itszariep.github.io/Tessera/[страницу-пример Tessera] для стандартного примера или link:https://itszariep.github.io/[мой блог (на испанском)] для версии с модификациями и реальным примером использования.
+
+Вы также можете посмотреть link:https://github.com/itszariep/Tessera/wiki/Webpages-created-with-Tessera[веб-страницы, созданные с помощью Tessera], чтобы увидеть больше функциональных сайтов.
+
+== Установка
+
+WARNING: Не форкайте и не клонируйте эту ветку! Она не предназначена для использования. Пожалуйста, форкайте ветку `gh-pages`.
+
+. Снимите флажок "Copy the main branch only" в процессе форка.
+. В вашем форкнутом репозитории:
+* Удалите ветку `main`.
+* Переименуйте ветку `gh-pages` в `main`.
+. Добавьте эту строку в `Gemfile` вашего сайта Jekyll:
++
+[source,ruby]
+----
+gem "tessera-jekyll-theme"
+----
+
+. Затем добавьте эту строку в `_config.yml` вашего сайта Jekyll:
++
+[source,yaml]
+----
+theme: tessera-jekyll-theme
+----
+
+. И затем выполните:
++
+[source,shell]
+----
+$ bundle
+----
+
+Или установите его вручную с помощью:
+
+[source,shell]
+----
+$ gem install tessera-jekyll-theme
+----
+
+== GitHub Pages
+
+Вместо выполнения вышеуказанных шагов, определите это в вашем `_config.yml`, удалив также `theme:`:
+
+[source,yaml]
+----
+# theme: something # удалите эту строку
+remote_theme: itszariep/Tessera # добавьте эту строку
+----
+
+== Зависимости
+
+Tessera требует следующих плагинов Jekyll для правильной работы:
+
+* `jekyll-paginate` (Пагинация на главной странице)
+* `jekyll-archives` (Просмотр постов по категориям)
+
+== Настройка после установки
+
+=== Выбор между Постами и Главами
+
+*Посты* полезны для блогов или контента, где важна дата. *Главы* полезны для книг/папок, где дата не важна, а необходимы разделы.
+
+На вашей индексной странице определите `indextype: chapters` или `indextype: posts`:
+
+[source,yaml]
+----
+---
+layout: home
+title: Home
+paginate: 9
+indextype: posts
+---
+----
+
+NOTE: Вы можете иметь оба типа индексов, если обе страницы имеют макет `home` и правильный `indextype`.
+
+=== Главы
+
+Чтобы включить Главы, вам нужно установить:
+
+[source,yaml]
+----
+collections:
+  chapters:
+    output: true
+    permalink: /:name/
+----
+
+После этого на страницах ваших глав вам нужно установить `section` и `order`:
+
+[source,yaml]
+----
+section: Web
+order: 1
+----
+
+== Поиск
+
+Поиск требует `/search.json`:
+
+[source,liquid]
+----
+---
+layout: null
+---
+[
+    {% for post in site.posts %}
+        {
+            "title": "{{ post.title | escape }}",
+            "url": "{{ site.baseurl }}{{ post.url }}",
+            "date": "{{ post.date | date: "%B %-d, %Y" }}",
+            "content": "{{ post.content | strip_html | strip_newlines | escape }}",
+            "tags": "{{ post.tags }}"
+        }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+]
+----
+
+== Кастомизация
+
+=== Макеты
+
+Чтобы начать кастомизацию Tessera, скопируйте любой из компонентов `_includes`, который вы хотите изменить:
+
+* `toppane.html`: Заголовок
+* `leftpane.html`: Левая сторона страницы
+* `postgrid.html`: Сетка постов на главной странице
+* `pagination-controls.html`: Элементы управления пагинацией для главной страницы
+* `postcontent.html`: Содержимое поста
+* `userbox.html`: Блок пользователя, отображаемый под содержимым поста
+* `comments.html`: Необязательный (в настоящее время не реализованный) раздел комментариев; по умолчанию закомментирован пример с использованием Utterances. Вы можете интегрировать любую пользовательскую систему комментариев через JavaScript.
+* `rightpane.html`: Правая сторона страницы
+* `searchbar.html`: Панель поиска (требует JavaScript)
+* `bottompane.html`: Подвал для всех страниц
+
+=== Стили
+
+Создайте файл `assets/css/custom.css`, этот файл будет служить для переопределения стилей без необходимости изменять весь CSS, так что вы можете редактировать только те элементы, которые хотите.
+
+== Участие в проекте
+
+Отчеты об ошибках и pull-реквесты приветствуются на GitHub по адресу https://github.com/itszariep/tessera.
+
+== Лицензия
+
+Эта тема доступна как открытое программное обеспечение на условиях лицензии MIT.

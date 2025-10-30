@@ -1,0 +1,39 @@
+:doctype: book
+:encoding: utf-8
+:lang: ru
+:toc: left
+:toclevels: 4
+:sectnums:
+= allure results pack
+
+Команда `allure results pack` создает `.zip` архив со всеми результатами тестов, которые могут быть собраны в проекте.
+
+== Синтаксис
+
+[source,bash]
+----
+$ allure results pack [options] [шаблон_пути_к_результатам]
+----
+По умолчанию команда ищет результаты в директориях, соответствующих шаблону `**/allure-results`.
+
+== Опции
+
+`--name <имя_архива>`::
+Имя создаваемого архива. По умолчанию `allure-results.zip`.
+
+`--cwd <путь>`::
+Рабочая директория для запуска команды. По умолчанию используется текущая рабочая директория.
+
+== Примеры
+
+.Создать архив с результатами тестов из директорий, соответствующих шаблону `**/allure-results`:
+[source,bash]
+----
+$ allure results pack
+----
+
+.Создать архив `results.zip` с результатами тестов из директорий, соответствующих шаблону `**/foo/**/my-results`:
+[source,bash]
+----
+$ allure results pack "**/foo/**/my-results" --name results.zip
+----

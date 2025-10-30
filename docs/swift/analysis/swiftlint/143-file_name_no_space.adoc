@@ -1,0 +1,18 @@
+= Rule: File Name no Space
+:source-highlighter: highlight.js
+
+Проверяет, что имена файлов не содержат пробелов.
+
+*Identifier*: `file_name_no_space`
+
+== Non-compliant
+
+----
+My File.swift
+----
+
+== Compliant
+
+----
+MyFile.swift
+----

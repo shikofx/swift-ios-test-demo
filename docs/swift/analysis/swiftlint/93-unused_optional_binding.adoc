@@ -1,0 +1,20 @@
+= Rule: Unused Optional Binding
+:source-highlighter: highlight.js
+
+Предпочитает проверку `!= nil` вместо `if let _ = ...`, если значение не используется.
+
+*Identifier*: `unused_optional_binding`
+
+== Non-compliant
+
+[source,swift]
+----
+if let _ = myOptional { ... }
+----
+
+== Compliant
+
+[source,swift]
+----
+if myOptional != nil { ... }
+----

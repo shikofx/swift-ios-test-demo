@@ -1,0 +1,20 @@
+= Rule: Extension Access Modifier
+:source-highlighter: highlight.js
+
+Предпочитает указывать модификатор доступа для расширения, а не для каждого его члена.
+
+*Identifier*: `extension_access_modifier`
+
+== Non-compliant
+
+[source,swift]
+----
+extension MyType { public func foo() {} }
+----
+
+== Compliant
+
+[source,swift]
+----
+public extension MyType { func foo() {} }
+----

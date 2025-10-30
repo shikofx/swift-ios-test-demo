@@ -1,0 +1,11 @@
+---
+layout: default
+title: Liquid Templating Language
+has_children: true
+parent: Jekyll & GitHub Pages
+nav_order: 9
+---
+
+= Liquid Templating Language
+
+В этом разделе вы познакомитесь с Liquid — языком шаблонов, который используется в Jekyll для динамической генерации контента.

@@ -1,0 +1,20 @@
+= Rule: Type Name
+:source-highlighter: highlight.js
+
+Проверяет, что имена типов (`class`, `struct`, `enum`) соответствуют стилю Swift (например, `UpperCamelCase`).
+
+*Identifier*: `type_name`
+
+== Non-compliant
+
+[source,swift]
+----
+class myClass {}
+----
+
+== Compliant
+
+[source,swift]
+----
+class MyClass {}
+----

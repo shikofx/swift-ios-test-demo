@@ -1,0 +1,24 @@
+= Rule: Closure End Indentation
+:source-highlighter: highlight.js
+
+Проверяет, что закрывающая скобка замыкания имеет тот же отступ, что и строка, на которой оно было объявлено.
+
+*Identifier*: `closure_end_indentation`
+
+== Non-compliant
+
+[source,swift]
+----
+foo.bar {
+    ...
+    }
+----
+
+== Compliant
+
+[source,swift]
+----
+foo.bar {
+    ...
+}
+----

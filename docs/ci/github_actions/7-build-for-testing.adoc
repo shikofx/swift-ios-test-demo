@@ -1,0 +1,89 @@
+= Оптимизация CI: Разделение сборки и тестирования
+:source-highlighter: highlight.js
+
+== Цели урока
+
+* Понять, как разделить этапы сборки и запуска тестов для ускорения CI.
+* Разобрать команду `xcodebuild build-for-testing`.
+* Научиться эффективно кэшировать `DerivedData` Xcode.
+* Понять, как передавать результаты сборки между задачами с помощью артефактов.
+
+---
+
+== Теория
+
+В предыдущих уроках мы создали пайплайн, который последовательно выполняет анализ, сборку и запуск тестов. Однако, по мере роста проекта, сборка (`build`) становится все дольше. Если у нас несколько тестовых задач (Unit-тесты, UI-тесты), каждая из них будет заново компилировать проект. Это неэффективно.
+
+Правильный подход — **собрать проект один раз**, а затем использовать результат этой сборки для запуска всех необходимых тестов. Для этого мы создадим отдельный переиспользуемый workflow — `.github/workflows/build-for-testing.yml`.
+
+[source,yaml]
+----
+name: Build Compiled code
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    name: Compiled Code
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        uses: ./.github/actions/setup-ios-environment
+
+      - name: Cache Xcode DerivedData
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('**/Podfile.lock') }}-${{ hashFiles('**/*.swift') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('**/Podfile.lock') }}-
+            ${{ runner.os }}-xcode-deriveddata-
+
+      - name: Build
+        run: |
+          DESTINATION_UDID=$(xcrun simctl list devices available | grep 'iPhone' | grep '(Shutdown)' | head -n 1 | awk -F'[()]' '{print $2}')
+          echo "Using destination UDID: $DESTINATION_UDID"
+
+          xcodebuild build-for-testing \
+            -workspace "SDET Demo App.xcworkspace" \
+            -scheme "Demo AppTests" \
+            -destination "id=$DESTINATION_UDID" \
+            -derivedDataPath build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: xctestrun-build
+          path: build
+          retention-days: 1
+----
+
+=== `Cache Xcode DerivedData` — Умное кэширование
+
+Этот шаг — ключ к быстрому пайплайну. Он кэширует папку `build`, куда Xcode складывает все результаты компиляции (`DerivedData`).
+
+*   `path: build`: Указываем, что кэшировать нужно папку `build`.
+*   `key: ...-${{ hashFiles('**/Podfile.lock') }}-${{ hashFiles('**/*.swift') }}`: Это "умный" ключ кэша. Он уникален для комбинации ОС, зависимостей (`Podfile.lock`) и *всех файлов с исходным кодом Swift*. Если вы измените хотя бы один Swift-файл, хэш изменится, и кэш будет создан заново. Если код не менялся, сборка будет восстановлена из кэша, что сэкономит много времени.
+
+=== `Build` — Сборка для тестирования
+
+Этот шаг выполняет саму сборку.
+
+*   `DESTINATION_UDID=...`: Эта команда находит UDID первого доступного и выключенного симулятора iPhone. Это делает пайплайн более стабильным, так как он не привязан к конкретной версии симулятора, которая может меняться на агентах GitHub.
+*   `xcodebuild build-for-testing`: Это специальная команда Xcode, которая:
+    *   Компилирует код приложения и тестов.
+    *   *Не запускает* тесты.
+    *   Создает в папке `build` специальный файл `.xctestrun`, который содержит всю информацию, необходимую для запуска тестов на уже скомпилированном приложении.
+*   `-derivedDataPath build`: Указывает Xcode, куда складывать результаты сборки. Путь совпадает с путем, который мы кэшируем и загружаем как артефакт.
+
+=== `Upload artifact` — Передача результатов
+
+*   `uses: actions/upload-artifact@v4`: Этот шаг берет все содержимое папки `build` (включая скомпилированное приложение и `.xctestrun` файл) и упаковывает его в артефакт с именем `xctestrun-build`.
+
+=== Что дальше?
+
+Теперь у нас есть артефакт `xctestrun-build`. В следующем уроке мы создадим workflow `unit-tests.yml`, который скачает этот артефакт и запустит тесты с помощью команды `xcodebuild test-without-building`, что будет практически мгновенно, так как компиляция уже выполнена.

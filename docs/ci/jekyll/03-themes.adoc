@@ -1,0 +1,73 @@
+---
+layout: default
+title: 3. Работа с темами Jekyll
+parent: Jekyll & GitHub Pages
+nav_order: 4
+---
+
+== 3. Работа с темами Jekyll
+
+Темы Jekyll позволяют быстро изменить внешний вид вашего сайта без необходимости писать весь CSS и HTML с нуля. GitHub Pages поддерживает несколько официальных тем "из коробки", а также позволяет использовать темы от сообщества.
+
+=== Официальные темы GitHub Pages
+
+https://github.com/pages-themes
+
+Эти темы можно активировать, просто указав их имя в файле `_config.yml`. GitHub Pages автоматически установит и применит их.
+
+Примеры популярных официальных тем:
+* `jekyll-theme-minimal` (изначально использовалась в вашем проекте)
+* `jekyll-theme-cayman` (текущая тема в вашем проекте)
+* `jekyll-theme-architect`
+* `jekyll-theme-dinky` 
+* `jekyll-theme-hacker`
+* `jekyll-theme-slate`
+* `jekyll-theme-merlot`
+* `jekyll-theme-midnight`
+
+*Как изменить тему:*
+
+Откройте ваш файл `.site/_config.yml` и измените значение параметра `theme`:
+
+[source,yaml]
+----
+# .site/_config.yml
+theme: jekyll-theme-cayman
+----
+
+=== Темы от сообщества и Gem-based темы
+
+Если вам нужны более сложные или уникальные темы, вы можете использовать темы от сообщества. Многие из них распространяются как Ruby-гемы (Gem-based themes).
+
+*Как использовать Gem-based тему:*
+
+1. *Добавьте гем в `Gemfile`:* В вашем файле `Gemfile` (который должен находиться в корневой директории сайта, т.е. `.site/Gemfile`) добавьте строку для вашей темы. Например:
+[source,ruby]
+----
+# .site/Gemfile
+gem "my-awesome-jekyll-theme"
+----
+2. *Укажите тему в `_config.yml`:*
+[source,yaml]
+----
+# .site/_config.yml
+theme: my-awesome-jekyll-theme
+----
+3. *Установите зависимости:* Запустите `bundle install` в директории `.site/` (или убедитесь, что ваш CI-пайплайн это делает).
+
+*Важное замечание про `github-pages` гем:*
+
+Как мы уже обсуждали, использование `gem "github-pages"` в вашем `Gemfile` является рекомендуемой практикой для GitHub Pages. Этот гем включает в себя все официальные темы и плагины, которые поддерживаются GitHub Pages, а также совместимую версию Jekyll. Если вы используете `github-pages` гем, то официальные темы (вроде `jekyll-theme-cayman`) будут доступны автоматически, и вам не нужно добавлять их как отдельные гемы в `Gemfile`.
+
+[source,ruby]
+----
+# .site/Gemfile
+source "https://rubygems.org"
+gem "github-pages"
+----
+
+В этом случае, достаточно просто указать `theme: jekyll-theme-cayman` в `_config.yml`.
+
+=== Кастомизация тем
+
+Даже с готовой темой вы можете вносить изменения. Большинство тем позволяют переопределять шаблоны (`_layouts`, `_includes`) и добавлять собственные стили. Об этом мы поговорим в следующем уроке.

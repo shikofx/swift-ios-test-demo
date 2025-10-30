@@ -1,0 +1,20 @@
+= Rule: XCTFail Message
+:source-highlighter: highlight.js
+
+Требует, чтобы вызовы `XCTFail` в тестах содержали сообщение с описанием ошибки.
+
+*Identifier*: `xctfail_message`
+
+== Non-compliant
+
+[source,swift]
+----
+XCTFail()
+----
+
+== Compliant
+
+[source,swift]
+----
+XCTFail("Должен был произойти определенный результат")
+----

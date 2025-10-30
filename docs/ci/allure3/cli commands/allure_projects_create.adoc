@@ -1,0 +1,39 @@
+:doctype: book
+:encoding: utf-8
+:lang: ru
+:toc: left
+:toclevels: 4
+:sectnums:
+= allure projects create
+
+Команда `allure projects create` создает новый проект в Allure Service.
+
+== Синтаксис
+
+[source,bash]
+----
+$ allure projects create [options] [имя_проекта]
+----
+Если имя проекта не указано, оно будет взято из git-репозитория или будет запрошено в интерактивном режиме.
+
+== Опции
+
+`--config, -c <путь>`::
+Путь к файлу конфигурации Allure.
+
+`--cwd <путь>`::
+Рабочая директория для запуска команды. По умолчанию используется текущая рабочая директория.
+
+== Примеры
+
+.Создать новый проект с именем 'my-project':
+[source,bash]
+----
+$ allure projects create my-project
+----
+
+.Создать новый проект, где имя будет взято из git-репозитория или запрошено в консоли:
+[source,bash]
+----
+$ allure projects create
+----

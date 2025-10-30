@@ -1,0 +1,17 @@
+= Rule: Enum Case Associated Values Count
+:source-highlighter: highlight.js
+
+Ограничивает количество ассоциированных значений в кейсах `enum`.
+
+*Identifier*: `enum_case_associated_values_count`
+
+== Non-compliant (если > 5 значений по умолчанию)
+
+[source,swift]
+----
+enum MyEnum {
+    case a(Int, Int, Int, Int, Int, Int)
+}
+----
+
+*Решение*: Сгруппировать значения в `struct`.

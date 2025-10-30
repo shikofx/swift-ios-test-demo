@@ -1,0 +1,19 @@
+= Rule: Fallthrough
+:source-highlighter: highlight.js
+
+Запрещает использование `fallthrough` в `switch`.
+
+*Identifier*: `fallthrough`
+
+== Non-compliant
+
+[source,swift]
+----
+switch myVar {
+case 1: fallthrough
+case 2: print("1 or 2")
+default: break
+}
+----
+
+*Причина*: `fallthrough` может делать логику `switch` неочевидной.

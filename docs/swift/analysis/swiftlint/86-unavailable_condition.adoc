@@ -1,0 +1,20 @@
+= Rule: Unavailable Condition
+:source-highlighter: highlight.js
+
+Запрещает использование `#available` с `*` в качестве единственного аргумента.
+
+*Identifier*: `unavailable_condition`
+
+== Non-compliant
+
+[source,swift]
+----
+if #available(*) {}
+----
+
+== Compliant
+
+[source,swift]
+----
+if #available(iOS 13, *) {}
+----

@@ -1,0 +1,24 @@
+= Rule: Private Unit Test
+:source-highlighter: highlight.js
+
+Юнит-тесты и их вспомогательные методы должны быть `private`, чтобы избежать их случайного вызова из других мест.
+
+*Identifier*: `private_unit_test`
+
+== Non-compliant
+
+[source,swift]
+----
+class MyTests: XCTestCase {
+    func testMyFeature() { ... }
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+private class MyTests: XCTestCase {
+    func testMyFeature() { ... }
+}
+----

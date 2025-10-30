@@ -1,0 +1,20 @@
+= Rule: Legacy Multiple
+:source-highlighter: highlight.js
+
+Предпочитает `isMultiple(of:)` вместо использования оператора остатка от деления (`%`).
+
+*Identifier*: `legacy_multiple`
+
+== Non-compliant
+
+[source,swift]
+----
+if value % 2 == 0 { ... }
+----
+
+== Compliant
+
+[source,swift]
+----
+if value.isMultiple(of: 2) { ... }
+----

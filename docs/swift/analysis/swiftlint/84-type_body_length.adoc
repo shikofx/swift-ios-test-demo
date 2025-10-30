@@ -1,0 +1,21 @@
+= Rule: Type Body Length
+:source-highlighter: highlight.js
+
+Ограничивает количество строк в теле типа (`class`, `struct`, `enum`).
+
+*Identifier*: `type_body_length`
+
+== Non-compliant (если > 200 строк по умолчанию)
+
+[source,swift]
+----
+class MyBigClass {
+    // 300 строк кода...
+}
+----
+
+*Решение*: Разделить большой тип на несколько более мелких.
+
+== Конфигурация
+
+Можно изменить пороговые значения в `.swiftlint.yml`.

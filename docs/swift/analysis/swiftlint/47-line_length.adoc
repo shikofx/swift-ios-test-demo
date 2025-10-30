@@ -1,0 +1,19 @@
+= Rule: Line Length
+:source-highlighter: highlight.js
+
+Ограничивает длину строк кода. Длинные строки трудно читать.
+
+*Identifier*: `line_length`
+
+== Non-compliant (если > 120 символов по умолчанию)
+
+[source,swift]
+----
+let myVeryLongVariableNameToDemonstrateThePoint = "This line is definitely going to be too long for the default SwiftLint configuration."
+----
+
+*Решение*: Разбить длинную строку на несколько.
+
+== Конфигурация
+
+Можно изменить пороговые значения в `.swiftlint.yml`.

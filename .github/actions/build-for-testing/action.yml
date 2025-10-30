@@ -1,0 +1,25 @@
+name: 'Build for Testing'
+description: 'Builds the project for testing and creates an xctestrun artifact.'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Dependencies
+      uses: ./.github/actions/setup-ios-environment
+
+    - name: Install CocoaPods dependencies
+      shell: bash
+      run: pod install
+
+    - name: Build for Testing
+      shell: bash
+      run: |
+        # Находим UDID первого доступного и выключенного симулятора iPhone для стабильности
+        DESTINATION_UDID=$(xcrun simctl list devices available | grep 'iPhone' | grep '(Shutdown)' | head -n 1 | awk -F'[()]' '{print $2}')
+        echo "Using destination UDID: $DESTINATION_UDID"
+
+        xcodebuild build-for-testing \
+          -workspace "SDET Demo App.xcworkspace" \
+          -scheme "Demo AppTests" \
+          -destination "id=$DESTINATION_UDID" \
+          -derivedDataPath build

@@ -1,0 +1,20 @@
+= Rule: Discouraged Optional Collection
+:source-highlighter: highlight.js
+
+Запрещает использование опциональных коллекций (`[Int]?`, `[String: Int]?`).
+
+*Identifier*: `discouraged_optional_collection`
+
+== Non-compliant
+
+[source,swift]
+----
+let myArray: [Int]?
+----
+
+== Compliant
+
+[source,swift]
+----
+let myArray: [Int] = [] // Пустая коллекция лучше, чем nil
+----

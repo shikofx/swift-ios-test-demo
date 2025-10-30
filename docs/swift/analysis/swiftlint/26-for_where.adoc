@@ -1,0 +1,22 @@
+= Rule: Prefer For-Where
+:source-highlighter: highlight.js
+
+Предпочитает использование `where` в цикле `for` вместо `if` внутри тела цикла.
+
+*Identifier*: `for_where`
+
+== Non-compliant
+
+[source,swift]
+----
+for user in users {
+  if user.isEmployee { ... }
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+for user in users where user.isEmployee { ... }
+----

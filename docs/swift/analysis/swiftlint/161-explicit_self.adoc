@@ -1,0 +1,30 @@
+= Rule: Explicit Self
+:source-highlighter: highlight.js
+
+Экземпляры методов должны явно использовать `self`.
+
+*Identifier*: `explicit_self`
+
+== Non-compliant
+
+[source,swift]
+----
+class MyClass {
+    let myProperty = "Hello"
+    func myFunction() {
+        print(myProperty)
+    }
+}
+----
+
+== Compliant
+
+[source,swift]
+----
+class MyClass {
+    let myProperty = "Hello"
+    func myFunction() {
+        print(self.myProperty)
+    }
+}
+----

@@ -1,0 +1,20 @@
+= Rule: Non-optional String -> Data Conversion
+:source-highlighter: highlight.js
+
+Предпочитает использование `Data(string.utf8)` вместо `string.data(using: .utf8)`, так как первый вариант не возвращает опционал.
+
+*Identifier*: `non_optional_string_data_conversion`
+
+== Non-compliant
+
+[source,swift]
+----
+let data = "foo".data(using: .utf8)
+----
+
+== Compliant
+
+[source,swift]
+----
+let data = Data("foo".utf8)
+----

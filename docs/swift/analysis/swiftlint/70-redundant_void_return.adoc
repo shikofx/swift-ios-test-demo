@@ -1,0 +1,21 @@
+= Rule: Redundant Void Return
+:source-highlighter: highlight.js
+
+Возвращаемый тип `Void` или `()` в функциях является избыточным и должен быть опущен.
+
+*Identifier*: `redundant_void_return`
+
+== Non-compliant
+
+[source,swift]
+----
+func foo() -> Void {}
+func bar() -> () {}
+----
+
+== Compliant
+
+[source,swift]
+----
+func foo() {}
+----

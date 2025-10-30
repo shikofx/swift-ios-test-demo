@@ -1,0 +1,22 @@
+= Rule: Opening Brace Spacing
+:source-highlighter: highlight.js
+
+Открывающая фигурная скобка должна иметь один пробел перед собой и находиться на той же строке, что и объявление.
+
+*Identifier*: `opening_brace`
+
+== Non-compliant
+
+[source,swift]
+----
+if foo{ ... }
+if bar
+{ ... }
+----
+
+== Compliant
+
+[source,swift]
+----
+if foo { ... }
+----

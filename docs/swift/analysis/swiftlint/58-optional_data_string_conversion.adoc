@@ -1,0 +1,20 @@
+= Rule: Optional Data -> String Conversion
+:source-highlighter: highlight.js
+
+Предпочитает использование `String(data:encoding:)` для преобразования опциональных данных в строку.
+
+*Identifier*: `optional_data_string_conversion`
+
+== Non-compliant
+
+[source,swift]
+----
+let string = data.flatMap { String(data: $0, encoding: .utf8) }
+----
+
+== Compliant
+
+[source,swift]
+----
+let string = String(data: data, encoding: .utf8)
+----

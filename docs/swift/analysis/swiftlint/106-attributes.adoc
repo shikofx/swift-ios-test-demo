@@ -1,0 +1,21 @@
+= Rule: Attributes
+:source-highlighter: highlight.js
+
+Проверяет, что атрибуты (`@objc`, `@IBOutlet` и т.д.) находятся на отдельной строке.
+
+*Identifier*: `attributes`
+
+== Non-compliant
+
+[source,swift]
+----
+@objc public var foo: String?
+----
+
+== Compliant
+
+[source,swift]
+----
+@objc
+public var foo: String?
+----

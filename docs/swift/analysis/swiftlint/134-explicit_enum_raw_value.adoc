@@ -1,0 +1,20 @@
+= Rule: Explicit Enum Raw Value
+:source-highlighter: highlight.js
+
+Требует явного указания `rawValue` для всех кейсов `enum` с типом `Int`.
+
+*Identifier*: `explicit_enum_raw_value`
+
+== Non-compliant
+
+[source,swift]
+----
+enum MyEnum: Int { case a, b }
+----
+
+== Compliant
+
+[source,swift]
+----
+enum MyEnum: Int { case a = 0, b = 1 }
+----

@@ -1,0 +1,20 @@
+= Rule: Explicit Init
+:source-highlighter: highlight.js
+
+Требует явного вызова `init()` при создании объекта.
+
+*Identifier*: `explicit_init`
+
+== Non-compliant
+
+[source,swift]
+----
+let foo = MyType()
+----
+
+== Compliant
+
+[source,swift]
+----
+let foo = MyType.init()
+----
