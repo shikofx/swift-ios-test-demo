@@ -145,7 +145,7 @@ def generate_swiftlint_html_report(json_path, output_path, github_workspace):
 <meta charset="UTF-8">
 <title>SwiftLint Style Report</title>
 <style>
-    body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; margin: 20px; }}
+    body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; }}
     .header-controls {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }}
     .filters-container {{ display: flex; align-items: center; gap: 20px; }}
     .filter-buttons button {{ margin-left: 5px; padding: 5px 10px; cursor: pointer; border: 1px solid #ccc; background-color: #f0f0f0; border-radius: 4px; }}

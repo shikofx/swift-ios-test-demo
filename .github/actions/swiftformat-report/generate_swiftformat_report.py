@@ -121,7 +121,7 @@ def generate_swiftformat_html_report(json_path, output_path, github_workspace):
 <meta charset="UTF-8">
 <title>SwiftFormat Style Report</title>
 <style>
-    body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; margin: 20px; }}
+    body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";}}
     .header-controls {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }}
     .filter-container select {{
         padding: 5px;

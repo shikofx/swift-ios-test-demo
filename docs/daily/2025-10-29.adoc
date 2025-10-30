@@ -1,0 +1,4 @@
+Убрать ошибку 
+swiftformat 0.58.5 is already installed and up-to-date. To reinstall 0.58.5, run: brew reinstall swiftformat
+
+

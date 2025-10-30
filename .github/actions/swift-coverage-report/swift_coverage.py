@@ -6,8 +6,8 @@ import sys
 
 CSS_STYLES = """
 <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; }
-    .coverage-report-container { max-width: 1200px; margin: 5px auto; padding: 5px 20px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";}
+    .coverage-report-container { max-width: 1200px; margin: 5px auto; }
     .report-summary { display: flex; justify-content: space-around; margin-bottom: 20px; background-color: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #ddd; }
     .summary-item { text-align: center; }
     .summary-item h3 { margin: 0 0 5px 0; font-size: 14px; color: #555; }
