@@ -44,7 +44,7 @@ runs:
       run: |
         cat <<EOF > "swiftlint-artifact/index.md"
         ---
-        layout: default
+        layout: swift-dashboard
         title: SwiftLint Style Report
         iframe_path: swiftlint-report.html
         ---

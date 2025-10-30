@@ -44,7 +44,7 @@ runs:
       run: |
         cat <<'EOF' > ./index-page-with-allure/index.md
         ---
-        layout: allure
+        layout: swift-allure-main-page
         title: Allure Test Report 
         iframe_path: /reports/allure/index.html
         ---

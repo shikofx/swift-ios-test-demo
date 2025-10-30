@@ -38,7 +38,7 @@ runs:
       run: |
         cat <<EOF > "coverage-report/index.md"
         ---
-        layout: default
+        layout: swift-dashboard
         title: Swift Coverage Report
         iframe_path: coverage-report.html
         ---
