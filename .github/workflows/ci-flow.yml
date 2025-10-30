@@ -5,9 +5,9 @@ on:
     branches:
       - test
       - 'feature/**' # Запускать при push в feature-ветки
-  # pull_request:
-  #   branches:
-  #     - main
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
