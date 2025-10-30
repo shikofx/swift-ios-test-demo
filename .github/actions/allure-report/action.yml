@@ -47,6 +47,7 @@ runs:
         layout: swift-allure-main-page
         title: Allure Test Report 
         iframe_path: /reports/allure/index.html
+        is_main_branch: ${{ github.ref == 'refs/heads/main' }}
         ---
         EOF
 

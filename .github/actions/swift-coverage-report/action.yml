@@ -28,11 +28,6 @@ runs:
           --output-path "coverage-report/coverage-report.html" \
           --repo-root .
 
-    - name: verify coverage-report.html content
-      shell: bash 
-      run: |
-        cat ./coverage-report/coverage-report.html
-
     - name: Create md page for the report
       shell: bash
       run: |
@@ -41,6 +36,7 @@ runs:
         layout: swift-dashboard
         title: Swift Coverage Report
         iframe_path: coverage-report.html
+        is_main_branch: true
         ---
         EOF
 

@@ -47,6 +47,7 @@ runs:
         layout: swift-dashboard
         title: SwiftLint Style Report
         iframe_path: swiftlint-report.html
+        is_main_branch: ${{ github.ref == 'refs/heads/main' }}
         ---
         EOF
 
