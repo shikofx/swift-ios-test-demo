@@ -1,0 +1,36 @@
+name: 'Get GitHub Info'
+description: 'Fetches CI/CD related information like branch list, build list, and main branch status.'
+
+inputs:
+  github-token:
+    description: 'GitHub token for API calls'
+    required: true
+
+outputs:
+  is_main_branch:
+    description: "True if the current branch is main"
+    value: ${{ steps.main_branch_check.outputs.is_main }}
+  branch_list_yaml:
+    description: "YAML-formatted list of branches"
+    value: ${{ steps.branches.outputs.branch_list_yaml }}
+  build_list_yaml:
+    description: "YAML-formatted list of workflow runs"
+    value: ${{ steps.builds.outputs.build_list_yaml }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check if main branch
+      id: main_branch_check
+      shell: bash
+      run: echo "is_main=${{ github.ref == 'refs/heads/main' }}" >> $GITHUB_OUTPUT
+
+    - name: Generate branchesg list
+      id: branches
+      shell: bash
+      run: bash ./.github/scripts/branches-list.sh
+
+    - name: Generate build list
+      id: builds
+      shell: bash
+      run: bash ./.github/scripts/runs-list.sh "${{ inputs.github-token }}"

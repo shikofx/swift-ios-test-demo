@@ -24,6 +24,8 @@ jobs:
 
       - name: Create Swiftlint Report
         uses: ./.github/actions/swiftlint-report
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   swiftformat_analysis:
     name: Static Analysis - SwiftFormat
@@ -34,6 +36,8 @@ jobs:
 
       - name: Create SwiftFormat Report
         uses: ./.github/actions/swiftformat-report
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
 # build_for_testing:
   #   name: Build for Testing
@@ -95,6 +99,7 @@ jobs:
         uses: ./.github/actions/swift-coverage-report
         with: 
           test-results-path: TestResults.xcresult
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   generate_allure_report:
     name: Report - Test
@@ -115,6 +120,7 @@ jobs:
         uses: ./.github/actions/allure-report
         with:
           test-results-path: TestResults.xcresult
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   build_site:
     name: Build Reports Site
@@ -128,8 +134,15 @@ jobs:
       - name: Configure github pages
         uses: actions/configure-pages@v5
 
-      - name: Checkout repository
+      - name: Checkout repositorybuild_site
         uses: actions/checkout@v4
+
+      - name: Checkout github-pages repository
+        uses: actions/checkout@v4
+        with:
+          repository: shikofx/github-pages
+          path: gh-pages-repo
+          token: ${{ secrets.GH_PAGES_PAT }} # Используем PAT для доступа
 
       - name: Download artifacts
         uses: actions/download-artifact@v4

@@ -5,6 +5,9 @@ inputs:
   test-results-path:
     description: 'Path to TestResults.xcresult'
     required: true
+  github-token:
+    description: 'GitHub token for API calls'
+    required: true
 
 runs:
   using: "composite"
@@ -18,6 +21,12 @@ runs:
       shell: bash
       run: |
         mkdir -p "coverage-report"
+    
+    - name: Get GitHub Info
+      id: github_info
+      uses: ./.github/actions/github-info
+      with:
+        github-token: ${{ inputs.github-token }}
 
     - name: Generate HTML report
       shell: bash
@@ -36,7 +45,11 @@ runs:
         layout: swift-dashboard
         title: Swift Coverage Report
         iframe_path: coverage-report.html
-        is_main_branch: true
+        is_main_branch: ${{ steps.github_info.outputs.is_main_branch }}
+        branches:
+        ${{ steps.github_info.outputs.branch_list_yaml }}
+        builds:
+        ${{ steps.github_info.outputs.build_list_yaml }}
         ---
         EOF
 

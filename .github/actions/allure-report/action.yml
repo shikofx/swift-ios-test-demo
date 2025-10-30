@@ -5,6 +5,9 @@ inputs:
   test-results-path:
     description: 'Path to the TestResults.xcresult file.'
     required: true
+  github-token:
+    description: 'GitHub token for API calls'
+    required: true
 
 runs:
   using: "composite"
@@ -39,6 +42,12 @@ runs:
         echo "" > ./index-page-with-allure/_config.yml
         echo "include: [\"reports/allure\"]" >> ./index-page-with-allure/_config.yml
 
+    - name: Get GitHub Info
+      id: github_info
+      uses: ./.github/actions/github-info
+      with:
+        github-token: ${{ inputs.github-token }}
+
     - name: Create Allure Page
       shell: bash
       run: |
@@ -47,7 +56,11 @@ runs:
         layout: swift-allure-main-page
         title: Allure Test Report 
         iframe_path: /reports/allure/index.html
-        is_main_branch: ${{ github.ref == 'refs/heads/main' }}
+        is_main_branch: ${{ steps.github_info.outputs.is_main_branch }}
+        branches:
+        ${{ steps.github_info.outputs.branch_list_yaml }}
+        builds:
+        ${{ steps.github_info.outputs.build_list_yaml }}
         ---
         EOF
 
