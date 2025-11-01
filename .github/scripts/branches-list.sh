@@ -4,8 +4,12 @@
 # and sets them as a multi-line output variable for GitHub Actions.
 
 # Using mktemp -u for a robust, unique delimiter string
-EOF_MARKER=$(mktemp -u XXXXXXXXXX)
+PAGES_REPO_PATH=$1
+PROJECT_NAME=$2
+PROJECT_PATH="$PAGES_REPO_PATH/$PROJECT_NAME"
 
-echo "branch_list_yaml<<${EOF_MARKER}" >> $GITHUB_OUTPUT
-git ls-remote --heads origin | awk '{print $2}' | sed 's|refs/heads/||' | grep -v '^main$' | sed 's/^/    - /' >> $GITHUB_OUTPUT
-echo "${EOF_MARKER}" >> $GITHUB_OUTPUT
+if [ -d "$PROJECT_PATH" ]; then
+  ls -1 "$PROJECT_PATH" | grep -v '^main$'
+else
+  echo ""
+fi

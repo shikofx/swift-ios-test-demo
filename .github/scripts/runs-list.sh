@@ -1,20 +1,12 @@
 #!/bin/bash
 
-# This script fetches the last 15 workflow runs for the current branch
-# from the GitHub API, formats them as a YAML list of objects, and sets
-# them as a multi-line output variable for GitHub Actions.
+PAGES_REPO_PATH=$1
+PROJECT_NAME=$2
+BRANCH_NAME=$3
+BRANCH_PATH="$PAGES_REPO_PATH/$PROJECT_NAME/$BRANCH_NAME"
 
-EOF_MARKER=$(mktemp -u XXXXXXXXXX)
-
-echo "build_list_yaml<<${EOF_MARKER}" >> $GITHUB_OUTPUT
-
-# Fetch workflow runs for the current branch from the GitHub API
-curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-     -H "Accept: application/vnd.github.v3+json" \
-     "https://api.github.com/repos/${{ github.repository }}/actions/workflows/ci-flow.yml/runs?branch=${{ github.ref_name }}&per_page=15" \
-     | jq -r '
-        .workflow_runs | .[] |
-        "    - number: \(.run_number)\n      date: \"\(.created_at | fromdate | strftime("%d-%m-%Y %H:%M"))\"\n      status: \"\(.conclusion)\"\n      hash: \"\(.head_sha | .[:7])\""
-       ' >> $GITHUB_OUTPUT
-
-echo "${EOF_MARKER}" >> $GITHUB_OUTPUT
+if [ -d "$BRANCH_PATH" ]; then
+  ls -1 "$BRANCH_PATH" | grep -E '^[0-9]+$' | sort -rn
+else
+  echo ""
+fi
