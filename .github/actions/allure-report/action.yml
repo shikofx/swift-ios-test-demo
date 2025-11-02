@@ -56,11 +56,6 @@ runs:
         layout: swift-allure-main-page
         title: Allure Test Report 
         iframe_path: /reports/allure/index.html
-        is_main_branch: ${{ steps.github_info.outputs.is_main_branch }}
-        branches:
-        ${{ steps.github_info.outputs.branch_list_yaml }}
-        builds:
-        ${{ steps.github_info.outputs.build_list_yaml }}
         ---
         EOF
 

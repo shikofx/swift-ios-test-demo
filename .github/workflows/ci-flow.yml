@@ -131,10 +131,6 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Configure github pages
-        id: gh-pages
-        uses: actions/configure-pages@v5
-
       - name: Checkout project repository
         uses: actions/checkout@v4
 
@@ -143,63 +139,55 @@ jobs:
         with:
           repository: shikofx/github-pages
           path: gh-pages-repo
+          ref: ${{ github.event.repository.name }} # Указываем, что работать нужно с веткой, названной как наш репозиторий
           token: ${{ secrets.GH_PAGES_PAT }} 
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           path: .artifacts
-
-      - name: Prepare .site content
+      
+      - name: Prepare and publish raw data
         run: |
-          mkdir -p .site/reports/swiftlint && mv .artifacts/swiftlint-report/* .site/reports/swiftlint/ || echo "swiftlint-report not found"
-          mkdir -p .site/reports/swiftformat && mv .artifacts/swiftformat-report/* .site/reports/swiftformat/ || echo "swiftformat-report not found"
-          mkdir -p .site/reports/coverage && mv .artifacts/coverage-report/* .site/reports/coverage/ || echo "coverage-report not found"
-          mkdir -p .site/reports/allure && mv .artifacts/allure-report/* .site/reports/allure/ || echo "allure-report not found"
-          mv .artifacts/index-page-with-allure/index.md .site/index.md || echo "index.md not found"
-
-      - name: Inject GitHub metadata into Jekyll config
+          # Определяем общий статус предыдущих jobs
+          CONCLUSION="success"
+          # Статус всего билда определяется успехом или провалом ключевого job'а - unit_tests.
+          if [[ "${{ needs.unit_tests.result }}" == "failure" ]]; then
+            CONCLUSION="failure"
+          fi
+          
+          # Вызываем скрипт, который создает папки и мета-файлы
+          bash ./.github/scripts/create-publish-data.sh \
+            "gh-pages-repo" \
+            ".artifacts" \
+            "${{ github.ref_name }}" \
+            "${{ github.run_number }}" \
+            "${{ github.sha }}" \
+            "${{ github.actor }}" \
+            "$CONCLUSION" \
+            "${{ github.event.repository.name }}"
+      
+      - name: Commit and Push data to github-pages
         run: |
-          cat .artifacts/index-page-with-allure/_config.yml >> .site/_config.yml || echo "_config.yml not found"
-          echo "Adding GitHub metadata to .site/_config.yml"
-          echo "" >> .site/_config.yml
-          echo "timezone: Europe/Minsk" >> .site/_config.yml
-          echo "github:" >> .site/_config.yml
-          echo "  repository_url: ${{ github.server_url }}/${{ github.repository }}" >> .site/_config.yml
-          echo "  actor: ${{ github.actor }}" >> .site/_config.yml
-          echo "  event_name: ${{ github.event_name }}" >> .site/_config.yml
-          echo "  ref_name: ${{ github.ref_name }}" >> .site/_config.yml
-          echo "  sha: ${{ github.sha }}" >> .site/_config.yml
-          echo "  run_id: ${{ github.run_id }}" >> .site/_config.yml
-          echo "  run_number: ${{ github.run_number }}" >> .site/_config.yml
-
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
-        env:
-          JEKYLL_VERBOSE: true
-        with:
-          source: ./.site
-          destination: ./_site
-            
-      - name: Upload site artifact
-        uses: actions/upload-pages-artifact@v3
-
-  deploy_site: 
-    name: Deploy Reports Site
-    runs-on: ubuntu-latest
-    needs: build_site
-    if: always()
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Set sanitized branch name for artifact
-        id: set_vars 
-        run: echo "sanitized_branch=${GITHUB_REF_NAME//\//-}" >> $GITHUB_ENV
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          cd gh-pages-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          # Коммитим и пушим изменения в целевую ветку
+          if ! git diff --staged --quiet; then
+            git commit -m "Add report for build ${{ github.run_number }} from ${{ github.repository }}"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+      
+      - name: Show report URL
+        run: |
+          echo "================================================================="
+          echo "Data has been published to the shikofx/github-pages repository."
+          echo "The report will be available at the following URL after the site is built:"
+          echo "https://shikofx.github.io/github-pages/${{ github.event.repository.name }}/$(echo ${{ github.ref_name }} | sed 's/\//-/g')/${{ github.run_number }}/"
+          echo "================================================================="
 
   # build_app:
   #   name: Build App

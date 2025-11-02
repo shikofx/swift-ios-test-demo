@@ -23,8 +23,12 @@ runs:
     - name: 'Install SwiftFormat'
       shell: bash
       run: |
-        brew install swiftformat
-        echo "SwiftFormat installed."
+        if ! command -v swiftformat &> /dev/null; then
+          echo "SwiftFormat not found. Installing via Homebrew..."
+          brew install swiftformat
+        else
+          echo "SwiftFormat is already installed."
+        fi
 
     - name: Run SwiftFormat. Generate JSON data
       shell: bash
@@ -58,11 +62,6 @@ runs:
         layout: swift-dashboard
         title: SwiftFormat Style Report
         iframe_path: swiftformat-report.html
-        is_main_branch: ${{ steps.github_info.outputs.is_main_branch }}
-        branches:
-        ${{ steps.github_info.outputs.branch_list_yaml }}
-        builds:
-        ${{ steps.github_info.outputs.build_list_yaml }}
         ---
         EOF
 
