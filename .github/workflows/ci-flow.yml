@@ -186,7 +186,7 @@ jobs:
           echo "================================================================="
           echo "Data has been published to the shikofx/github-pages repository."
           echo "The report will be available at the following URL after the site is built:"
-          echo "https://shikofx.github.io/github-pages/${{ github.event.repository.name }}/$(echo ${{ github.ref_name }} | sed 's/\//-/g')/${{ github.run_number }}/"
+          echo "https://shikofx.github.io/github-pages/projects/${{ github.event.repository.name }}/$(echo ${{ github.ref_name }} | sed 's/\//-/g')/${{ github.run_number }}/"
           echo "================================================================="
 
   # build_app:
