@@ -135,7 +135,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: .artifacts
-
+          
       - name: Prepare .site content
         run: |
           mkdir -p .site/reports/swiftlint
@@ -146,6 +146,7 @@ jobs:
           mkdir -p .site/reports/allure
           mv .artifacts/allure-report/* .site/reports/allure/ || echo "allure-report not found"
           mv .artifacts/index-page-with-allure/index.md .site/index.md || echo "index.md not found"
+          cp -r .artifacts/previous-site-version/* .site/ || echo "previous-site-version not found"
           cat .artifacts/index-page-with-allure/_config.yml >> .site/_config.yml || echo "_config.yml not found"
 
       - name: Inject GitHub metadata into Jekyll config
@@ -161,6 +162,7 @@ jobs:
           echo "  sha: ${{ github.sha }}" >> .site/_config.yml
           echo "  run_id: ${{ github.run_id }}" >> .site/_config.yml
           echo "  run_number: ${{ github.run_number }}" >> .site/_config.yml
+          echo "baseurl: /${{ github.event.repository.name }}/${{ github.ref_name }}/${{ github.run_number }}" >> .site/_config.yml
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
@@ -168,7 +170,35 @@ jobs:
           JEKYLL_VERBOSE: true
         with:
           source: ./.site
-          destination: ./_site
+          destination: ./_site/${{github.ref_name}}/${{ github.run_number }}
+
+      - name: Find previous successful run
+        id: find_previous_run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Ищем последний успешный запуск этого воркфлоу для текущей ветки,
+          # который не является текущим запуском.
+          previous_run_id=$(gh api "repos/${{ github.repository }}/actions/workflows/ci-flow.yml/runs?branch=${{ github.ref_name }}&status=success" \
+            --jq '.workflow_runs | map(select(.id != ${{ github.run_id }})) | .[0].id')
+
+          if [ -n "$previous_run_id" ] && [ "$previous_run_id" != "null" ]; then
+            echo "Found previous successful run ID: $previous_run_id"
+            echo "run_id=$previous_run_id" >> $GITHUB_OUTPUT
+          else
+            echo "No previous successful run found for this branch. Skipping download."
+          fi
+
+      - name: Download previous site artifact
+        if: steps.find_previous_run.outputs.run_id
+        uses: ./.github/actions/previous-site
+        with:
+          source_run_id: ${{ steps.find_previous_run.outputs.run_id }}
+          download_path: ./.history
+
+      - name: Copy history to the _site directory
+        run: |
+          sudo cp -r ./.history/* ./_site/
             
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
@@ -180,7 +210,7 @@ jobs:
     if: always()
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url }}${{github.ref_name}}/${{ github.run_number }}
     steps:
       - name: Set sanitized branch name for artifact
         id: set_vars 
@@ -208,5 +238,4 @@ jobs:
   #         name: sdet-demo-app
   #         path: SDET-Demo-App.zip
   #         retention-days: 7
- 
   
