@@ -1,0 +1,61 @@
+name: 'Download Previous Site Artifact'
+description: 'Finds and downloads the "github-pages" artifact from a specified previous workflow run.'
+
+inputs:
+  source_run_id:
+    description: 'ID of the workflow run to download the site artifact from.'
+    required: true
+  token:
+    description: 'GitHub token for API authentication.'
+    required: true
+    default: ${{ github.token }}
+  download_path:
+    description: 'Path to download and extract the artifact to.'
+    required: false
+    default: 'previous-site'
+
+outputs:
+  site_path:
+    description: 'The path to the directory containing the downloaded site content.'
+    value: ${{ steps.set_output.outputs.path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Find 'github-pages' artifact ID
+      id: find_artifact
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        echo "Searching for 'github-pages' artifact in Run ID: ${{ inputs.source_run_id }}"
+        artifact_id=$(gh api "repos/${{ github.repository }}/actions/runs/${{ inputs.source_run_id }}/artifacts" | jq '.artifacts[] | select(.name == "github-pages") | .id')
+
+        if [ -z "$artifact_id" ]; then
+          echo "::error::Could not find 'github-pages' artifact in Run ID ${{ inputs.source_run_id }}."
+          exit 1
+        fi
+        echo "Found artifact ID: $artifact_id"
+        echo "artifact_id=$artifact_id" >> $GITHUB_OUTPUT
+
+    - name: Download and extract artifact
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        echo "Downloading and extracting artifact ${{ steps.find_artifact.outputs.artifact_id }} to ${{ inputs.download_path }}"
+        mkdir -p ${{ inputs.download_path }}
+        download_url=$(gh api "repos/${{ github.repository }}/actions/artifacts/${{ steps.find_artifact.outputs.artifact_id }}" --jq '.archive_download_url')
+        curl -L -o artifact.zip \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ inputs.token }}" \
+          "$download_url"
+        unzip -o artifact.zip -d "${{ inputs.download_path }}"
+        tar -xvf ${{ inputs.download_path }}/artifact.tar -C "${{ inputs.download_path }}"
+        rm artifact.zip
+        rm ${{ inputs.download_path }}/artifact.tar
+
+    - name: Set output path
+      id: set_output
+      shell: bash
+      run: echo "path=${{ inputs.download_path }}" >> $GITHUB_OUTPUT
