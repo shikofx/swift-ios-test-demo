@@ -199,10 +199,6 @@ jobs:
       - name: Copy history to the _site directory
         run: |
           sudo cp -r ./.history/* ./_site/
-
-      - name: Verify _site content
-        run: |
-          ls -R .
             
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
