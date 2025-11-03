@@ -103,7 +103,7 @@ class ProductPageDetailViewController: UIViewController {
         selectedColor = "Gray"
     }
     
-    @IBAction func addToCartButton(_ sender: Any) {
+    @IBAction func addToCartButton(_ sender: UIButton) {
         
         Engine.sharedInstance.cartCount += productQuantity
         cartCountLbl.text = String(Engine.sharedInstance.cartCount)
@@ -143,7 +143,7 @@ class ProductPageDetailViewController: UIViewController {
 
     }
     
-    @IBAction func addButton(_ sender: Any) {
+    @IBAction func addButton(_ sender: UIButton) {
         productQuantity = productQuantity + 1
         productCountLbl.text = String(productQuantity)
         

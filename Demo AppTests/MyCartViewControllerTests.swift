@@ -33,7 +33,7 @@ final class MyCartViewControllerTest: XCTestCase {
     
     
     
-    func test_calculateTotalPrice_when_cartIsEmpty_then_zero() {
+    func testCalculateTotalPriceForEmptyCart() {
         given("empty card list")  { _ in
             engine.cartList = []
         }
@@ -49,7 +49,7 @@ final class MyCartViewControllerTest: XCTestCase {
     
     }
     
-    func test_calculateTotalPrice_when_cartHasOneItem_then_correctPrice() {
+    func testCalculateTotalPriceWhenCartHasOneItem() {
         given("cart with one item")  { _ in
             engine.cartList = [
                 ["ProductPrice": "15.99", "ProductQuantity": 2]
@@ -65,7 +65,7 @@ final class MyCartViewControllerTest: XCTestCase {
         }
     }
     
-    func test_calculateTotalPrice_when_cartHasMultipleItems_then_correctPrice() {
+    func testCalculateTotalPriceWhenCartHasMultipleItems() {
         given("cart with multiple items")  { _ in
             engine.cartList = [
                 ["ProductPrice": "15.99", "ProductQuantity": 2],
@@ -83,7 +83,7 @@ final class MyCartViewControllerTest: XCTestCase {
         }
     }
     
-    func test_addButton_increses_QuantityAndCartCount() {
+    func testAddButtonIncresesQuantityAndCartCount() {
         given("cart with one item")  { _ in
             engine.cartCount = 1
             engine.cartList = [
@@ -103,7 +103,7 @@ final class MyCartViewControllerTest: XCTestCase {
         })
     }
 
-    func test_subtractButton_RemovesProduct_WhenQuantityIsOne() {
+    func testSubtractButtonRemovesProductWhenQuantityIsOne() {
         given("cart with one item") { _ in
             let item: NSMutableDictionary = ["ProductPrice": "10.00", "ProductQuantity": 1]
             engine.cartList = [item]
@@ -122,7 +122,7 @@ final class MyCartViewControllerTest: XCTestCase {
         }
     }
 
-    func test_subtractButton_decreases_QuantityAndCartCount() {
+    func testSubtractButtonDecreasesQuantityAndCartCount() {
         given("product quantity is 3 and cart count is 3") { _ in
             let item: NSMutableDictionary = ["ProductPrice": "10.00", "ProductQuantity": 3]
             engine.cartList = [item]
@@ -142,7 +142,7 @@ final class MyCartViewControllerTest: XCTestCase {
         }
     }
 
-    func test_deleteProduct_removesProductFromCart() {
+    func testDeleteProductRemovesProductFromCart() {
         given("cart with one item") { _ in
             let item: NSMutableDictionary = ["ProductPrice": "10.00", "ProductQuantity": 3]
             engine.cartList = [item]
