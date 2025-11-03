@@ -168,7 +168,7 @@ jobs:
           JEKYLL_VERBOSE: true
         with:
           source: ./.site
-          destination: ./_site
+          destination: ./_site/${{github.ref_name}}/${{ github.run_number }}
             
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
@@ -180,7 +180,7 @@ jobs:
     if: always()
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url }}${{github.ref_name}}/${{ github.run_number }}
     steps:
       - name: Set sanitized branch name for artifact
         id: set_vars 
