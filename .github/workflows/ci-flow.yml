@@ -161,6 +161,7 @@ jobs:
           echo "  sha: ${{ github.sha }}" >> .site/_config.yml
           echo "  run_id: ${{ github.run_id }}" >> .site/_config.yml
           echo "  run_number: ${{ github.run_number }}" >> .site/_config.yml
+          echo "baseurl: /${{ github.event.repository.name }}/${{ github.ref_name }}/${{ github.run_number }}" >> .site/_config.yml
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
