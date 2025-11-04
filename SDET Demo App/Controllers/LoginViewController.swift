@@ -20,6 +20,8 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var cartCountContView: UIView!
     @IBOutlet weak var faceLoginContView: UIView!
     
+    var methods: AlertPresenter = Methods()
+    
     var isFromProcessCheckout = false
     
     override func viewDidLoad() {
@@ -55,12 +57,12 @@ class LoginViewController: UIViewController {
         passwordTF.text = "10203040"
     }
     
-    @IBAction func LoginButton(_ sender: Any) {
+    @IBAction func loginButton(_ sender: Any) {
         if(!userNameTF.hasText){
-            Methods.showAlertMessage(vc: self, title: "Validation Error!", message: "Username is required")
+            methods.showAlertMessage(vc: self, title: "Validation Error!", message: "Username is required")
         }
         else if (!passwordTF.hasText) {
-            Methods.showAlertMessage(vc: self, title: "Validation Error!", message: "Password is required")
+            methods.showAlertMessage(vc: self, title: "Validation Error!", message: "Password is required")
         }
         else {
             if isFromProcessCheckout{
@@ -143,6 +145,16 @@ class LoginViewController: UIViewController {
         }
         
         
+    }
+}
+
+protocol AlertPresenter {
+    func showAlertMessage(vc: UIViewController, title: NSString, message: NSString)
+}
+
+extension Methods: AlertPresenter {
+    func showAlertMessage(vc: UIViewController, title: NSString, message: NSString) {
+        Methods.showAlertMessage(vc: vc, title: title, message: message)
     }
 }
 

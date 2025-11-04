@@ -3,8 +3,8 @@ name: IOS-DEMO
 on:
   push:
     branches:
-      - test
-      - 'feature/**' # Запускать при push в feature-ветки
+      - '**' 
+      
   pull_request:
     branches:
       - main
@@ -35,38 +35,39 @@ jobs:
       - name: Create SwiftFormat Report
         uses: ./.github/actions/swiftformat-report
 
-# build_for_testing:
-  #   name: Build for Testing
-  #   needs: [swiftlint_analysis, swiftformat_analysis]
-  #   runs-on: macos-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+  build_for_testing:
+    name: Build for Testing
+    needs: [swiftlint_analysis, swiftformat_analysis]
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Cache Xcode DerivedData
-  #       uses: actions/cache@v4
-  #       with:
-  #         path: build
-  #         key: ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('**/Podfile.lock') }}-${{ hashFiles('**/*.swift') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('**/Podfile.lock') }}-
-  #           ${{ runner.os }}-xcode-deriveddata-
+      - name: Cache Xcode DerivedData
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('**/Podfile.lock') }}-${{ hashFiles('**/*.swift') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('**/Podfile.lock') }}-
+            ${{ runner.os }}-xcode-deriveddata-
 
-  #     - name: Build for Testing
-  #       uses: ./.github/actions/build-for-testing
+      - name: Build for Testing
+        uses: ./.github/actions/build-for-testing
 
-  #     - name: Upload artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: xctestrun-build
-  #         path: build
-  #         retention-days: 1
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: xctestrun-build
+          path: build
+          retention-days: 1
 
   unit_tests:
     name: Unit Tests
     needs: [
       swiftlint_analysis, 
-      swiftformat_analysis
+      swiftformat_analysis,
+      build_for_testing
     ]
     runs-on: macos-latest
     steps:

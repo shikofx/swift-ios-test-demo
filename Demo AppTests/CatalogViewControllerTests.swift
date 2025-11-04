@@ -25,7 +25,7 @@ final class CatalogViewControllerTests: XCTestCase {
         
         let storyboard = UIStoryboard(name: "TabBar", bundle: nil)
         controller = storyboard.instantiateViewController(identifier: "CatalogViewController") as? CatalogViewController
-        controller.loadViewIfNeeded() // <-- Важный шаг: загружаем view, чтобы outlets были доступны
+        controller.loadViewIfNeeded() 
     }
     
     override func tearDown() {
