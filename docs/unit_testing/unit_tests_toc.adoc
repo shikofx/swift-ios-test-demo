@@ -1,0 +1,29 @@
+= Основы Unit-тестирования на Swift
+:toc:
+:toc-title: Содержание
+
+Этот раздел содержит серию уроков, посвященных основам написания Unit-тестов для iOS-приложений с использованием фреймворка XCTest.
+
+== Уроки
+
+* <<_урок_1_пирамида_тестирования_и_роль_unit_тестов,Урок 1: Пирамида тестирования и роль Unit-тестов>>
+* <<_урок_2_подходы_к_написанию_unit_тестов_на_swift,Урок 2: Подходы к написанию Unit-тестов на Swift>>
+* <<_урок_3_работа_с_таргетами_в_xcode,Урок 3: Работа с таргетами в Xcode>>
+* <<_урок_4_структура_и_жизненный_цикл_теста_в_xctest,Урок 4: Структура и жизненный цикл теста в XCTest>>
+* <<_урок_5_проверки_assertions_в_xctest,Урок 5: Проверки (Assertions) в XCTest>>
+* <<_урок_6_параметризация_и_data_driven_тесты,Урок 6: Параметризация и Data-Driven тесты>>
+* <<_практика_unit_тестирования_на_примере_mycartviewcontroller,Урок 7: Практика на примере MyCartViewController>>
+* <<_создание_dsl_для_тестов_bdd_и_интеграция_с_allure,Урок 8: Создание DSL для тестов (BDD)>>
+* <<_практика_unit_тестирования_catalogviewcontroller,Урок 9: Практика на примере CatalogViewController>>
+* <<_практика_unit_тестирования_productpagedetailviewcontroller,Урок 10: Практика на примере ProductPageDetailViewController>>
+
+include::01_test_pyramid.adoc[leveloffset=+1]
+include::02_unit_testing_approaches.adoc[leveloffset=+1]
+include::03_xcode_targets.adoc[leveloffset=+1]
+include::04_xctest_structure_and_lifecycle.adoc[leveloffset=+1]
+include::05_xctest_assertions.adoc[leveloffset=+1]
+include::06_data_driven_testing.adoc[leveloffset=+1]
+include::07_my-cart-view-controller-tests.adoc[leveloffset=+1]
+include::08_bdd-dsl-and-allure-integration.adoc[leveloffset=+1]
+include::09_catalog-view-controller-tests.adoc[leveloffset=+1]
+include::10_product-page-detail-view-controller-tests.adoc[leveloffset=+1]

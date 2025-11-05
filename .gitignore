@@ -34,4 +34,4 @@ allure-report/
 test-reports/
 xcov_report/
 *.zip
-# /**/*.xcresult
+/**/*.xcresult

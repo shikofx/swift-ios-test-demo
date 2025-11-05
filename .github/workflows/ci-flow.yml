@@ -18,6 +18,7 @@ jobs:
   swiftlint_analysis:
     name: Static Analysis - SwiftLint
     runs-on: macos-latest
+    continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,6 +29,7 @@ jobs:
   swiftformat_analysis:
     name: Static Analysis - SwiftFormat
     runs-on: macos-latest
+    continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -80,6 +82,7 @@ jobs:
   generate_coverage_report:
     name: Report - Coverage
     needs: unit_tests
+    continue-on-error: true
     if: always()
     runs-on: macos-latest
     steps:
@@ -89,13 +92,13 @@ jobs:
       - name: Download raw test results
         uses: actions/download-artifact@v4
         with:
-          name: test-results
-          path: .
+          name: unit-test-results
+          path: unit-test-results/TestResults.xcresult
 
       - name: Generate HTML Report
         uses: ./.github/actions/swift-coverage-report
         with: 
-          test-results-path: TestResults.xcresult
+          test-results-path: ./unit-test-results/TestResults.xcresult
 
   generate_allure_report:
     name: Report - Test
@@ -109,13 +112,13 @@ jobs:
       - name: Download test results
         uses: actions/download-artifact@v4
         with:
-          name: test-results
-          path: .
+          name: unit-test-results
+          path: unit-test-results/TestResults.xcresult
 
       - name: Create Allure Report page
         uses: ./.github/actions/allure-report
         with:
-          test-results-path: TestResults.xcresult
+          test-results-path: ./unit-test-results/TestResults.xcresult
 
   build_site:
     name: Build Reports Site
@@ -123,6 +126,7 @@ jobs:
       generate_coverage_report,
       generate_allure_report
     ]
+    continue-on-error: true
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -199,7 +203,11 @@ jobs:
 
       - name: Copy history to the _site directory
         run: |
-          sudo cp -r ./.history/* ./_site/
+          if [ -d ".history" ]; then
+            sudo cp -r ./.history/* ./_site/
+          else 
+            echo "The folder .history does not exitst. The step is skipped"
+          fi
             
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3

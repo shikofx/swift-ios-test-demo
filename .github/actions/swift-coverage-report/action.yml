@@ -19,6 +19,11 @@ runs:
       run: |
         mkdir -p "coverage-report"
 
+    - name: List files for debugging (first 4 levels)
+      shell: bash
+      run: |
+        find . -maxdepth 4 -print
+
     - name: Generate HTML report
       shell: bash
       run: |
