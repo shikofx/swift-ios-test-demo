@@ -1,0 +1,156 @@
+= Практика Unit-тестирования: ProductPageDetailViewController
+:source-highlighter: highlight.js
+
+== Цели урока
+
+*   Научиться тестировать `UIViewController`, которому для работы требуются начальные данные.
+*   Закрепить навыки симуляции последовательных действий пользователя (изменение количества, добавление в корзину).
+*   Покрыть тестами бизнес-логику добавления товаров в корзину.
+
+---
+
+== Теория
+
+На этом уроке мы напишем тесты для `ProductPageDetailViewController`. Его основная задача — отображать детальную информацию о товаре и позволять пользователю добавлять его в корзину, предварительно выбрав количество.
+
+=== Подготовка к тестированию (`setUp`)
+
+В отличие от `CatalogViewController`, `ProductPageDetailViewController` не может работать "из коробки". Ему необходимо передать данные о товаре, который он должен отобразить. Мы будем делать это в `setUp()` сразу после его создания и *до* загрузки `view`.
+
+[source,swift]
+----
+final class ProductPageDetailViewControllerTests: XCTestCase {
+
+    var engine: Engine!
+    var controller: ProductPageDetailViewController!
+
+    override func setUp() {
+        // Given: Создаем чистый экземпляр Engine
+        engine = Engine()
+        Engine.sharedInstance = engine
+
+        // Given: Загружаем контроллер из Storyboard
+        let storyboard = UIStoryboard(name: "TabBar", bundle: nil)
+        controller = storyboard.instantiateViewController(withIdentifier: "ProductPageDetailViewController") as? ProductPageDetailViewController
+        
+        // Given: Передаем в контроллер данные о товаре
+        controller.productName = "Sauce Labs Backpack"
+        controller.productPrice = "29.99"
+        controller.productId = "bag-black"
+        // ... и другие необходимые свойства ...
+
+        // Given: Загружаем view, чтобы IBOutlets были инициализированы
+        controller.loadViewIfNeeded()
+    }
+    // ...
+}
+----
+
+Ключевой момент здесь — передача данных (`productName`, `productPrice` и т.д.) *до* вызова `controller.loadViewIfNeeded()`. Это позволяет методу `viewDidLoad()` внутри контроллера корректно отработать и отобразить правильную информацию, так как на момент его вызова все необходимые данные уже будут на месте.
+
+---
+
+=== Симуляция последовательных действий
+
+В этом контроллере пользователь может выполнить несколько действий подряд: сначала несколько раз нажать на "+", чтобы увеличить количество товара, а затем нажать "Add to Cart". В тестах мы можем симулировать эту последовательность, просто вызывая соответствующие `@IBAction` методы один за другим.
+
+[source,swift]
+----
+when("пользователь увеличивает количество до 3 и добавляет товар в корзину") { _ in
+    // Симулируем два нажатия на кнопку "+"
+    controller.addButton(controller.addBtn)
+    controller.addButton(controller.addBtn)
+    
+    // Симулируем нажатие на кнопку "Add to Cart"
+    controller.addToCartButton(controller.addToCartBtn)
+}
+----
+
+Это позволяет нам тестировать более сложные сценарии взаимодействия пользователя с экраном.
+
+== Практика: Пишем тесты для добавления в корзину
+
+Мы напишем тесты для трех ключевых сценариев.
+
+=== UC-PPDV-001: Добавление одного товара в корзину
+
+*Тест:* Проверяем, что при нажатии на "Add to Cart" товар корректно добавляется в корзину.
+
+[source,swift]
+----
+func test_addToCart_when_singleItem_then_cartIsUpdated() {
+    given("пустая корзина и страница товара") {
+        engine.cartList = []
+        engine.cartCount = 0
+    }
+
+    when("пользователь добавляет товар в корзину") {
+        controller.addToCartButton(controller.addToCartBtn)
+    }
+
+    then("товар появляется в корзине, и счетчик обновляется") {
+        XCTAssertEqual(engine.cartList.count, 1, "В корзине должен быть один товар")
+        XCTAssertEqual(engine.cartCount, 1, "Счетчик корзины должен быть равен 1")
+        
+        let cartItem = engine.cartList.first!
+        XCTAssertEqual(cartItem["ProductQuantity"] as? Int, 1, "Количество товара должно быть 1")
+    }
+}
+----
+
+=== UC-PPDV-002: Добавление нескольких единиц одного товара
+
+*Тест:* Проверяем, что если пользователь сначала увеличил количество товара, то в корзину добавится правильное количество.
+
+[source,swift]
+----
+func test_addToCart_when_multipleItems_then_cartIsUpdatedWithCorrectQuantity() {
+    given("пустая корзина и страница товара") { /* ... */ }
+
+    when("пользователь увеличивает количество до 3 и добавляет товар в корзину") {
+        controller.addButton(controller.addBtn) // quantity = 2
+        controller.addButton(controller.addBtn) // quantity = 3
+        controller.addToCartButton(controller.addToCartBtn)
+    }
+
+    then("в корзине появляется один товар с количеством 3") {
+        XCTAssertEqual(engine.cartList.count, 1)
+        XCTAssertEqual(engine.cartCount, 3, "Счетчик корзины должен быть равен 3")
+        
+        let cartItem = engine.cartList.first!
+        XCTAssertEqual(cartItem["ProductQuantity"] as? Int, 3, "Количество товара должно быть 3")
+    }
+}
+----
+
+=== UC-PPDV-003: Повторное добавление того же товара
+
+*Тест:* Проверяем, что если пользователь добавляет в корзину товар, который там уже есть, то новый товар не создается, а обновляется количество у существующего.
+
+[source,swift]
+----
+func test_addToCart_when_addingSameItemTwice_then_quantityIsUpdated() {
+    given("пустая корзина и страница товара") { /* ... */ }
+
+    when("пользователь дважды добавляет товар в корзину") {
+        controller.addToCartButton(controller.addToCartBtn) // Добавили первый раз
+        controller.addToCartButton(controller.addToCartBtn) // Добавили второй раз
+    }
+
+    then("в корзине остается один товар, но его количество равно 2") {
+        XCTAssertEqual(engine.cartList.count, 1, "В корзине должен остаться один товар")
+        XCTAssertEqual(engine.cartCount, 2, "Счетчик корзины должен быть равен 2")
+        
+        let cartItem = engine.cartList.first!
+        XCTAssertEqual(cartItem["ProductQuantity"] as? Int, 2, "Количество товара должно быть 2")
+    }
+}
+----
+
+== Заключение
+
+Мы успешно протестировали логику `ProductPageDetailViewController`. Ключевые моменты, которые мы освоили:
+
+*   **Инициализация с состоянием:** Научились передавать начальные данные в контроллер перед его тестированием.
+*   **Симуляция последовательных действий:** Смоделировали поведение пользователя, который выполняет несколько действий подряд.
+*   **Проверка сложной логики:** Убедились, что логика добавления и обновления товаров в корзине работает корректно.
