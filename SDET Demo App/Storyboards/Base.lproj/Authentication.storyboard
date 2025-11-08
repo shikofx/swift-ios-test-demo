@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BXJ-gN-Bmn">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BXJ-gN-Bmn">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22685"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -26,7 +25,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WwO-Of-zJ7">
-                                <rect key="frame" x="0.0" y="48" width="414" height="814"/>
+                                <rect key="frame" x="0.0" y="96" width="414" height="732"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="W3g-fT-lda" customClass="ViewShadowBottom" customModule="My_Demo_App" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="414" height="60"/>
@@ -60,7 +59,7 @@
                                                 </constraints>
                                             </view>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="My Cart" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ix6-AN-KJ7">
-                                                <rect key="frame" x="50" y="22" width="55" height="16"/>
+                                                <rect key="frame" x="50" y="20.5" width="57" height="19"/>
                                                 <fontDescription key="fontDescription" name="ProximaNova-Medium" family="Proxima Nova" pointSize="16"/>
                                                 <color key="textColor" red="0.094117647058823528" green="0.34509803921568627" blue="0.22745098039215686" alpha="1" colorSpace="calibratedRGB"/>
                                                 <nil key="highlightedColor"/>
@@ -77,31 +76,31 @@
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="l1s-ue-8bH">
-                                        <rect key="frame" x="0.0" y="62" width="414" height="608"/>
+                                        <rect key="frame" x="0.0" y="62" width="414" height="526"/>
                                         <subviews>
                                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aet-rh-yj3">
-                                                <rect key="frame" x="0.0" y="0.0" width="414" height="608"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="414" height="526"/>
                                                 <subviews>
                                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="CBq-zR-ALL">
                                                         <rect key="frame" x="0.0" y="0.0" width="414" height="612"/>
                                                         <subviews>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Login" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0Xk-4V-aM2">
-                                                                <rect key="frame" x="16" y="37" width="58.5" height="24"/>
+                                                                <rect key="frame" x="16" y="37" width="60" height="28"/>
                                                                 <fontDescription key="fontDescription" name="ProximaNova-Medium" family="Proxima Nova" pointSize="24"/>
                                                                 <nil key="textColor"/>
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Select a username from the list below" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BKC-Rr-FEr">
-                                                                <rect key="frame" x="16" y="93" width="382" height="16"/>
+                                                                <rect key="frame" x="16" y="97" width="382" height="19"/>
                                                                 <fontDescription key="fontDescription" name="ProximaNova-Medium" family="Proxima Nova" pointSize="16"/>
                                                                 <nil key="textColor"/>
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="User Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fuk-dO-CKv">
-                                                                <rect key="frame" x="16" y="141" width="79.5" height="16"/>
+                                                                <rect key="frame" x="16" y="148" width="80.5" height="19"/>
                                                                 <fontDescription key="fontDescription" name="ProximaNova-Medium" family="Proxima Nova" pointSize="16"/>
                                                                 <nil key="textColor"/>
                                                             </label>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rao-vG-IDx">
-                                                                <rect key="frame" x="16" y="165" width="382" height="45"/>
+                                                                <rect key="frame" x="16" y="175" width="382" height="45"/>
                                                                 <subviews>
                                                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Pxu-fh-Ovf" customClass="TextFieldBorderColor" customModule="My_Demo_App" customModuleProvider="target">
                                                                         <rect key="frame" x="0.0" y="0.0" width="382" height="45"/>
@@ -142,12 +141,12 @@
                                                                 </userDefinedRuntimeAttributes>
                                                             </view>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Password" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wH0-gj-3UT">
-                                                                <rect key="frame" x="16" y="242" width="68.5" height="16"/>
+                                                                <rect key="frame" x="16" y="252" width="71" height="19"/>
                                                                 <fontDescription key="fontDescription" name="ProximaNova-Medium" family="Proxima Nova" pointSize="16"/>
                                                                 <nil key="textColor"/>
                                                             </label>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ynu-zJ-YPI">
-                                                                <rect key="frame" x="16" y="266" width="382" height="45"/>
+                                                                <rect key="frame" x="16" y="279" width="382" height="45"/>
                                                                 <subviews>
                                                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="8K8-Ip-ghL" customClass="TextFieldBorderColor" customModule="My_Demo_App" customModuleProvider="target">
                                                                         <rect key="frame" x="0.0" y="0.0" width="382" height="45"/>
@@ -188,22 +187,22 @@
                                                                 </userDefinedRuntimeAttributes>
                                                             </view>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Usernames" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="a5O-tE-dwf">
-                                                                <rect key="frame" x="47" y="364" width="90.5" height="18"/>
+                                                                <rect key="frame" x="47" y="377" width="92" height="21"/>
                                                                 <fontDescription key="fontDescription" name="ProximaNova-Medium" family="Proxima Nova" pointSize="18"/>
                                                                 <nil key="textColor"/>
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Password" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QPQ-J6-U8Y">
-                                                                <rect key="frame" x="265" y="364" width="77" height="18"/>
+                                                                <rect key="frame" x="262" y="377" width="80" height="21"/>
                                                                 <fontDescription key="fontDescription" name="ProximaNova-Medium" family="Proxima Nova" pointSize="18"/>
                                                                 <nil key="textColor"/>
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="10203040" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="px5-uD-jmK">
-                                                                <rect key="frame" x="264" y="405.5" width="63" height="14"/>
+                                                                <rect key="frame" x="264.5" y="420" width="62.5" height="16.5"/>
                                                                 <fontDescription key="fontDescription" name="ProximaNova-Regular" family="Proxima Nova" pointSize="14"/>
                                                                 <color key="textColor" red="0.42745098039215684" green="0.45882352941176469" blue="0.51764705882352935" alpha="1" colorSpace="calibratedRGB"/>
                                                             </label>
                                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="g5G-MW-14h">
-                                                                <rect key="frame" x="50" y="398" width="124" height="28.5"/>
+                                                                <rect key="frame" x="50" y="414" width="124" height="28.5"/>
                                                                 <state key="normal">
                                                                     <attributedString key="attributedTitle">
                                                                         <fragment content="bob@example.com">
@@ -220,7 +219,7 @@
                                                                 </connections>
                                                             </button>
                                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wHO-iw-AWj">
-                                                                <rect key="frame" x="50" y="434.5" width="129" height="28.5"/>
+                                                                <rect key="frame" x="50" y="450.5" width="129" height="28.5"/>
                                                                 <state key="normal">
                                                                     <attributedString key="attributedTitle">
                                                                         <fragment content="alice@example.com">
@@ -238,7 +237,7 @@
                                                                 </connections>
                                                             </button>
                                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RIw-Dv-Bht">
-                                                                <rect key="frame" x="50" y="471" width="126" height="28.5"/>
+                                                                <rect key="frame" x="50" y="487" width="126" height="28.5"/>
                                                                 <state key="normal">
                                                                     <attributedString key="attributedTitle">
                                                                         <fragment content="john@example.com">
@@ -326,7 +325,7 @@
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="R63-WL-osC" customClass="ViewShadowTop" customModule="My_Demo_App" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="672" width="414" height="15"/>
+                                        <rect key="frame" x="0.0" y="590" width="414" height="15"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="15" id="kMr-iW-IlY"/>
@@ -338,7 +337,7 @@
                                         </userDefinedRuntimeAttributes>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hJg-Ju-VQf">
-                                        <rect key="frame" x="0.0" y="672" width="414" height="80"/>
+                                        <rect key="frame" x="0.0" y="590" width="414" height="80"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fso-Rl-o8c" customClass="ButtonRoundCorner" customModule="My_Demo_App" customModuleProvider="target">
                                                 <rect key="frame" x="16" y="16" width="382" height="48"/>
@@ -348,7 +347,7 @@
                                                     <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </state>
                                                 <connections>
-                                                    <action selector="LoginButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="HQ9-i3-jIb"/>
+                                                    <action selector="loginButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="HQ9-i3-jIb"/>
                                                 </connections>
                                             </button>
                                         </subviews>
@@ -367,7 +366,7 @@
                                         </userDefinedRuntimeAttributes>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FKV-5b-g72">
-                                        <rect key="frame" x="0.0" y="672" width="414" height="80"/>
+                                        <rect key="frame" x="0.0" y="590" width="414" height="80"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="P59-gr-kCa" customClass="ButtonRoundCorner" customModule="My_Demo_App" customModuleProvider="target">
                                                 <rect key="frame" x="100" y="16" width="298" height="48"/>
@@ -377,7 +376,7 @@
                                                     <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </state>
                                                 <connections>
-                                                    <action selector="LoginButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="IMM-BL-Lns"/>
+                                                    <action selector="loginButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="IMM-BL-Lns"/>
                                                 </connections>
                                             </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1Fg-0r-jDl" customClass="ButtonRoundCorner" customModule="My_Demo_App" customModuleProvider="target">
@@ -415,14 +414,14 @@
                                         </userDefinedRuntimeAttributes>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lGN-KS-yxs" customClass="ViewShadowTop" customModule="My_Demo_App" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="754" width="414" height="15"/>
+                                        <rect key="frame" x="0.0" y="672" width="414" height="15"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="15" id="SCD-Ia-94W"/>
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kY5-m6-z7f">
-                                        <rect key="frame" x="0.0" y="754" width="414" height="60"/>
+                                        <rect key="frame" x="0.0" y="672" width="414" height="60"/>
                                         <subviews>
                                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="xWi-xx-PIh">
                                                 <rect key="frame" x="0.0" y="0.0" width="414" height="60"/>
@@ -438,7 +437,7 @@
                                                                 </constraints>
                                                             </imageView>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Catalog" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EK8-5I-L48">
-                                                                <rect key="frame" x="52" y="38" width="34.5" height="10"/>
+                                                                <rect key="frame" x="51.5" y="38" width="35" height="12"/>
                                                                 <fontDescription key="fontDescription" name="ProximaNova-Medium" family="Proxima Nova" pointSize="10"/>
                                                                 <nil key="textColor"/>
                                                             </label>
@@ -500,7 +499,7 @@
                                                                 </constraints>
                                                             </view>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Cart" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YUE-09-awz">
-                                                                <rect key="frame" x="59.5" y="38" width="19" height="10"/>
+                                                                <rect key="frame" x="59.5" y="38" width="19.5" height="12"/>
                                                                 <fontDescription key="fontDescription" name="ProximaNova-Medium" family="Proxima Nova" pointSize="10"/>
                                                                 <nil key="textColor"/>
                                                             </label>
@@ -537,7 +536,7 @@
                                                                 </constraints>
                                                             </imageView>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="More" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8wt-eJ-Fdo">
-                                                                <rect key="frame" x="57.5" y="38" width="23" height="10"/>
+                                                                <rect key="frame" x="57.5" y="38" width="23" height="12"/>
                                                                 <fontDescription key="fontDescription" name="ProximaNova-Medium" family="Proxima Nova" pointSize="10"/>
                                                                 <nil key="textColor"/>
                                                             </label>
@@ -633,6 +632,7 @@
                     <toolbarItems/>
                     <nil key="simulatedTopBarMetrics"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="24V-oJ-97W">
+                        <rect key="frame" x="0.0" y="0.0" width="1000" height="1000"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -645,23 +645,6 @@
             <point key="canvasLocation" x="1820.289855072464" y="66.964285714285708"/>
         </scene>
     </scenes>
-    <designables>
-        <designable name="1Fg-0r-jDl">
-            <size key="intrinsicContentSize" width="342" height="48"/>
-        </designable>
-        <designable name="8K8-Ip-ghL">
-            <size key="intrinsicContentSize" width="31" height="34"/>
-        </designable>
-        <designable name="P59-gr-kCa">
-            <size key="intrinsicContentSize" width="342" height="48"/>
-        </designable>
-        <designable name="Pxu-fh-Ovf">
-            <size key="intrinsicContentSize" width="33" height="34"/>
-        </designable>
-        <designable name="fso-Rl-o8c">
-            <size key="intrinsicContentSize" width="342" height="48"/>
-        </designable>
-    </designables>
     <resources>
         <image name="AddToCartUnselected Icons" width="20" height="17.5"/>
         <image name="BackButton Icons" width="14" height="12"/>

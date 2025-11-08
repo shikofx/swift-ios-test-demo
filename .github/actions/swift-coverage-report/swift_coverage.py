@@ -151,26 +151,15 @@ def main(json_path, source_dir, output_path, repo_root):
             print(" -> Skipping: File is in 'Pods/' directory.")
             continue
 
-        # --- RESTRUCTURED LOGIC TO FIX PATHS ---
-        # Try to find the repo name in the original path to determine the project-relative path
-        path_parts = original_path.split(os.sep)
-        try:
-            # Find the index of the directory that is the repo name
-            repo_name_index = path_parts.index(repo_name)
-            # The relative path starts from the directory *after* the repo name
-            project_relative_path = os.path.join(*path_parts[repo_name_index+1:])
-            # Construct the absolute path on the runner
-            path_on_runner = os.path.join(absolute_repo_root, project_relative_path)
-            
-            print(f" -> Found repo '{repo_name}' in path. Relative path: {project_relative_path}")
-            print(f" -> Constructed runner path: {path_on_runner}")
-            # IMPORTANT: Update the path in file_info to the correct runner path
-            file_info['path'] = path_on_runner
-            relative_path = project_relative_path # Use this for display
-        except ValueError:
-            print(f" -> Skipping: Could not find repo name '{repo_name}' in path '{original_path}'.")
+        # The path from coverage.json is already absolute on the runner.
+        # We just need to make it relative to the repo root for display and linking.
+        if os.path.exists(original_path):
+            file_info['path'] = original_path
+            relative_path = os.path.relpath(original_path, start=absolute_repo_root)
+            print(f" -> File found at '{original_path}'. Relative path: '{relative_path}'")
+        else:
+            print(f" -> Skipping: File not found at the absolute path '{original_path}'.")
             continue
-        # --- END OF RESTRUCTURED LOGIC ---
         
         total_app_covered_lines += file_info['coveredLines']
         total_app_executable_lines += file_info['executableLines']
