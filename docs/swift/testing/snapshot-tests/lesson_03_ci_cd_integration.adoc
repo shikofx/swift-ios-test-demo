@@ -1,0 +1,116 @@
+= Интеграция Snapshot-тестов в CI/CD
+:source-highlighter: highlight.js
+
+:author: Пархейчук Дмитрий Александрович
+:email: d.parkheichuk@yandex.ru
+:revnumber: 1.0
+:revdate: 2025-11-08
+:doctype: article
+:encoding: utf-8
+:lang: ru
+:sectnums:
+
+Наши Snapshot-тесты отлично работают локально, но их истинная сила раскрывается при автоматическом запуске на сервере непрерывной интеграции (CI). Это гарантирует, что никакие случайные визуальные изменения не попадут в основную ветку кода.
+
+== 1. Проблемы и решения
+
+Snapshot-тесты чрезвычайно чувствительны к окружению. Снимок, сделанный на macOS Sonoma с Xcode 15, может пиксель в пиксель отличаться от снимка, сделанного на macOS Ventura с той же версией Xcode.
+
+*   **Проблема:** Неконсистентность окружения приводит к ложным срабатываниям тестов.
+*   **Решение:** Запускать тесты всегда в одном и том же, строго определенном окружении, которое предоставляет CI-сервер (в нашем случае, GitHub Actions).
+
+== 2. Стратегия для CI
+
+Наш CI-пайплайн должен уметь работать в двух режимах:
+
+.  **Режим верификации (Verification Mode):** Это стандартный режим для Pull Request'ов. CI-сервер запускает тесты, генерирует новые снимки и сравнивает их с эталонами из репозитория. Если есть отличия, сборка падает.
+.  **Режим записи (Recording Mode):** Этот режим используется для обновления эталонных снимков. Он **никогда** не должен запускаться автоматически. Разработчик должен сам инициировать этот процесс, когда изменения в UI были сделаны намеренно.
+
+== 3. Настройка GitHub Actions
+
+Мы добавим новую задачу (`job`) в наш workflow `.github/workflows/ci-flow.yml` для запуска Snapshot-тестов.
+
+Ключевой момент — при падении теста библиотека `SnapshotTesting` создает артефакты (эталонное изображение, новое и их разницу), которые показывают, что именно изменилось. Наша главная задача — сделать так, чтобы CI прикреплял эти артефакты к результатам сборки.
+
+=== Модификация `ci-flow.yml`
+
+Добавим новый `job` с именем `snapshot_tests`.
+
+[source, yaml]
+--
+# ... после job'а ui_tests ...
+
+  snapshot_tests:
+    name: Snapshot Tests
+    needs: build_for_testing
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: xctestrun-build
+          path: build
+
+      - name: Run Snapshot tests
+        run: |
+          xcodebuild test-without-building \
+            -xctestrun "build/Build/Products/SDET Demo App_UITests.xctestrun" \
+            -destination "platform=iOS Simulator,name=iPhone 14 Pro,OS=17.0" \
+            -only-testing:"SDET Demo AppUITests/LoginSnapshotTests"
+
+      - name: Upload Snapshot Failure Artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-test-failures
+          path: /Users/runner/Library/Developer/CoreSimulator/Devices/**/data/Containers/Data/Application/**/tmp/com.apple.dt.xctest.tool/Attachments/
+--
+
+=== Разбор шагов
+
+1.  `needs: build_for_testing`: Задача зависит от успешной сборки проекта.
+2.  `Download build artifact`: Скачиваем артефакт со скомпилированным приложением и тестами.
+3.  `Run Snapshot tests`: Запускаем тесты.
+    *   `-destination "platform=iOS Simulator,name=iPhone 14 Pro,OS=17.0"`: **Это критически важный шаг.** Мы жестко фиксируем модель симулятора и версию ОС. Использование `latest` может привести к падению тестов после обновления окружения на серверах GitHub.
+    *   `-only-testing:"..."`: Мы указываем, что нужно запустить только наш класс со Snapshot-тестами, чтобы не смешивать их с UI-тестами.
+4.  `Upload Snapshot Failure Artifacts`: Этот шаг выполняется, только если предыдущий (`Run Snapshot tests`) завершился с ошибкой.
+    *   `if: failure()`: Условие выполнения шага.
+    *   `path`: Мы указываем путь, где `SnapshotTesting` по умолчанию сохраняет артефакты сбоя (diff-изображения). Этот путь может показаться сложным, но он стандартен для симуляторов. Wildcards (`**`) помогают найти нужную директорию независимо от уникального ID симулятора.
+
+=== Обновление зависимостей для отчетов
+
+Не забудьте добавить `snapshot_tests` в зависимости для задач `generate_allure_report` и `build_site`, чтобы они ждали завершения всех тестов.
+
+[source, yaml]
+--
+  generate_allure_report:
+    needs: [unit_tests, ui_tests, snapshot_tests] # <-- Добавили snapshot_tests
+    # ...
+
+  build_site:
+    needs: [generate_coverage_report, generate_allure_report, ui_tests, snapshot_tests] # <-- Добавили snapshot_tests
+    # ...
+--
+
+Теперь, если кто-то в Pull Request'е случайно изменит UI, сборка упадет, и в артефактах сборки появится папка `snapshot-test-failures` с изображениями, наглядно демонстрирующими регрессию.
+
+== Что дальше?
+
+Мы настроили полный цикл для Snapshot-тестов: от написания до автоматической проверки в CI. В следующих уроках мы рассмотрим, как тестировать отдельные, изолированные UI-компоненты (например, одну ячейку таблицы), что еще больше ускорит наши тесты и сделает их более сфокусированными.
+
+```
+
+### 2. Обновление `index.adoc` для курса по Snapshot-тестам
+
+```diff
+--- a/docs/snapshot-tests/index.adoc
++++ b/docs/snapshot-tests/index.adoc
+@@ -16,3 +16,5 @@
+ include::lesson_01_intro_to_snapshot_testing.adoc[]
+ 
+ include::lesson_02_advanced_snapshot_testing.adoc[]
++
++include::lesson_03_ci_cd_integration.adoc[]

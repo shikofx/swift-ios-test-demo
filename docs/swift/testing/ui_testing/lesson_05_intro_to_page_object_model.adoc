@@ -1,0 +1,162 @@
+= Введение в Page Object Model
+:source-highlighter: highlight.js
+
+:author: Пархейчук Дмитрий Александрович
+:email: d.parkheichuk@yandex.ru
+:revnumber: 1.0
+:revdate: 2025-11-08
+:doctype: article
+:encoding: utf-8
+:lang: ru
+:sectnums:
+
+Наш тест `testSuccessfulLogin` работает, но у него есть серьезные проблемы. Вся логика поиска элементов и взаимодействия с ними смешана в одном большом методе. Если в будущем UI экрана логина изменится (например, поменяется идентификатор кнопки), нам придется искать и исправлять это во всех тестах, которые используют этот экран.
+
+Чтобы решить эту проблему, мы применим паттерн проектирования **Page Object Model (POM)**.
+
+== Что такое Page Object Model?
+
+**Page Object Model** — это шаблон проектирования, при котором каждая страница (или значимый компонент) пользовательского интерфейса вашего приложения представляется в виде отдельного класса.
+
+Этот класс инкапсулирует (прячет внутри себя) всю информацию об элементах на странице и методах взаимодействия с ними.
+
+Ключевые преимущества:
+
+*   **Читаемость:** Тесты становятся короткими и декларативными. Они описывают *что* нужно сделать, а не *как* (например, `loginPage.login(user: "test")` вместо набора тапов и вводов текста).
+*   **Поддерживаемость:** Если UI меняется, вам нужно внести изменения только в одном месте — в соответствующем классе Page Object. Тесты при этом остаются нетронутыми.
+*   **Переиспользование:** Логика взаимодействия с экраном легко переиспользуется в разных тестах.
+
+== Структура Page Object
+
+Классический Page Object состоит из двух частей:
+
+1.  **Свойства (Elements):** Приватные переменные, которые хранят `XCUIElement` — элементы интерфейса страницы (кнопки, поля ввода и т.д.).
+2.  **Методы (Actions):** Публичные функции, которые описывают действия пользователя на этой странице (например, `ввестиЛогин`, `нажатьКнопкуВойти`). Если действие приводит к переходу на другую страницу, метод должен возвращать Page Object следующей страницы.
+
+== Рефакторинг: Создаем наши первые Page Objects
+
+Давайте применим эту теорию к нашему тесту. Мы создадим три Page Object'а для экранов, с которыми взаимодействуем: `MenuPage`, `LoginPage` и `ProductsPage`.
+
+=== 1. MenuPage
+
+Этот класс будет отвечать за взаимодействие с боковым меню.
+
+[source, swift]
+--
+// MenuPage.swift
+
+import XCTest
+
+class MenuPage {
+    private let app: XCUIApplication
+
+    // Elements
+    private lazy var moreTabItem = app.buttons["More-tab-item"]
+    private lazy var loginMenuItem = app.otherElements["Login Button"]
+
+    init(app: XCUIApplication) {
+        self.app = app
+    }
+
+    // Actions
+    @discardableResult
+    func openLoginScreen() -> LoginPage {
+        moreTabItem.tap()
+        loginMenuItem.tap()
+        return LoginPage(app: app)
+    }
+}
+--
+
+=== 2. LoginPage
+
+Этот класс будет описывать экран логина.
+
+[source, swift]
+--
+// LoginPage.swift
+
+import XCTest
+
+class LoginPage {
+    private let app: XCUIApplication
+
+    // Elements
+    private lazy var usernameTextField = app.textFields.element(boundBy: 0)
+    private lazy var passwordTextField = app.secureTextFields.element(boundBy: 0)
+    private lazy var loginButton = app.buttons["Login"]
+
+    init(app: XCUIApplication) {
+        self.app = app
+    }
+
+    // Actions
+    @discardableResult
+    func login(user: String, pass: String) -> ProductsPage {
+        usernameTextField.tap()
+        usernameTextField.typeText(user)
+
+        passwordTextField.tap()
+        passwordTextField.typeText(pass)
+
+        // Баг: клавиатура не убирается. В реальном проекте здесь был бы код для ее скрытия.
+        // app.keyboards.buttons["Return"].tap()
+
+        loginButton.tap()
+
+        return ProductsPage(app: app)
+    }
+}
+--
+
+=== 3. ProductsPage
+
+Этот класс описывает экран каталога продуктов.
+
+[source, swift]
+--
+// ProductsPage.swift
+
+import XCTest
+
+class ProductsPage {
+    private let app: XCUIApplication
+
+    // Elements
+    lazy var productsHeader = app.staticTexts["Products"]
+
+    init(app: XCUIApplication) {
+        self.app = app
+    }
+
+    // Verifications
+    func isProductsHeaderVisible() -> Bool {
+        return productsHeader.waitForExistence(timeout: 5)
+    }
+}
+--
+
+== Обновленный тест
+
+Теперь посмотрим, как преобразился наш тест `testSuccessfulLogin`. Он стал коротким, понятным и не содержит деталей реализации.
+
+[source, swift]
+--
+// LoginUiTests.swift
+
+@MainActor
+func testSuccessfulLogin() {
+    let menuPage = MenuPage(app: app)
+
+    let loginPage = menuPage.openLoginScreen()
+    let productsPage = loginPage.login(user: "bob@example.com", pass: "10203040")
+
+    XCTAssertTrue(productsPage.isProductsHeaderVisible(), "Не удалось перейти на экран продуктов после логина")
+}
+--
+
+Сравните это с первоначальной версией! Теперь тест читается как последовательность бизнес-действий, а вся "грязная" работа по поиску элементов и взаимодействию с ними скрыта в Page Objects.
+
+== Что дальше?
+
+Мы заложили фундамент для нашего фреймворка. В следующих уроках мы будем расширять его: создадим базовый класс для всех Page Objects, вынесем идентификаторы элементов в отдельное место и напишем новые тесты, используя уже созданные страницы.

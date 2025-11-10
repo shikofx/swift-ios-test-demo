@@ -1,0 +1,120 @@
+= Структура сгенерированных тестовых классов
+:source-highlighter: highlight.js
+
+:author: Пархейчук Дмитрий Александрович
+:email: d.parkheichuk@yandex.ru
+:revnumber: 1.0
+:revdate: 2025-11-08
+:doctype: article
+:encoding: utf-8
+:lang: ru
+:sectnums:
+
+В предыдущем уроке мы создали таргет для UI-тестов. Xcode автоматически сгенерировал для нас два файла с примерами тестовых классов:
+
+*   `SDET_Demo_AppUITests.swift`: Основной файл для написания ваших функциональных UI-тестов.
+*   `SDET_Demo_AppUITestsLaunchTests.swift`: Специализированный класс для теста запуска приложения.
+
+Давайте подробно разберем их структуру и назначение.
+
+== Основной тестовый класс: `SDET_Demo_AppUITests.swift`
+
+Это ваша основная "рабочая лошадка". Здесь вы будете писать большинство тестов, проверяющих сценарии взаимодействия пользователя с приложением.
+
+Откройте файл `SDET Demo AppUITests/SDET_Demo_AppUITests.swift`.
+
+[source, swift]
+--
+import XCTest
+
+final class SDET_Demo_AppUITests: XCTestCase {
+
+    override func setUpWithError() throws {
+        // Этот метод вызывается перед каждым тестовым методом в классе.
+        // В UI-тестах лучше всего останавливаться сразу при возникновении сбоя.
+        continueAfterFailure = false
+
+        // Здесь хорошее место для установки начального состояния, например, ориентации интерфейса.
+    }
+
+    override func tearDownWithError() throws {
+        // Этот метод вызывается после каждого тестового метода.
+    }
+
+    @MainActor
+    func testExample() throws {
+        // UI-тесты должны запускать тестируемое приложение.
+        let app = XCUIApplication()
+        app.launch()
+
+        // Используйте XCTAssert и связанные функции для проверки того,
+        // что ваши тесты дают правильные результаты.
+    }
+
+    @MainActor
+    func testLaunchPerformance() throws {
+        // Этот тест измеряет, сколько времени занимает запуск вашего приложения.
+        measure(metrics: [XCTApplicationLaunchMetric()]) {
+            XCUIApplication().launch()
+        }
+    }
+}
+--
+
+=== Методы жизненного цикла: `setUp` и `tearDown`
+
+*   `setUpWithError()`: Вызывается *перед запуском каждого* тестового метода в этом классе.
+    **   `continueAfterFailure = false`: Это критически важная настройка для UI-тестов. Она означает, что если в одном из шагов теста произойдет сбой (например, не найдется кнопка), весь тест немедленно остановится. Это экономит время и делает отчеты более понятными. Если бы стояло `true`, тест бы пытался выполнить следующие шаги, что почти всегда бессмысленно и приводит к лавине ошибок.
+
+*   `tearDownWithError()`: Вызывается *после завершения каждого* тестового метода. Используется для "очистки" состояния после теста.
+
+=== Тестовые методы
+
+*   `func testExample() throws`: Шаблон для вашего первого функционального теста. Система `XCTest` автоматически находит и запускает все функции, имя которых начинается со слова `test`.
+    **   `let app = XCUIApplication()`: Создание объекта, представляющего наше приложение.
+    **   `app.launch()`: Команда для запуска приложения в симуляторе или на устройстве.
+
+*   `func testLaunchPerformance() throws`: Специальный тест для измерения производительности. В данном случае он измеряет время запуска приложения. Мы не будем подробно останавливаться на performance-тестах в этом курсе.
+
+== Тест запуска: `SDET_Demo_AppUITestsLaunchTests.swift`
+
+Этот класс предназначен для одной конкретной цели: проверки самого факта запуска приложения и создания скриншота стартового экрана.
+
+Откройте файл `SDET Demo AppUITests/SDET_Demo_AppUITestsLaunchTests.swift`.
+
+[source, swift]
+--
+import XCTest
+
+final class SDET_Demo_AppUITestsLaunchTests: XCTestCase {
+
+    override class var runsForEachTargetApplicationUIConfiguration: Bool {
+        true
+    }
+
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+    }
+
+    @MainActor
+    func testLaunch() throws {
+        let app = XCUIApplication()
+        app.launch()
+
+        // Создание скриншота и прикрепление его к отчету о тестировании.
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = "Launch Screen"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+}
+--
+
+=== Ключевые особенности
+
+*   `override class var runsForEachTargetApplicationUIConfiguration: Bool`: Эта настройка (когда `true`) заставляет `testLaunch()` запускаться для каждой конфигурации UI, которую вы определили (например, для светлой и темной темы, разных языков).
+*   `XCTAttachment`: Код в `testLaunch()` делает скриншот (`app.screenshot()`) и прикрепляет его к результатам теста. Это полезно для визуальной проверки того, как выглядит приложение сразу после запуска в разных конфигурациях.
+
+== Что дальше?
+
+Теперь, когда мы понимаем структуру и назначение сгенерированных файлов, мы готовы написать наш первый осмысленный UI-тест. В следующем уроке мы модифицируем `SDET_Demo_AppUITests.swift`, чтобы проверить функциональность экрана входа, и научимся находить элементы на экране.

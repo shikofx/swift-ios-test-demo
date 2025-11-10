@@ -1,0 +1,144 @@
+:source-highlighter: highlight.js
+:author: Пархейчук Дмитрий Александрович
+:email: d.parkheichuk@yandex.ru
+:revnumber: 1.0
+:revdate: 2025-11-08
+:doctype: article
+:encoding: utf-8
+:lang: ru
+:sectnums:
+
+= Интеграция UI-тестов в CI/CD (GitHub Actions)
+
+На данный момент мы запускаем UI-тесты только локально. Этого недостаточно для командной разработки. Чтобы гарантировать стабильность приложения, тесты должны запускаться автоматически на сервере при каждом изменении кода. Этот процесс называется непрерывной интеграцией (Continuous Integration, CI).
+
+В этом уроке мы добавим запуск наших UI-тестов в существующий CI/CD пайплайн на GitHub Actions.
+
+== 1. Зачем нужна CI/CD для UI-тестов?
+
+*   **Раннее обнаружение багов:** Автоматический запуск тестов при каждом Pull Request'е позволяет находить ошибки до того, как они попадут в основную ветку.
+*   **Стабильное окружение:** Тесты всегда выполняются в чистом, одинаковом окружении, что исключает проблемы, связанные с локальными настройками разработчика.
+*   **Экономия времени:** Разработчикам не нужно тратить время на ручной запуск всего набора тестов.
+*   **Видимость для команды:** Вся команда видит результаты тестов и может быстро реагировать на проблемы.
+
+== 2. Стратегия запуска
+
+UI-тесты значительно медленнее, чем Unit-тесты. Запускать их на каждое изменение в feature-ветке может быть слишком накладно. Хорошей стратегией является:
+
+*   **Запуск по Pull Request в `main`:** Обязательная проверка перед вливанием изменений в основную ветку.
+*   **Запуск по merge в `main`:** Финальная проверка и архивация результатов для основной ветки.
+*   **(Опционально) Ночные сборки:** Запуск полного набора регрессионных тестов по расписанию (например, каждую ночь).
+
+Наш текущий workflow в `.github/workflows/ci-flow.yml` уже настроен на запуск при `push` и `pull_request`, что нам и подходит.
+
+== 3. Модификация `ci-flow.yml`
+
+Мы добавим новую задачу (`job`) в наш workflow специально для UI-тестов. Ключевая оптимизация — мы не будем собирать проект заново. Вместо этого мы воспользуемся артефактом, который уже был собран на шаге `build_for_testing`, и запустим тесты с помощью команды `test-without-building`.
+
+Откройте файл `.github/workflows/ci-flow.yml` и добавьте новый `job` `ui_tests`.
+
+[source, yaml]
+--
+# ... после job'а unit_tests ...
+
+  ui_tests:
+    name: UI Tests
+    needs: build_for_testing # Зависит от успешной сборки
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: xctestrun-build
+          path: build
+
+      - name: Run UI tests
+        run: |
+          xcodebuild test-without-building \
+            -xctestrun "build/Build/Products/SDET Demo App_UITests.xctestrun" \
+            -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
+            -resultBundlePath "ui-test-results/TestResults.xcresult"
+
+      - name: Upload UI test results
+        if: always() # Загружать результаты, даже если тесты упали
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-results
+          path: ui-test-results/
+--
+
+=== Разбор шагов:
+
+1.  `needs: build_for_testing`: Наша задача начнется только после успешного завершения `build_for_testing`.
+2.  `Download build artifact`: Скачиваем артефакт `xctestrun-build`, содержащий скомпилированное приложение и тесты.
+3.  `Run UI tests`: Запускаем тесты с помощью `xcodebuild test-without-building`.
+    *   `-xctestrun`: Указываем путь к файлу, который описывает, как запускать тесты.
+    *   `-destination`: Указываем симулятор, на котором будут выполняться тесты.
+    *   `-resultBundlePath`: Указываем, куда сохранить результаты.
+4.  `Upload UI test results`: Загружаем `.xcresult` в виде нового артефакта, чтобы его можно было использовать для генерации отчетов.
+
+== 4. Обновление отчета Allure
+
+Теперь нам нужно, чтобы наш Allure-отчет включал результаты и Unit, и UI-тестов. Для этого нужно изменить задачу `generate_allure_report`.
+
+1.  **Добавить зависимость:** `generate_allure_report` теперь должна ждать завершения `ui_tests`.
+2.  **Скачать оба артефакта:** Нужно скачать и `unit-test-results`, и `ui-test-results`.
+3.  **Передать оба пути в команду генерации отчета.**
+
+Обновленный `job` `generate_allure_report`:
+
+[source, yaml]
+--
+  generate_allure_report:
+    name: Report - Test
+    needs: [unit_tests, ui_tests] # <-- Добавили ui_tests
+    if: always()
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download unit test results
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-test-results
+          path: unit-test-results/
+
+      - name: Download UI test results
+        uses: actions/download-artifact@v4
+        with:
+          name: ui-test-results
+          path: ui-test-results/
+
+      - name: Create Allure Report page
+        uses: ./.github/actions/allure-report
+        with:
+          # Передаем оба пути через запятую
+          test-results-path: "./unit-test-results/TestResults.xcresult,./ui-test-results/TestResults.xcresult"
+--
+
+Также не забудьте добавить `ui_tests` в `needs` для `build_site`, чтобы сайт генерировался после всех тестов.
+
+[source, yaml]
+--
+  build_site:
+    name: Build Reports Site
+    needs: [
+      generate_coverage_report,
+      generate_allure_report,
+      ui_tests # <-- Добавляем зависимость
+    ]
+--
+
+Теперь после каждого запуска workflow в Allure-отчете вы будете видеть результаты всех видов тестов, что даст вам полную картину о качестве вашего приложения.
+
+== Что дальше?
+
+Мы автоматизировали запуск тестов и генерацию отчетов. В следующих уроках мы рассмотрим более продвинутые темы:
+
+*   Настройка `Allure` для UI-тестов: добавление шагов, скриншотов при падении и вложений.
+*   Интеграция со Snapshot-тестами для отслеживания визуальных регрессий.
+*   Запуск тестов на облачных фермах реальных устройств.

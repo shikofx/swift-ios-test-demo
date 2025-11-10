@@ -1,0 +1,145 @@
+:source-highlighter: highlight.js
+:author: Пархейчук Дмитрий Александрович
+:email: d.parkheichuk@yandex.ru
+:revnumber: 1.0
+:revdate: 2025-11-08
+:doctype: article
+:encoding: utf-8
+:lang: ru
+:sectnums:
+
+= Управление тестовыми данными с помощью хелперов
+
+Взгляните на наши тесты в `LoginUiTests`. Они содержат "магические строки" и числа:
+
+[source, swift]
+--
+// testSuccessfulLogin
+loginPage.login(user: "bob@example.com", pass: "10203040")
+
+// testInvalidLogin
+loginPage.login(user: "wrong_user", pass: "wrong_pass")
+--
+
+Такой подход имеет несколько недостатков:
+
+*   **Нечитаемость:** Глядя на `"bob@example.com"`, не сразу понятно, что это за пользователь. Это стандартный пользователь? Администратор? Заблокированный?
+*   **Сложность поддержки:** Если учетные данные изменятся, их придется искать и заменять во всех тестах, где они используются.
+*   **Дублирование:** Одни и те же данные могут быть разбросаны по всему проекту.
+
+Чтобы решить эту проблему, мы создадим централизованный хелпер (помощник) для управления тестовыми данными.
+
+== 1. Модель для тестовых данных
+
+Сначала создадим простую структуру, которая будет описывать нашего тестового пользователя.
+
+Создайте новый файл `TestUser.swift`.
+
+[source, swift]
+--
+// TestUser.swift
+
+import Foundation
+
+struct TestUser {
+    let username: String
+    let password: String
+}
+--
+
+== 2. Фабрика тестовых пользователей
+
+Теперь создадим "фабрику", которая будет предоставлять нам готовые экземпляры пользователей для разных сценариев. Это удобно сделать с помощью расширения (`extension`) для нашей структуры `TestUser`.
+
+Создайте новый файл `TestUser+Factory.swift`.
+
+[source, swift]
+--
+// TestUser+Factory.swift
+
+extension TestUser {
+    /// Стандартный пользователь для успешного входа
+    static var standard: TestUser {
+        return TestUser(username: "bob@example.com", password: "10203040")
+    }
+
+    /// Несуществующий пользователь для проверки ошибки
+    static var invalid: TestUser {
+        return TestUser(username: "wrong_user", password: "wrong_password")
+    }
+
+    /// Заблокированный пользователь (для будущих тестов)
+    static var lockedOut: TestUser {
+        // В нашем приложении такого пользователя нет, но это пример для демонстрации
+        return TestUser(username: "locked_out_user", password: "secret_sauce")
+    }
+}
+--
+
+Теперь у нас есть единый источник правды для всех тестовых пользователей. Если пароль стандартного пользователя изменится, нам нужно будет поправить его только в одном месте.
+
+== 3. Рефакторинг Page Objects и тестов
+
+Теперь, когда у нас есть фабрика, давайте используем ее.
+
+=== Обновление `LoginPage`
+
+Изменим метод `login` в `LoginPage`, чтобы он принимал не две строки, а один объект `TestUser`.
+
+[source, swift]
+--
+// LoginPage.swift
+
+class LoginPage: BaseScreen {
+    // ...
+    // Actions
+    @discardableResult
+    func login(user: TestUser) -> ProductsPage { // <-- Принимаем TestUser
+        usernameTextField.clearAndTypeText(user.username) // <-- Используем user.username
+        passwordTextField.clearAndTypeText(user.password) // <-- Используем user.password
+
+        // ...
+
+        loginButton.waitAndTap()
+
+        return ProductsPage(app: app)
+    }
+    // ...
+}
+--
+
+=== Обновление `LoginUiTests`
+
+Наконец, обновим наши тесты, чтобы они использовали фабрику. Посмотрите, насколько более читаемыми они стали.
+
+[source, swift]
+--
+// LoginUiTests.swift
+
+@MainActor
+func testSuccessfulLogin() {
+    let menuPage = MenuPage(app: app)
+
+    let loginPage = menuPage.openLoginScreen()
+    let productsPage = loginPage.login(user: .standard) // <-- Используем .standard
+
+    XCTAssertTrue(productsPage.isProductsHeaderVisible(), "Не удалось перейти на экран продуктов после логина")
+}
+
+@MainActor
+func testInvalidLogin() {
+    let menuPage = MenuPage(app: app)
+    let loginPage = menuPage.openLoginScreen()
+
+    loginPage.login(user: .invalid) // <-- Используем .invalid
+
+    XCTAssertTrue(loginPage.isErrorMessageVisible(), "Сообщение об ошибке не появилось на экране.")
+    XCTAssertEqual(loginPage.getErrorMessageText(), "Provided credentials do not match any user in this service.", "Текст сообщения об ошибке неверный.")
+}
+--
+
+Теперь наши тесты описывают поведение (`логин со стандартным пользователем`, `логин с невалидным пользователем`), а не просто передают случайные строки. Код стал чище, надежнее и проще в поддержке.
+
+== Что дальше?
+
+Мы научились управлять тестовыми данными. Следующим шагом может быть создание хелперов для взаимодействия с API. Это позволит нам подготавливать состояние приложения (например, наполнять корзину товарами) перед запуском UI-теста, делая тесты еще быстрее и стабильнее.

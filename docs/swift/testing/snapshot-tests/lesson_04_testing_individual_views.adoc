@@ -1,0 +1,144 @@
+= Тестирование отдельных UIView и SwiftUI View
+:source-highlighter: highlight.js
+
+:author: Пархейчук Дмитрий Александрович
+:email: d.parkheichuk@yandex.ru
+:revnumber: 1.0
+:revdate: 2025-11-08
+:doctype: article
+:encoding: utf-8
+:lang: ru
+:sectnums:
+
+До сих пор мы делали снимки целых экранов (`UIViewController`). Это полезно, но часто бывает необходимо или даже более эффективно тестировать отдельные, изолированные компоненты — ячейку таблицы, кастомную кнопку или карточку товара.
+
+== 1. Зачем тестировать отдельные компоненты?
+
+*   **Скорость и изоляция:** Тестирование маленького `UIView` намного быстрее, чем рендеринг целого `UIViewController`. Компонент тестируется в полной изоляции от остальной логики приложения.
+*   **Покрытие всех состояний:** Легко проверить все возможные состояния компонента. Например, ячейку товара можно протестировать с длинным названием, без изображения, со скидкой и т.д., просто передавая разные данные.
+*   **Разработка UI-кита:** Этот подход является основой для создания и поддержки библиотеки переиспользуемых UI-компонентов.
+
+== 2. Тестирование `UIView` (UIKit)
+
+Давайте напишем Snapshot-тест для ячейки товара `ProductsCell` из нашего каталога.
+
+=== Шаг 1: Создание и настройка View
+
+Сначала нам нужно получить экземпляр `ProductsCell` и настроить его, передав тестовые данные.
+
+[source, swift]
+--
+// ComponentSnapshotTests.swift
+
+import XCTest
+import SnapshotTesting
+@testable import SDET_Demo_App // Импортируем основной модуль, чтобы получить доступ к ProductsCell
+
+final class ComponentSnapshotTests: BaseSnapshotTest {
+
+    func testProductCell() {
+        // 1. Загружаем ячейку из ее XIB-файла
+        let nib = UINib(nibName: "ProductsCell", bundle: nil)
+        guard let cell = nib.instantiate(withOwner: nil, options: nil).first as? ProductsCell else {
+            XCTFail("Не удалось создать ProductsCell")
+            return
+        }
+
+        // 2. Настраиваем ячейку, передавая ей данные
+        cell.productIV.image = UIImage(named: "SauceLabsBackpack")
+        cell.productNameLbl.text = "Sauce Labs Backpack"
+        cell.productPriceLbl.text = "$ 29.99"
+        // Устанавливаем рейтинг
+        cell.star1Btn.isSelected = true
+        cell.star2Btn.isSelected = true
+        cell.star3Btn.isSelected = true
+        cell.star4Btn.isSelected = true
+        cell.star5Btn.isSelected = false
+
+        // 3. Делаем снимок, указывая конкретный размер
+        assertSnapshot(of: cell, as: .image(layout: .fixed(width: 180, height: 300)))
+    }
+}
+--
+
+=== Шаг 2: Разбор кода
+
+*   `@testable import SDET_Demo_App`: Этот атрибут позволяет тестам получить доступ к `internal` классам и методам основного приложения, таким как `ProductsCell`.
+*   `UINib(...)`: Мы загружаем `UIView` напрямую из его `.xib` файла, минуя `UIViewController` и `UITableView`.
+*   `as: .image(layout: .fixed(width:height:))`: Это ключевой момент. В отличие от `UIViewController`, который имеет свой размер, для `UIView` мы должны явно указать, какого размера снимок мы хотим сделать. Стратегия `.fixed` идеально для этого подходит.
+
+После записи эталона вы получите снимок только одной ячейки, что идеально для проверки ее верстки.
+
+== 3. Тестирование `View` (SwiftUI)
+
+Тестирование SwiftUI View выглядит еще проще, так как они создаются декларативно. Хотя в нашем демо-приложении нет SwiftUI, давайте рассмотрим пример.
+
+Представим, что у нас есть такая `ProductRow` на SwiftUI:
+
+[source, swift]
+--
+// ProductRow.swift (гипотетический пример)
+import SwiftUI
+
+struct ProductRow: View {
+    var productName: String
+    var price: Double
+
+    var body: some View {
+        HStack {
+            Image(systemName: "bag.fill")
+            Text(productName)
+            Spacer()
+            Text(String(format: "$%.2f", price))
+                .foregroundColor(.gray)
+        }
+        .padding()
+    }
+}
+--
+
+=== Написание теста для SwiftUI View
+
+Тест для него будет выглядеть очень похоже.
+
+[source, swift]
+--
+// ComponentSnapshotTests.swift
+
+func testSwiftUIProductRow() {
+    // 1. Создаем View и передаем данные
+    let productRow = ProductRow(productName: "Test Item", price: 99.99)
+
+    // 2. Делаем снимок, указывая layout
+    // .sizeThatFits растянет View до нужного размера
+    assertSnapshot(of: productRow, as: .image(layout: .sizeThatFits))
+}
+--
+
+=== Разбор кода
+
+*   `as: .image(layout: .sizeThatFits)`: Для SwiftUI-компонентов с динамическим размером стратегия `.sizeThatFits` подходит лучше всего. Она позволяет компоненту самому определить свой оптимальный размер.
+
+== Что дальше?
+
+Мы научились тестировать самые маленькие "кирпичики" нашего UI. Это открывает дверь для создания обширной библиотеки визуальных тестов для всех компонентов приложения.
+
+Теперь, когда мы полностью освоили написание и запуск Snapshot-тестов, в следующих уроках мы можем рассмотреть более организационные темы:
+
+*   Разработка стратегии обновления эталонных снимков в команде.
+*   Использование Snapshot-тестов для не-визуальных данных, например, для проверки структуры JSON.
+
+```
+
+### 2. Обновление `index.adoc` для курса по Snapshot-тестам
+
+Я добавлю ссылку на новый, четвертый урок в `index.adoc`.
+
+```diff
+--- a/docs/snapshot-tests/index.adoc
++++ b/docs/snapshot-tests/index.adoc
+@@ -18,3 +18,5 @@
+ include::./lesson_02_advanced_snapshot_testing.adoc[leveloffset=+1]
+ include::./lesson_03_ci_cd_integration.adoc[leveloffset=+1]
+ 
++include::./lesson_04_testing_individual_views.adoc[leveloffset=+1]

@@ -1,0 +1,37 @@
+:source-highlighter: highlight.js
+:author: Пархейчук Дмитрий Александрович
+:email: d.parkheichuk@yandex.ru
+:revnumber: 1.0
+:revdate: 2025-11-08
+:doctype: book
+:encoding: utf-8
+:lang: ru
+:sectnums:
+:toc: left
+:toclevels: 3
+
+= Полный курс по UI-тестированию iOS-приложений
+
+Этот документ объединяет все уроки по автоматизации тестирования пользовательского интерфейса для приложения `SDET Demo App`.
+
+include::lesson_01_intro_and_setup.adoc[]
+
+include::lesson_02_test_class_structure.adoc[]
+
+include::lesson_03_first_test_and_finding_elements.adoc[]
+
+include::lesson_04_xcui_element_types.adoc[]
+
+include::lesson_05_intro_to_page_object_model.adoc[]
+
+include::lesson_06_base_classes_and_protocols.adoc[]
+
+include::lesson_07_writing_new_tests_with_abstractions.adoc[]
+
+include::lesson_08_test_data_management.adoc[]
+
+include::lesson_09_api_helpers_and_app_state.adoc[]
+
+include::lesson_10_ci_cd_integration.adoc[]
+
+include::lesson_11_advanced_allure_reporting.adoc[]

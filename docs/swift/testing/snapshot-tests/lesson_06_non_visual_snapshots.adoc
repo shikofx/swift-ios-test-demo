@@ -1,0 +1,130 @@
+= Использование Snapshot-тестов для не-визуальных данных (JSON, Objects)
+:source-highlighter: highlight.js
+
+:author: Пархейчук Дмитрий Александрович
+:email: d.parkheichuk@yandex.ru
+:revnumber: 1.0
+:revdate: 2025-11-08
+:doctype: article
+:encoding: utf-8
+:lang: ru
+:sectnums:
+
+Хотя основное применение Snapshot-тестов — это проверка визуальных регрессий, библиотека `SnapshotTesting` является гораздо более гибким инструментом. Ее можно использовать для "снимка" практически любой структуры данных, которую можно представить в виде текста, например, JSON-объектов или иерархии `UIView`.
+
+== Зачем это нужно?
+
+*   **Тестирование API-ответов:** Можно зафиксировать эталонный JSON-ответ от сервера и убедиться, что его структура не меняется со временем.
+*   **Проверка моделей данных:** Если у вас есть сложная `Codable` модель, можно сделать ее "снимок" и гарантировать, что логика кодирования/декодирования не изменится случайно.
+*   **Отладка иерархии View:** Вместо того чтобы сравнивать изображение, можно сохранить текстовое описание всей иерархии `UIView` на экране. Это полезно для проверки `accessibilityIdentifier` или отладки сложных лейаутов.
+
+== Снапшот `Codable` объектов
+
+Давайте представим, что у нас есть модель данных для продукта. Мы можем легко проверить, как она сериализуется в JSON.
+
+Создадим новый тестовый файл `DataSnapshotTests.swift`.
+
+[source, swift]
+--
+// DataSnapshotTests.swift
+import XCTest
+import SnapshotTesting
+
+// Гипотетическая модель продукта
+struct Product: Codable {
+    let id: Int
+    let title: String
+    let price: Double
+    let tags: [String]
+}
+
+final class DataSnapshotTests: XCTestCase {
+
+    func testProductJSON() {
+        // 1. Создаем экземпляр модели
+        let product = Product(
+            id: 123,
+            title: "Sauce Labs Backpack",
+            price: 29.99,
+            tags: ["apparel", "gear"]
+        )
+
+        // 2. Делаем снимок, используя стратегию .json
+        assertSnapshot(of: product, as: .json)
+    }
+}
+--
+
+При первом запуске (в режиме записи) этот тест создаст в папке `__Snapshots__` файл `testProductJSON.json` со следующим содержимым:
+
+[source, json]
+--
+{
+  "id" : 123,
+  "price" : 29.99,
+  "tags" : [
+    "apparel",
+    "gear"
+  ],
+  "title" : "Sauce Labs Backpack"
+}
+--
+
+Теперь, если кто-то добавит новое поле в структуру `Product` или изменит имя существующего, этот тест упадет, сигнализируя о непреднамеренном изменении контракта данных.
+
+== Снапшот иерархии View (`recursiveDescription`)
+
+Иногда нам важна не картинка, а структура UI. Стратегия `.recursiveDescription` сохраняет текстовое представление иерархии `UIView`, аналогичное выводу команды `po view` в отладчике.
+
+Это невероятно полезно для проверки того, что все `accessibilityIdentifier` на месте или что структура ячейки таблицы не изменилась.
+
+Давайте добавим такой тест в `LoginSnapshotTests.swift`.
+
+[source, swift]
+--
+// LoginSnapshotTests.swift
+
+final class LoginSnapshotTests: BaseSnapshotTest {
+    // ... существующие тесты ...
+
+    func testLoginScreenHierarchy() {
+        let storyboard = UIStoryboard(name: "Login", bundle: nil)
+        let loginVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController")
+
+        // Делаем снимок иерархии view
+        assertSnapshot(of: loginVC, as: .recursiveDescription)
+    }
+}
+--
+
+Этот тест создаст эталонный файл `testLoginScreenHierarchy.txt`, который будет выглядеть примерно так:
+
+[source, text]
+--
+<UIWindow: ...>
+   | <UILayoutContainerView: ...>
+   |    | <UITransitionView: ...>
+   |    |    | <UIDropShadowView: ...>
+   |    |    |    | <UIView: ...; identifier: "Login screen">
+   |    |    |    |    | <UITextField: ...; identifier: "Username input">
+   |    |    |    |    |    | <_UITextFieldCanvasView: ...>
+   |    |    |    |    | <UITextField: ...; identifier: "Password input">
+   |    |    |    |    |    | <_UITextFieldCanvasView: ...>
+   |    |    |    |    | <UIButton: ...; identifier: "Login button">
+   |    |    |    |    |    | <UIButtonLabel: ...; text: 'Login'>
+--
+
+Теперь любое изменение в идентификаторах или в основной структуре вложенности приведет к падению теста.
+
+== Завершение курса по Snapshot-тестированию
+
+Поздравляем! Вы освоили один из самых мощных инструментов для поддержания высокого качества UI в iOS-приложениях. Мы рассмотрели полный цикл:
+
+*   Написание базовых тестов для целых экранов.
+*   Тестирование в разных конфигурациях (устройства, темы, состояния).
+*   Интеграцию с CI/CD для автоматической проверки.
+*   Тестирование отдельных, изолированных компонентов.
+*   Стратегии командной работы с эталонами.
+*   Использование снапшотов для не-визуальных данных.
+
+Теперь вы готовы применять Snapshot-тесты в своих проектах для создания надежных и визуально стабильных приложений.

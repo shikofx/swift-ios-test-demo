@@ -1,0 +1,187 @@
+= Практика Unit-тестирования: WebViewViewController
+
+== Цели урока
+
+*   Научиться тестировать логику обработки URL в `UIViewController`.
+*   Познакомиться с подходами к тестированию переходов между экранами.
+*   Закрепить навыки написания Unit-тестов для проверки различных сценариев ввода данных.
+
+---
+
+== Теория
+
+В этом уроке мы напишем тесты для `WebViewViewController`. Основная задача этого контроллера — обработка URL, введенного пользователем, и переход на экран веб-просмотра. Мы сфокусируемся на проверке правильности формирования URL и корректности перехода.
+
+=== Подготовка к тестированию (`setUp`)
+
+Как и в предыдущих уроках, мы используем метод `setUp()` для создания "чистого" окружения перед каждым тестом. Это гарантирует, что состояние из одного теста не повлияет на другой.
+
+[source,swift]
+----
+final class WebViewViewControllerTests: XCTestCase {
+
+    var controller: WebViewViewController!
+
+    override func setUp() {
+        super.setUp()
+        
+        // Given: Загружаем контроллер из Storyboard
+        let storyboard = UIStoryboard(name: "Menu", bundle: nil)
+        controller = storyboard.instantiateViewController(withIdentifier: "WebViewViewController") as? WebViewViewController
+        
+        // Given: Загружаем view, чтобы IBOutlets (текстовые поля) были инициализированы
+        controller.loadViewIfNeeded()
+    }
+    
+    override func tearDown() {
+        controller = nil
+        super.tearDown()
+    }
+    // ...
+}
+----
+
+Ключевые моменты:
+
+1.  `controller.loadViewIfNeeded()`: Этот вызов необходим для инициализации всех `@IBOutlet` в нашем контроллере, таких как `urlTF`. Без этого обращение к ним привело бы к падению теста.
+
+=== Тестирование переходов между экранами
+
+Для тестирования переходов между экранами мы будем использовать подход, основанный на `UIWindow`. Мы создадим `UIWindow`, установим наш `WebViewViewController` в качестве корневого контроллера и будем проверять, что при нажатии на кнопку происходит переход на другой экран.
+
+*Шаг 1. Создаем `UIWindow` в файле тестов:*
+
+[source,swift]
+----
+    var window: UIWindow!
+
+    override func setUp() {
+        super.setUp()
+        
+        // Given: Загружаем контроллер из Storyboard
+        let storyboard = UIStoryboard(name: "Menu", bundle: nil)
+        controller = storyboard.instantiateViewController(withIdentifier: "WebViewViewController") as? WebViewViewController
+        
+        // Given: Загружаем view, чтобы IBOutlets (текстовые поля) были инициализированы
+        controller.loadViewIfNeeded()
+
+        // Given: Создаем окно и устанавливаем контроллер в качестве корневого
+        window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+    }
+    
+    override func tearDown() {
+        controller = nil
+        window = nil
+        super.tearDown()
+    }
+----
+
+*Шаг 2. Создаем Mock для `UIStoryboard`:*
+
+Для проверки переходов, создадим `UIStoryboardMock`, который позволит нам убедиться, что был вызван метод `instantiateViewController(withIdentifier:)` с нужным идентификатором.
+
+[source, swift]
+----
+class UIStoryboardMock: UIStoryboard {
+    var instantiateViewControllerIdentifier: String?
+    
+    static func create(instantiateViewControllerIdentifier: String? = nil) -> UIStoryboardMock {
+        let storyboard = UIStoryboardMock()
+        storyboard.instantiateViewControllerIdentifier = instantiateViewControllerIdentifier
+        return storyboard
+    }
+
+    override func instantiateViewController(withIdentifier identifier: String) -> UIViewController {
+        instantiateViewControllerIdentifier = identifier
+        return UIViewController()
+    }
+}
+----
+
+*Шаг 3. Модифицируем `WebViewViewController.swift`, чтобы сделать его тестируемым:*
+
+Добавляем свойство `storyboard` типа `UIStoryboard`. По умолчанию оно инициализируется реальным объектом `UIStoryboard()`, но в тестах мы сможем легко подменить его на мок. Также заменяем прямой вызов метода `UIStoryboard.instantiateViewController(withIdentifier:)` на вызов через это свойство `storyboard.instantiateViewController(withIdentifier:)`.
+
+[source,swift]
+----
+class WebViewViewController: UIViewController {
+    // ...
+    var storyboard: UIStoryboard? = UIStoryboard.init(name: "Menu", bundle: nil)
+    // ...
+
+    @IBAction func goToSiteButton(_ sender: Any) {
+        var urlString: String = urlTF.text!
+        if !urlString.starts(with: "http://") && !urlString.starts(with: "https://") {
+              urlString = "https://\(urlString)"
+        }
+        
+        // Было: UIStoryboard.init(name: "Menu", bundle: nil)
+        // Стало:
+        let vc = storyboard!.instantiateViewController(withIdentifier: "WebViewHandlerViewController") as! WebViewHandlerViewController
+        vc.urlString = urlString
+        self.navigationController?.pushViewController(vc, animated: true)
+    }
+}
+----
+
+---
+
+== Практика: Пишем тесты для `WebViewViewController`
+
+Мы напишем тесты для проверки логики обработки URL и перехода на экран веб-просмотра.
+
+=== UC-WV-001: Добавление префикса `https://`
+
+*Тест:* Проверяем, что к URL без протокола добавляется префикс `https://`.
+
+[source,swift]
+----
+func test_goToSiteButton_withURLWithoutProtocol_shouldAddHttpsPrefix() {
+    // Given
+    controller.urlTF.text = "saucelabs.com"
+    let storyboardMock = UIStoryboardMock.create()
+    controller.storyboard = storyboardMock
+
+    // When
+    controller.goToSiteButton(self)
+
+    // Then
+    XCTAssertEqual(storyboardMock.instantiateViewControllerIdentifier, "WebViewHandlerViewController", "Должен быть выполнен переход на экран WebViewHandlerViewController")
+    
+    let webViewHandlerViewController = controller.navigationController?.topViewController as? WebViewHandlerViewController
+    XCTAssertEqual(webViewHandlerViewController?.urlString, "https://saucelabs.com", "URL должен содержать префикс https://")
+}
+----
+
+=== UC-WV-002: URL с существующим протоколом не изменяется
+
+*Тест:* Проверяем, что URL с существующим протоколом не изменяется.
+
+[source,swift]
+----
+func test_goToSiteButton_withURLWithProtocol_shouldNotChangeURL() {
+    // Given
+    controller.urlTF.text = "http://saucelabs.com"
+    let storyboardMock = UIStoryboardMock.create()
+    controller.storyboard = storyboardMock
+
+    // When
+    controller.goToSiteButton(self)
+
+    // Then
+    XCTAssertEqual(storyboardMock.instantiateViewControllerIdentifier, "WebViewHandlerViewController", "Должен быть выполнен переход на экран WebViewHandlerViewController")
+    
+    let webViewHandlerViewController = controller.navigationController?.topViewController as? WebViewHandlerViewController
+    XCTAssertEqual(webViewHandlerViewController?.urlString, "http://saucelabs.com", "URL не должен изменяться")
+}
+----
+
+== Заключение
+
+Мы написали тесты для проверки логики обработки URL в `WebViewViewController`. Ключевыми моментами этого урока стали:
+
+*   **Тестирование UI-логики:** Мы научились проверять реакцию контроллера на ввод данных пользователем.
+*   **Использование Mock-объектов:** Мы использовали Mock для `UIStoryboard`, чтобы протестировать переходы между экранами.
+*   **Проверка различных сценариев:** Мы убедились, что приложение корректно обрабатывает URL как с протоколом, так и без него.

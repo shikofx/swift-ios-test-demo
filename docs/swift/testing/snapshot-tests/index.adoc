@@ -1,0 +1,22 @@
+= Полный курс по Snapshot-тестированию
+:source-highlighter: highlight.js
+
+:author: Пархейчук Дмитрий Александрович
+:email: d.parkheichuk@yandex.ru
+:revnumber: 1.0
+:revdate: 2025-11-08
+:doctype: book
+:encoding: utf-8
+:lang: ru
+:sectnums:
+:toc: left
+:toclevels: 3
+
+Этот документ объединяет все уроки по Snapshot-тестированию для iOS-приложений.
+
+include::./lesson_01_intro_to_snapshot_testing.adoc[leveloffset=+1]
+include::./lesson_02_advanced_snapshot_testing.adoc[leveloffset=+1]
+include::./lesson_03_ci_cd_integration.adoc[leveloffset=+1]
+include::./lesson_04_testing_individual_views.adoc[leveloffset=+1]
+include::./lesson_05_snapshot_update_strategy.adoc[leveloffset=+1]
+include::./lesson_06_non_visual_snapshots.adoc[leveloffset=+1]

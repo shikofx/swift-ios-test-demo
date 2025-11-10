@@ -1,0 +1,211 @@
+= Практика Unit-тестирования: LoginViewController
+:source-highlighter: highlight.js
+
+== Цели урока
+
+*   Научиться тестировать логику валидации полей ввода в `UIViewController`.
+*   Познакомиться с подходом к тестированию вызова статических методов.
+*   Закрепить навыки написания Unit-тестов для проверки негативных сценариев.
+
+---
+
+== Теория
+
+На этом уроке мы напишем тесты для `LoginViewController`. Его основная задача — валидация данных, введенных пользователем, и предотвращение входа в систему при некорректном вводе. Мы сфокусируемся на проверке полей имени пользователя и пароля.
+
+=== Подготовка к тестированию (`setUp`)
+
+Как и в предыдущих уроках, мы используем метод `setUp()` для создания "чистого" окружения перед каждым тестом. Это гарантирует, что состояние из одного теста не повлияет на другой.
+
+[source,swift]
+----
+final class LoginViewControllerTests: XCTestCase {
+
+    var controller: LoginViewController!
+    var mockMethods: MethodsMock!
+
+    override func setUp() {
+        super.setUp()
+        
+        // Given: Загружаем контроллер из Storyboard
+        let storyboard = UIStoryboard(name: "Authentication", bundle: nil)
+        controller = storyboard.instantiateViewController(withIdentifier: "LoginViewController") as? LoginViewController
+        
+        // Given: Загружаем view, чтобы IBOutlets (текстовые поля) были инициализированы
+        controller.loadViewIfNeeded()
+        
+        // Given: Создаем и внедряем мок для статических методов
+        mockMethods = MethodsMock()
+        controller.methods = mockMethods
+    }
+    
+    override func tearDown() {
+        controller = nil
+        mockMethods = nil
+        super.tearDown()
+    }
+    // ...
+}
+----
+
+Ключевые моменты:
+
+1.  `controller.loadViewIfNeeded()`: Этот вызов необходим для инициализации всех `@IBOutlet` в нашем контроллере, таких как `userNameTF` и `passwordTF`. Без этого обращение к ним привело бы к падению теста.
+2.  `controller.methods = mockMethods`: Логика `LoginViewController` при ошибке валидации вызывает статический метод `Methods.showAlertMessage(...)`. Чтобы протестировать этот вызов, мы используем подход **Dependency Injection**. Мы создаем свойство в контроллере, которое будет хранить объект, отвечающий за показ алертов, и в тесте подменяем его на наш мок-объект `MethodsMock`.
+
+=== Тестирование вызова статических методов
+
+==== Проблема
+
+Прямое тестирование вызова статических методов (например, `Methods.showAlertMessage`) в Unit-тестах является сложной задачей по нескольким причинам:
+
+*   **Жесткая связь (Tight Coupling):** Код, который напрямую вызывает статический метод (`LoginViewController`), становится жестко связан с конкретной реализацией (`Methods`). Его невозможно протестировать в изоляции от этой зависимости.
+*   **Сложность подмены (мокирования):** Статические методы принадлежат самому типу, а не его экземпляру. Их нельзя просто так "подменить" в тестах на тестовый дублер (мок-объект), чтобы проверить, был ли метод вызван.
+*   **Побочные эффекты:** Статический метод `Methods.showAlertMessage` имеет побочный эффект — он пытается отобразить `UIAlertController` на экране. Это нежелательно в Unit-тестах, так как они должны быть быстрыми и не зависеть от UI.
+
+==== Решение: Инверсия зависимостей и внедрение зависимостей
+
+Правильный подход — инкапсулировать зависимость в протокол и внедрять ее в тестируемый класс. Этот паттерн также известен как **Dependency Inversion Principle**.
+
+1.  **Определяем абстракцию (протокол):** Вместо того чтобы зависеть от конкретного класса `Methods`, мы создаем протокол `AlertPresenter`. Он описывает, *что* мы хотим делать (показывать alert), а не *как* это делается.
+
+2.  **Используем абстракцию:** `LoginViewController` теперь зависит не от `Methods`, а от протокола `AlertPresenter`.
+
+3.  **Внедряем зависимость (Dependency Injection):** Мы передаем конкретную реализацию (`Methods` для приложения или `MethodsMock` для тестов) в `LoginViewController` извне.
+
+Этот подход разрывает жесткую связь и позволяет нам легко подменять реальную зависимость на тестовую.
+
+*Шаг 1. Создаем протокол `AlertPresenter` в `LoginViewController.swift`:*
+
+Он описывает необходимую нам функцию.
+
+*Шаг 1. Создаем протокол `AlertPresenter` в файле тестов:*
+
+Он описывает необходимую нам функцию.
+
+[source,swift]
+----
+protocol AlertPresenter {
+    func showAlertMessage(vc: UIViewController, title: NSString, message: NSString)
+}
+----
+
+*Шаг 2. Заставляем `Methods` соответствовать протоколу в файле тестов:*
+
+Мы расширяем наш существующий класс `Methods`, чтобы он реализовывал протокол `AlertPresenter`. Внутри он просто вызывает свой же статический метод. Это позволяет нам не менять код, который уже использует `Methods.showAlertMessage` в других частях приложения.
+
+[source,swift]
+----
+extension Methods: AlertPresenter {
+    func showAlertMessage(vc: UIViewController, title: NSString, message: NSString) {
+        Methods.showAlertMessage(vc: vc, title: title, message: message)
+    }
+}
+----
+
+*Шаг 3. Модифицируем `LoginViewController.swift`, чтобы сделать его тестируемым:*
+
+Добавляем свойство `methods` типа `AlertPresenter`. По умолчанию оно инициализируется реальным объектом `Methods()`, но в тестах мы сможем легко подменить его на мок. Также заменяем прямой вызов статического метода `Methods.showAlertMessage(...)` на вызов через это свойство `methods.showAlertMessage(...)`.
+
+[source,swift]
+----
+class LoginViewController: UIViewController {
+    // ...
+    var methods: AlertPresenter = Methods() // По умолчанию используется реальный класс
+    // ...
+
+    @IBAction func LoginButton(_ sender: Any) {
+        if(!userNameTF.hasText){
+            // Было: Methods.showAlertMessage(...)
+            // Стало:
+            methods.showAlertMessage(vc: self, title: "Validation Error!", message: "Username is required")
+        } else if (!passwordTF.hasText) {
+            // Было: Methods.showAlertMessage(...)
+            // Стало:
+            methods.showAlertMessage(vc: self, title: "Validation Error!", message: "Password is required")
+        }
+        // ... остальная логика
+    }
+}
+----
+
+*Шаг 4. Создаем мок-класс в файле тестов:*
+
+Этот класс также реализует протокол `AlertPresenter`, но вместо реального показа алерта он просто устанавливает флаг `showAlertCalled` и сохраняет переданное сообщение. Это позволяет нам в тесте проверить, что метод был вызван с правильными параметрами.
+
+Этот класс также реализует протокол `AlertPresenter`, но вместо реального показа алерта он просто устанавливает флаг `showAlertCalled` и сохраняет переданное сообщение. Это позволяет нам в тесте проверить, что метод был вызван с правильными параметрами.
+
+[source,swift]
+----
+class MethodsMock: AlertPresenter {
+    var showAlertCalled = false
+    var alertMessage: String?
+
+    func showAlertMessage(vc: UIViewController, title: NSString, message: NSString) {
+        showAlertCalled = true
+        alertMessage = message as String
+    }
+}
+----
+
+Теперь в `LoginViewController` вместо прямого вызова `Methods.showAlertMessage(...)` мы используем `methods.showAlertMessage(...)`. В тестах мы подменяем реальную реализацию на `MethodsMock` и проверяем его состояние (`showAlertCalled`, `alertMessage`), чтобы убедиться, что нужный метод был вызван с правильными параметрами.
+
+---
+
+== Практика: Пишем тесты для валидации
+
+Мы напишем тесты для двух сценариев валидации, описанных в `LoginViewController.adoc`.
+
+=== UC-LV-001: Валидация пустого имени пользователя
+
+*Тест:* Проверяем, что при попытке входа с пустым полем имени пользователя будет показано сообщение об ошибке.
+
+[source,swift]
+----
+func test_login_withEmptyUsername_shouldShowError() {
+    given("заполнено поле пароля, но не имени пользователя") {
+        controller.passwordTF.text = "some_password"
+        controller.userNameTF.text = ""
+    }
+
+    when("пользователь нажимает кнопку входа") {
+        controller.LoginButton(self)
+    }
+
+    then("должно появиться сообщение об ошибке 'Username is required'") {
+        XCTAssertTrue(mockMethods.showAlertCalled, "Метод showAlertMessage должен был быть вызван")
+        XCTAssertEqual(mockMethods.alertMessage, "Username is required", "Сообщение об ошибке неверное")
+    }
+}
+----
+
+=== UC-LV-002: Валидация пустого пароля
+
+*Тест:* Проверяем, что при попытке входа с пустым полем пароля будет показано соответствующее сообщение.
+
+[source,swift]
+----
+func test_login_withEmptyPassword_shouldShowError() {
+    given("заполнено поле имени пользователя, но не пароля") {
+        controller.userNameTF.text = "standard_user"
+        controller.passwordTF.text = ""
+    }
+
+    when("пользователь нажимает кнопку входа") {
+        controller.LoginButton(self)
+    }
+
+    then("должно появиться сообщение об ошибке 'Password is required'") {
+        XCTAssertTrue(mockMethods.showAlertCalled, "Метод showAlertMessage должен был быть вызван")
+        XCTAssertEqual(mockMethods.alertMessage, "Password is required", "Сообщение об ошибке неверное")
+    }
+}
+----
+
+== Заключение
+
+Мы написали тесты для проверки логики валидации в `LoginViewController`. Ключевыми моментами этого урока стали:
+
+*   **Тестирование UI-логики:** Мы научились проверять реакцию контроллера на некорректный ввод данных пользователем.
+*   **Внедрение зависимостей (Dependency Injection):** Мы использовали мок-объект для тестирования вызова статического метода, что сделало наш тест независимым от реальной реализации UI (показа `UIAlertController`).
+*   **Проверка негативных сценариев:** Мы убедились, что приложение корректно обрабатывает ошибки и информирует о них пользователя.

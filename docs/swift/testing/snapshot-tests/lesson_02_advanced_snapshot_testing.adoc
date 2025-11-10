@@ -1,0 +1,183 @@
+= Продвинутое Snapshot-тестирование (разные состояния и устройства)
+:source-highlighter: highlight.js
+
+:author: Пархейчук Дмитрий Александрович
+:email: d.parkheichuk@yandex.ru
+:revnumber: 1.0
+:revdate: 2025-11-08
+:doctype: article
+:encoding: utf-8
+:lang: ru
+:sectnums:
+
+В предыдущем уроке мы научились делать базовый снимок экрана. Но реальная мощь Snapshot-тестов раскрывается, когда мы начинаем тестировать один и тот же UI-компонент в десятках различных конфигураций: на разных устройствах, в разных темах и в разных состояниях.
+
+== Тестирование разных состояний
+
+Экран редко бывает статичным. Он может отображать состояние загрузки, ошибку или пустые данные. Snapshot-тесты идеально подходят для проверки всех этих состояний.
+
+Давайте протестируем наш `LoginViewController`, но на этот раз с видимым сообщением об ошибке.
+
+[source, swift]
+--
+// LoginSnapshotTests.swift
+
+import XCTest
+import SnapshotTesting
+
+final class LoginSnapshotTests: XCTestCase {
+
+    func testLoginScreen() {
+        let loginVC = // ... создаем VC
+        assertSnapshot(of: loginVC, as: .image)
+    }
+
+    // Новый тест
+    func testLoginScreenWithError() {
+        // 1. Создаем VC
+        let storyboard = UIStoryboard(name: "Login", bundle: nil)
+        guard let loginVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController") as? LoginViewController else {
+            XCTFail("Не удалось создать LoginViewController")
+            return
+        }
+
+        // 2. Приводим его в нужное состояние
+        loginVC.showError(message: "Provided credentials do not match any user in this service.")
+
+        // 3. Делаем снимок
+        assertSnapshot(of: loginVC, as: .image)
+    }
+}
+--
+
+После записи эталона для этого теста у вас будет два `.png` файла: один для обычного состояния, другой — для состояния с ошибкой. Это гарантирует, что сообщение об ошибке всегда будет выглядеть так, как вы ожидаете.
+
+== Тестирование для разных устройств и тем
+
+Верстка может "поехать" на экране другого размера или при переключении на темную тему. Библиотека `SnapshotTesting` позволяет легко проверить это, передавая в `assertSnapshot` разные конфигурации.
+
+=== Определение конфигураций
+
+Библиотека предоставляет структуру `ViewImageConfig` для описания конфигурации устройства. Давайте определим несколько таких конфигураций для наших тестов.
+
+[source, swift]
+--
+// LoginSnapshotTests.swift
+
+func testLoginScreenOnMultipleDevices() {
+    let loginVC = // ... создаем VC
+
+    // Определяем конфигурации
+    let iPhone14Pro = ViewImageConfig.iPhone14Pro
+    let iPadPro11 = ViewImageConfig.iPadPro11(.portrait)
+    let iPhone14ProDarkMode = ViewImageConfig.iPhone14Pro(.dark)
+
+    // Проверяем снапшоты для каждой конфигурации
+    assertSnapshot(of: loginVC, as: .image(on: iPhone14Pro), named: "iPhone14Pro")
+    assertSnapshot(of: loginVC, as: .image(on: iPadPro11), named: "iPadPro11")
+    assertSnapshot(of: loginVC, as: .image(on: iPhone14ProDarkMode), named: "iPhone14Pro_DarkMode")
+}
+--
+
+=== Разбор кода
+
+*   `ViewImageConfig.iPhone14Pro`: Готовая конфигурация для iPhone 14 Pro.
+*   `ViewImageConfig.iPadPro11(.portrait)`: Конфигурация для 11-дюймового iPad Pro в портретной ориентации.
+*   `ViewImageConfig.iPhone14Pro(.dark)`: Конфигурация для iPhone 14 Pro с темной темой.
+*   `named: "..."`: Мы добавляем суффикс к имени файла снапшота, чтобы различать их.
+
+После записи эталонов для этого теста в папке `__Snapshots__` появятся три новых файла, каждый для своей конфигурации.
+
+== Упрощение с помощью базового класса
+
+Как вы заметили, в каждом тесте мы повторяем код создания `ViewController` и перечисления `assertSnapshot`. Давайте вынесем это в базовый класс.
+
+Создайте новый файл `BaseSnapshotTest.swift`.
+
+[source, swift]
+--
+// BaseSnapshotTest.swift
+
+import XCTest
+import SnapshotTesting
+
+class BaseSnapshotTest: XCTestCase {
+
+    // Определяем все нужные нам конфигурации в одном месте
+    let configs: [String: ViewImageConfig] = [
+        "iPhone14Pro": .iPhone14Pro,
+        "iPadPro11": .iPadPro11(.portrait),
+        "iPhoneSE": .iPhoneSe,
+        "iPhone14Pro_DarkMode": .iPhone14Pro(.dark)
+    ]
+
+    /// Вспомогательная функция, которая делает снимки для всех конфигураций
+    func assertSnapshots<Value>(
+        of value: Value,
+        as snapshotting: Snapshotting<Value, UIImage>,
+        file: StaticString = #file,
+        testName: String = #function,
+        line: UInt = #line
+    ) {
+        configs.forEach { name, config in
+            assertSnapshot(
+                of: value,
+                as: .image(on: config),
+                named: name,
+                file: file,
+                testName: testName,
+                line: line
+            )
+        }
+    }
+}
+--
+
+Теперь наш `LoginSnapshotTests` становится невероятно простым и чистым.
+
+[source, swift]
+--
+// LoginSnapshotTests.swift
+
+final class LoginSnapshotTests: BaseSnapshotTest { // <-- Наследуемся от базового класса
+
+    func testLoginScreen() {
+        let storyboard = UIStoryboard(name: "Login", bundle: nil)
+        let loginVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController")
+
+        // Одна строка для всех проверок!
+        assertSnapshots(of: loginVC, as: .image)
+    }
+}
+--
+
+Теперь при запуске `testLoginScreen` будут автоматически созданы и проверены снимки для всех устройств и тем, которые мы определили в `BaseSnapshotTest`.
+
+== Управление точностью сравнения (Precision)
+
+Иногда тесты могут падать из-за незначительных различий в несколько пикселей, вызванных особенностями рендеринга на разных машинах или версиях ОС. Для таких случаев можно указать допустимый процент расхождения.
+
+Параметр `precision` в стратегии `.image` принимает значение от `0.0` (0% совпадения) до `1.0` (100% совпадения). По умолчанию он равен `1.0`.
+
+[source, swift]
+--
+func testLoginScreenWithPrecision() {
+    let loginVC = // ... создаем VC
+
+    // Тест пройдет, если новый снимок совпадает с эталоном как минимум на 99%
+    assertSnapshot(of: loginVC, as: .image(precision: 0.99))
+}
+--
+
+[IMPORTANT]
+====
+**Используйте с осторожностью!**
+
+Снижение точности — это компромисс. Устанавливая `precision` ниже `1.0`, вы рискуете пропустить небольшую, но реальную визуальную регрессию. Этот параметр следует использовать как последнее средство, когда вы абсолютно уверены, что различия не являются багом, и нет другого способа стабилизировать окружение.
+
+Лучшей практикой всегда остается обеспечение максимальной идентичности локального и CI окружений, как мы обсуждали в уроке про интеграцию с CI/CD.
+====
+
+== Что дальше?
+
+Мы научились эффективно тестировать UI в различных конфигурациях. Следующий важный шаг — интеграция Snapshot-тестов в наш CI/CD пайплайн. Мы разберемся, как правильно настроить GitHub Actions, чтобы он мог как записывать новые эталоны, так и проверять существующие.

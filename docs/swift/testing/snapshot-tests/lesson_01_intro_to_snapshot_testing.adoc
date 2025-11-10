@@ -1,0 +1,146 @@
+= Введение в Snapshot-тестирование
+:source-highlighter: highlight.js
+
+:author: Пархейчук Дмитрий Александрович
+:email: d.parkheichuk@yandex.ru
+:revnumber: 1.0
+:revdate: 2025-11-08
+:doctype: article
+:encoding: utf-8
+:lang: ru
+:sectnums:
+
+
+Добро пожаловать в раздел, посвященный Snapshot-тестам! Unit-тесты проверяют логику, а UI-тесты — сквозные сценарии. Но кто проверит, что кнопка случайно не съехала на 10 пикселей влево или что цвет фона не изменился на другой оттенок серого? Для этого и существуют Snapshot-тесты.
+
+== 1. Что такое Snapshot-тестирование?
+
+**Snapshot-тестирование** — это процесс, при котором мы делаем "снимок" (снапшот) UI-компонента или целого экрана и сохраняем его как эталон. При последующих запусках теста система генерирует новый снимок и сравнивает его пиксель в пиксель с эталонным. Если есть хотя бы одно различие, тест падает.
+
+Согласно нашей `TEST-STRATEGY.adoc`, Snapshot-тесты:
+
+*   **Защищают от визуальных регрессий:** Они мгновенно ловят любые непреднамеренные изменения в UI.
+*   **Очень быстрые:** Они не требуют запуска симулятора и взаимодействия с UI, так как работают на уровне рендеринга компонента.
+*   **Тестируют в изоляции:** Мы можем протестировать отдельную ячейку таблицы, кнопку или целый экран в различных состояниях.
+
+== 2. Настройка проекта
+
+Для реализации Snapshot-тестов мы будем использовать популярную библиотеку `SnapshotTesting` от Point-Free.
+
+=== Добавление зависимости через Swift Package Manager (SPM)
+
+1.  В Xcode перейдите в меню `File` -> `Add Packages...`.
+2.  В правый верхний угол вставьте URL репозитория: `https://github.com/pointfreeco/swift-snapshot-testing`.
+3.  Xcode найдет пакет. В поле `Dependency Rule` выберите `Up to Next Major Version` и нажмите `Add Package`.
+4.  На следующем экране выберите ваш UI-тестовый таргет (`SDET Demo AppUITests`) и нажмите `Add Package`.
+
+image::https://i.imgur.com/3gY5h1f.png[Добавление пакета]
+
+Библиотека добавлена в проект, и мы готовы писать тесты.
+
+== 3. Написание первого Snapshot-теста
+
+Давайте напишем тест, который проверит внешний вид экрана логина.
+
+Создайте новый файл в папке `SDET Demo AppUITests` с именем `LoginSnapshotTests.swift`.
+
+[source, swift]
+--
+// LoginSnapshotTests.swift
+
+import XCTest
+import SnapshotTesting
+
+final class LoginSnapshotTests: XCTestCase {
+
+    func testLoginScreen() {
+        // 1. Создаем экземпляр нашего ViewController
+        let storyboard = UIStoryboard(name: "Login", bundle: nil)
+        let loginVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController")
+
+        // 2. Выполняем проверку снапшота
+        assertSnapshot(of: loginVC, as: .image)
+    }
+}
+--
+
+=== Разбор кода
+
+*   `import SnapshotTesting`: Импортируем библиотеку.
+*   `storyboard.instantiateViewController(...)`: Мы получаем экземпляр нашего экрана так же, как это делает система, но без запуска всего приложения.
+*   `assertSnapshot(of: loginVC, as: .image)`: Это главная функция.
+    *   `of: loginVC`: Указываем, что мы хотим протестировать.
+    *   `as: .image`: Указываем *стратегию* сравнения. В данном случае — как изображение. Библиотека поддерживает и другие стратегии, например, `.recursiveDescription` (сравнение иерархии view) или `.json`.
+
+== 4. Запись и проверка эталона
+
+При первом запуске этого теста он упадет с ошибкой. Это нормально! Тест сообщает, что у него нет эталонного снимка для сравнения.
+
+=== Шаг 1: Запись эталона
+
+Чтобы записать эталонный снимок, нам нужно временно установить специальную переменную окружения или добавить `isRecording = true` в код.
+
+[source, swift]
+--
+func testLoginScreen() {
+    let storyboard = UIStoryboard(name: "Login", bundle: nil)
+    let loginVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController")
+
+    // Временно устанавливаем режим записи
+    isRecording = true
+
+    assertSnapshot(of: loginVC, as: .image)
+}
+--
+
+Теперь запустите тест еще раз. Он снова упадет, но на этот раз с сообщением, что эталонный снимок был успешно записан.
+
+В навигаторе проекта рядом с вашим файлом `LoginSnapshotTests.swift` появится новая папка `__Snapshots__`. Внутри нее будет лежать `.png` файл — наш эталон.
+
+image::https://i.imgur.com/k2e4xLg.png[Эталонный снимок]
+
+[IMPORTANT]
+====
+Папку `__Snapshots__` и все ее содержимое **необходимо** добавить в систему контроля версий (Git). Это неотъемлемая часть вашего тестового кода.
+====
+
+=== Шаг 2: Проверка
+
+Теперь, когда эталон записан, уберите строку `isRecording = true` из теста.
+
+[source, swift]
+--
+func testLoginScreen() {
+    let storyboard = UIStoryboard(name: "Login", bundle: nil)
+    let loginVC = storyboard.instantiateViewController(withIdentifier: "LoginViewController")
+
+    // Режим записи выключен, теперь тест будет сравнивать с эталоном
+    assertSnapshot(of: loginVC, as: .image)
+}
+--
+
+Запустите тест снова. На этот раз он должен пройти успешно (стать "зеленым"), так как текущий вид экрана полностью совпадает с эталоном.
+
+Если вы теперь внесете любое визуальное изменение в `LoginViewController` (например, измените цвет кнопки) и запустите тест, он упадет. В отчете об ошибке Xcode покажет вам три изображения: эталонное, новое и их разницу (diff), подсветив измененные пиксели.
+
+== Что дальше?
+
+Мы научились основам Snapshot-тестирования. В следующем уроке мы рассмотрим более продвинутые техники:
+
+*   Тестирование экрана в разных состояниях (например, с сообщением об ошибке).
+*   Тестирование для разных устройств (iPhone, iPad) и тем (светлая/темная).
+*   Создание базового класса для упрощения написания Snapshot-тестов.
+
+```
+
+### 2. Обновление `index.adoc`
+
+```diff
+--- a/docs/ui_testing/index.adoc
++++ b/docs/ui_testing/index.adoc
+@@ -25,3 +25,5 @@
+ include::lesson_10_ci_cd_integration.adoc[]
+ 
+ include::lesson_11_advanced_allure_reporting.adoc[]
++
++include::lesson_12_intro_to_snapshot_testing.adoc[]

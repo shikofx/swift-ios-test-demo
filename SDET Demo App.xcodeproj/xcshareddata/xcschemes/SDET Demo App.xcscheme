@@ -41,6 +41,17 @@
                ReferencedContainer = "container:SDET Demo App.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D617BA062EBF104C0065DEB8"
+               BuildableName = "SDET Demo AppUITests.xctest"
+               BlueprintName = "SDET Demo AppUITests"
+               ReferencedContainer = "container:SDET Demo App.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
@@ -63,6 +74,19 @@
             ReferencedContainer = "container:SDET Demo App.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "-UITesting"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "DISABLE_ANIMATIONS"
+            value = "true"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
