@@ -8,7 +8,7 @@ import XCTest
 
 class ProductsScreen: BaseScreen {
 
-    lazy var productsHeader = app.staticTexts[Selector.productsHeaderText.rawValue]
+    lazy var productsHeader = app.staticText(.productsHeaderText)
     
     func isProductsHeaderVisible() -> Bool {
         return productsHeader.waitForExistence(timeout: SCREEN_TIMEOUT)

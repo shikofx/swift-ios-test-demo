@@ -10,8 +10,8 @@ import XCTest
 class MainMenu {
     private let app: XCUIApplication!
 
-    private lazy var tabItemMore: XCUIElement = app.buttons["More-tab-item"]
-    private lazy var itemLogin: XCUIElement = app.otherElements["Login Button"]
+    private lazy var tabItemMore: XCUIElement = app.button(.tabItem_More)
+    private lazy var itemLogin: XCUIElement = app.otherElement(.menuItem_Login)
     
     init(_ app: XCUIApplication) {
         self.app = app
