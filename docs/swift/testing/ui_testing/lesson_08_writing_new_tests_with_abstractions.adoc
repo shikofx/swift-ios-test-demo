@@ -1,0 +1,97 @@
+:source-highlighter: highlight.js
+:author: Пархейчук Дмитрий Александрович
+:email: d.parkheichuk@yandex.ru
+:revnumber: 1.1
+:revdate: 2025-11-12
+:doctype: article
+:encoding: utf-8
+:lang: ru
+:sectnums:
+
+= Написание новых тестов с использованием кастомных ассертов
+
+В предыдущих уроках мы создали мощный фундамент: `UiBot` для навигации, `Page Objects` для инкапсуляции экранов и кастомные ассерты (`XCTAssertExists`, `XCTAssertVisible`) для выразительных проверок. Теперь давайте посмотрим, как эти улучшения помогают нам в написании новых тестов.
+
+Мы напишем негативный тест, который проверяет поведение приложения при вводе неверных учетных данных.
+
+== Тестовый сценарий: Неудачный логин
+
+1.  Открыть экран логина.
+2.  Ввести невалидное имя пользователя (например, `wrong_user`).
+3.  Ввести невалидный пароль (например, `wrong_pass`).
+4.  Нажать на кнопку "Login".
+5.  Убедиться, что на экране появилось сообщение об ошибке.
+
+== 1. Обновление `AppElement`
+== 1. Обновление `Selector`
+
+Первым делом, нам нужно добавить идентификатор для сообщения об ошибке в наш `enum`. С помощью `Accessibility Inspector` или `po app` мы выяснили, что у сообщения об ошибке на экране логина есть идентификатор `generic-error-message`.
+
+Добавим его в `Selector.swift`:
+
+[source, swift]
+--
+// Selector.swift
+enum Selector: String {
+    // ... существующие кейсы
+
+    // Login
+    case loginButton = "Login"
+    case genericErrorMessage = "generic-error-message" // <-- Наш новый элемент для сообщения об ошибке
+
+    // ...
+}
+--
+
+== 2. Расширение `LoginScreen`
+
+Теперь добавим в наш `LoginScreen` элемент для сообщения об ошибке. Нам больше не нужны методы для проверок (`isErrorMessageVisible` и т.д.), так как мы будем использовать кастомные ассерты прямо в тесте.
+
+[source, swift]
+--
+// LoginScreen.swift
+class LoginScreen: BaseScreen {
+    // Elements
+    private lazy var usernameTextField = app.textFields.element(boundBy: 0)
+    private lazy var passwordTextField = app.secureTextFields.element(boundBy: 0)
+    private lazy var loginButton = app.button(.loginButton)
+    lazy var errorMessage = app.staticTexts(.genericErrorMessage) // <-- Добавили элемент
+
+    // ... (методы login, setUsername и т.д. остаются без изменений)
+}
+--
+
+Обратите внимание, что мы сделали свойство `errorMessage` публичным (`lazy var` вместо `private lazy var`), чтобы иметь к нему доступ из теста для проверки.
+
+== 3. Написание нового теста
+
+Теперь мы готовы добавить новый тестовый метод в `LoginUiTests.swift`. Посмотрите, каким лаконичным и читаемым он получился благодаря нашему фреймворку.
+
+[source, swift]
+--
+// LoginUiTests.swift
+
+// ... существующий тест testLoginWithValidData() ...
+
+@MainActor
+func testInvalidLogin() {
+    // Arrange: Подготовка
+    let loginScreen = uiBot.menu.openLoginScreen()
+
+    // Act: Действие
+    // Вызываем метод login, но игнорируем возвращаемый ProductsScreen,
+    // так как ожидаем остаться на экране логина.
+    loginScreen.login(username: "wrong_user", password: "wrong_pass")
+
+    // Assert: Проверка
+    // Используем наши кастомные ассерты для проверки
+    XCTAssertExists(loginScreen.errorMessage, "Сообщение об ошибке не появилось на экране.")
+    XCTAssertEqual(loginScreen.errorMessage.label, "Provided credentials do not match any user in this service.", "Текст сообщения об ошибке неверный.")
+}
+--
+
+Вот и все! Мы написали новый, полностью рабочий UI-тест. Нам не пришлось создавать лишние методы в Page Object — вся логика проверки находится в самом тесте, где ей и место.
+
+== Что дальше?
+
+Наши тесты становятся все лучше, но у нас все еще есть "магические" данные прямо в коде (`"wrong_user"`, `"wrong_pass"`). В следующем уроке мы создадим вспомогательные классы (хелперы) для управления тестовыми данными, чтобы сделать наши тесты еще более гибкими и поддерживаемыми.

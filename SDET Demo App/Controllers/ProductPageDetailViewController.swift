@@ -51,6 +51,10 @@ class ProductPageDetailViewController: UIViewController {
         productDescriptionTV.text = productHighlights
         cartCountLbl.text = String(Engine.sharedInstance.cartCount)
         
+        // Add accessibility identifiers for UI testing
+        addToCartBtn.accessibilityIdentifier = "addToCartButton"
+        cartCountLbl.accessibilityIdentifier = "cartCountLabel"
+        
         
         if productName.starts(with:"Test.allTheThings() T-Shirt") || productName.starts(with:"Sauce Labs Onesie") {
             blueBtn.isHidden = true

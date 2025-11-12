@@ -1,20 +1,14 @@
-//
-//  Keyboard.swift
-//  SDET Demo App
-//
-//  Created by d parkheychuk on 11.11.25.
-//
-
 import XCTest
 
-class Keyboard {
-    private let app: XCUIApplication!
-    
-    init(_ app: XCUIApplication) {
-        self.app = app
-    }
-    
+class Keyboard: UIComponent {
+        
     func tapReturn() {
         app.keyboards.buttons["Return"].tap()
+    }
+}
+
+extension UiBot {
+    var keyboard: Keyboard {
+        return .init(app)
     }
 }

@@ -1,10 +1,3 @@
-//
-//  XCUIApplicationWithSelector.swift
-//  SDET Demo App
-//
-//  Created by d parkheychuk on 11.11.25.
-//
-
 import XCTest
 
 extension XCUIApplication {

@@ -1,0 +1,26 @@
+name: 'Run UI Tests'
+description: 'Runs UI tests and generates test results.'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: xctestrun-build
+        path: build
+
+    - name: Run UI tests
+      shell: bash
+      run: |
+        xcodebuild test-without-building \
+          -xctestrun "build/Build/Products/SDET Demo App_UITests.xctestrun" \
+          -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
+          -resultBundlePath "ui-test-results/TestResults.xcresult"
+
+    - name: Upload UI test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ui-test-results
+        path: ui-test-results/

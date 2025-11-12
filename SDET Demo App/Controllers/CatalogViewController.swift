@@ -55,6 +55,15 @@ class CatalogViewController: UIViewController {
         flowLayout.sectionInset = UIEdgeInsets(top: 0, left: 16, bottom: 5, right: 16)
         
         cartCountLbl.text = String(Engine.sharedInstance.cartCount)
+
+        // Add accessibility identifier for UI testing
+        sortBtn.accessibilityIdentifier = "sortButton"
+        nameAscendingBtn.accessibilityIdentifier = "sortByNameAscendingButton"
+        nameDescendingBtn.accessibilityIdentifier = "sortByNameDescendingButton"
+        priceAscendingBtn.accessibilityIdentifier = "sortByPriceAscendingButton"
+        priceDescendingBtn.accessibilityIdentifier = "sortByPriceDescendingButton"
+        sortPopUpView.accessibilityIdentifier = "sortPopupView"
+        cartCountContView.accessibilityIdentifier = "cartButton" // Используем контейнер как кнопку
         
     }
 
@@ -219,6 +228,9 @@ extension CatalogViewController: UICollectionViewDataSource, UICollectionViewDel
         cell.star4Btn.addTarget(self, action: #selector(showAlert(sender:)), for: .touchUpInside)
         cell.star5Btn.tag = indexPath.row
         cell.star5Btn.addTarget(self, action: #selector(showAlert(sender:)), for: .touchUpInside)
+
+        // Add accessibility identifier for UI testing
+        cell.accessibilityIdentifier = "productCell_\(productName)"
         
         return cell
     }

@@ -1,9 +1,3 @@
-//
-//  LoginScreen.swift
-//  SDET Demo App
-//
-//  Created by d parkheychuk on 11.11.25.
-//
 import XCTest
 
 class LoginScreen: BaseScreen {

@@ -1,10 +1,3 @@
-//
-//  XCTestCase+Assertions.swift
-//  SDET Demo App
-//
-//  Created by d parkheychuk on 12.11.25.
-//
-
 import XCTest
 
 extension XCTestCase {

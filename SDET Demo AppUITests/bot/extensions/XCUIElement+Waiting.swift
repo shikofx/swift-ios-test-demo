@@ -1,10 +1,3 @@
-//
-//  XCUIElement+Waiting.swift
-//  SDET Demo App
-//
-//  Created by d parkheychuk on 12.11.25.
-//
-
 import XCTest
 
 extension XCUIElement {
@@ -17,6 +10,16 @@ extension XCUIElement {
     func waitUntilVisible(timeout: TimeInterval) -> Bool {
         let hittablePredicate = NSPredicate(format: "isHittable == true")
         let expectation = XCTNSPredicateExpectation(predicate: hittablePredicate, object: self)
+        return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
+    }
+    
+    /// Waits for the element to become not visible (i.e., to not exist) within the specified timeout.
+    /// - Parameter timeout: The maximum time to wait for the element to disappear.
+    /// - Returns: True if the element disappears within the timeout, false otherwise.
+    @discardableResult
+    func waitUntilNotVisible(timeout: TimeInterval) -> Bool {
+        let notExistsPredicate = NSPredicate(format: "exists == false")
+        let expectation = XCTNSPredicateExpectation(predicate: notExistsPredicate, object: self)
         return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
     }
 }

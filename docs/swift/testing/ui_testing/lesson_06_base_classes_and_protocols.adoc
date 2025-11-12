@@ -116,10 +116,22 @@ import XCTest
 
 extension XCUIElement {
 
+    /// Ожидает, пока элемент не станет видимым и доступным для нажатия.
+    /// Этот метод более надежен, чем `waitForExistence`, так как проверяет свойство `isHittable`.
+    /// - Parameter timeout: Время ожидания в секундах. По умолчанию 5.
+    /// - Returns: `true`, если элемент стал доступен для взаимодействия.
+    @discardableResult
+    func waitUntilVisible(timeout: TimeInterval = 5) -> Bool {
+        let hittablePredicate = NSPredicate(format: "isHittable == true")
+        let expectation = XCTNSPredicateExpectation(predicate: hittablePredicate, object: self)
+        return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
+    }
+
     /// Ожидает появления элемента в течение `timeout` секунд, а затем нажимает на него.
     /// - Parameter timeout: Время ожидания в секундах. По умолчанию 5.
     func waitAndTap(timeout: TimeInterval = 5) {
-        XCTAssertTrue(self.waitForExistence(timeout: timeout), "Элемент \(self) не появился на экране.")
+        // Используем наш новый, более надежный метод ожидания
+        XCTAssertTrue(self.waitUntilVisible(timeout: timeout), "Элемент \(self) не стал видимым и доступным для нажатия.")
         self.tap()
     }
 
@@ -229,6 +241,6 @@ func testSuccessfulLoginWithRobot() {
 
 == Что дальше?
 
-Мы создали прочный фундамент для нашего фреймворка. Код стал более структурированным, читаемым и легким в поддержке.
+Мы создали прочный фундамент для нашего фреймворка. Код стал более структурированным, читаемым и легким в поддержке. Однако, сами проверки в тестах все еще можно сделать более выразительными.
 
-В следующем уроке мы воспользуемся нашими новыми абстракциями и напишем еще несколько тестов, например, на проверку невалидного логина, чтобы увидеть, насколько проще и быстрее это стало.
+В следующем уроке мы научимся создавать собственные, кастомные ассерты, такие как `XCTAssertVisible`, чтобы сделать наши тесты еще чище и понятнее.

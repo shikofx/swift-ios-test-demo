@@ -1,20 +1,32 @@
-//
-//  Selector.swift
-//  SDET Demo App
-//
-//  Created by d parkheychuk on 11.11.25.
-//
-
 import Foundation
 
 enum Selector: String {
+    // Tab Bar
+    case tabBarItemCart = "Cart-tab-item"
+    case tabBarItemMenu = "More-tab-item"
+
+    
     // Menu
-    case tabItem_More = "More-tab-item"
-    case menuItem_Login = "Login Button"
+    case menuItemLogin = "Login Button"
 
     // LoginScreen
     case loginButton = "Login"
 
-    // ProductsScreen
-    case productsHeaderText = "Products"
+    // ProductsCatalogScreen
+    case productsHeaderText = "title"
+    
+    // SortProductsScreen
+    case sortPopupView = "sortPopupView"
+    case sortButton = "sortButton"
+    case sortByNameAscendingButton = "sortByNameAscendingButton"
+    case sortByNameDescendingButton = "sortByNameDescendingButton"
+    case sortByPriceAscendingButton = "sortByPriceAscendingButton"
+    case sortByPriceDescendingButton = "sortByPriceDescendingButton"
+    
+    // ProductDetailsScreen
+    case addToCartButton = "addToCartButton"
+    case cartCountLabel = "cartCountLabel"
+    
+    // CartScreen
+    case proceedToCheckoutButton = "GoShopping"
 }

@@ -1,17 +1,15 @@
-//
-//  UiBot.swift
-//  SDET Demo App
-//
-//  Created by d parkheychuk on 11.11.25.
-//
-
 import XCTest
 
 class UiBot {
     internal let app: XCUIApplication
     
+    lazy var tabBar = TabBarComponent(app)
+    
     init(app: XCUIApplication) {
         self.app = app
+    }
+    
+    func start() {
         app.launch()
     }
 }

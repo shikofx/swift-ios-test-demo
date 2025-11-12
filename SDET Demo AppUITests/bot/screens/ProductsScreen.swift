@@ -1,17 +1,27 @@
-//
-//  HomeScreen.swift
-//  SDET Demo App
-//
-//  Created by d parkheychuk on 11.11.25.
-//
 import XCTest
 
 class ProductsScreen: BaseScreen {
 
-    lazy var productsHeader = app.staticText(.productsHeaderText)
+    internal lazy var productsHeader = app.staticText(.productsHeaderText)
+    private lazy var sortButton = app.button(.sortButton)
     
-    func isProductsHeaderVisible() -> Bool {
-        return productsHeader.waitForExistence(timeout: screenTimeout) // Используем унаследованный screenTimeout
+    func sort() -> SortProductsScreen{
+        sortButton.tap()
+        return SortProductsScreen(app)
+    }
+    
+    @available(*, deprecated, message: "Use openProductDetails(at:) instead. Relying on names is brittle.")
+    @discardableResult
+    func openProductDetails(named name: String) -> ProductDetailsScreen {
+        app.collectionViews.cells["productCell_\(name)"].firstMatch.tap()
+        return ProductDetailsScreen(app)
+    }
+    
+    @discardableResult
+    func openProductDetails(at index: Int) -> ProductDetailsScreen {
+        // Открываем товар по его индексу в коллекции
+        app.collectionViews.cells.element(boundBy: index).tap()
+        return ProductDetailsScreen(app)
     }
 }
 

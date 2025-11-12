@@ -19,7 +19,7 @@
 *Expected result:*
 
 . Отображается сообщение "No Items".
-. Кнопки "Proceed to Checkout" и "Go to Shopping" видны.
+. Кнопки "Proceed to Checkout" и "Go to Shopping" отображаются.
 
 == TC-UI-CART-02: Просмотр корзины с одним товаром
 

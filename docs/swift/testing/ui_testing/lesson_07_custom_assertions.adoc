@@ -1,0 +1,117 @@
+:author: Пархейчук Дмитрий Александрович
+:email: d.parkheichuk@yandex.ru
+:revnumber: 1.0
+:revdate: 2025-11-12
+:doctype: article
+:encoding: utf-8
+:lang: ru
+:sectnums:
+
+= Создание кастомных ассертов для повышения читаемости тестов
+
+В предыдущих уроках мы значительно улучшили структуру нашего фреймворка. Однако, сами проверки (ассерты) в тестах все еще могут быть более выразительными.
+
+Рассмотрим текущую проверку в нашем тесте:
+
+[source, swift]
+----
+XCTAssertTrue(productsScreen.isProductsHeaderVisible(), "Не удалось перейти на экран продуктов после логина")
+----
+
+Этот код работает, но у него есть недостатки:
+
+*   **Низкая читаемость:** Он не сразу говорит, *что именно* мы проверяем. Мы проверяем, что `isProductsHeaderVisible()` вернул `true`.
+*   **Лишний код в Page Object:** Метод `isProductsHeaderVisible()` существует только для того, чтобы его можно было использовать в `XCTAssertTrue`. Page Object начинает брать на себя ответственность за то, *как* его проверять.
+
+Гораздо лучше было бы написать так:
+
+[source, swift]
+----
+XCTAssertVisible(productsScreen.productsHeader, "Заголовок 'Products' не видим")
+----
+
+Такой ассерт интуитивно понятен и четко выражает намерение. Давайте научимся создавать такие кастомные ассерты.
+
+== Расширение `XCTestCase`
+
+Самый правильный способ добавить новые ассерты — расширить стандартный класс `XCTestCase`. Это позволит нашим новым функциям вести себя точно так же, как и встроенные (`XCTAssertEqual`, `XCTAssertNil` и т.д.).
+
+Ключевой момент здесь — использование параметров `file` и `line`. Они позволяют Xcode точно подсвечивать строку в *тесте*, где произошла ошибка, а не строку внутри нашего вспомогательного метода.
+
+=== 1. Создание файла для ассертов
+
+Создадим новый файл `XCTestCase+Assertions.swift` в папке `bot/extensions`.
+
+[source, swift]
+--
+// XCTestCase+Assertions.swift
+import XCTest
+
+extension XCTestCase {
+
+    /// Проверяет, что UI-элемент существует на экране в течение заданного времени.
+    /// - Parameters:
+    ///   - element: Элемент `XCUIElement` для проверки.
+    ///   - timeout: Максимальное время ожидания. По умолчанию 5 секунд.
+    ///   - message: Сообщение об ошибке.
+    ///   - file: Файл, в котором произошла ошибка (не изменять).
+    ///   - line: Строка, на которой произошла ошибка (не изменять).
+    func XCTAssertExists(_ element: XCUIElement, timeout: TimeInterval = 5.0, _ message: String = "", file: StaticString = #filePath, line: UInt = #line) {
+        if !element.waitForExistence(timeout: timeout) {
+            let customMessage = message.isEmpty ? "Элемент \(element.description) не появился на экране в течение \(timeout) секунд." : message
+            XCTFail(customMessage, file: file, line: line)
+        }
+    }
+
+    /// Проверяет, что UI-элемент видим и доступен для взаимодействия.
+    func XCTAssertVisible(_ element: XCUIElement, timeout: TimeInterval = 5.0, _ message: String = "", file: StaticString = #filePath, line: UInt = #line) {
+        if !element.waitUntilVisible(timeout: timeout) {
+            let customMessage = message.isEmpty ? "Элемент \(element.description) не стал видимым в течение \(timeout) секунд." : message
+            XCTFail(customMessage, file: file, line: line)
+        }
+    }
+}
+--
+
+*Примечание:* Для работы `XCTAssertVisible` нам понадобится метод `waitUntilVisible`, который мы создали в предыдущих уроках.
+
+=== 2. Рефакторинг теста
+
+Теперь мы можем использовать наш новый ассерт в `LoginUiTests.swift`. Это позволит нам также удалить лишний метод `isProductsHeaderVisible` из `ProductsScreen`.
+
+*`ProductsScreen.swift` (удаляем метод):*
+
+[source, swift, diff]
+----
+ class ProductsScreen: BaseScreen {
+ 
+     lazy var productsHeader = app.staticText(.productsHeaderText)
+     
+-    func isProductsHeaderVisible() -> Bool {
+-        return productsHeader.waitForExistence(timeout: screenTimeout)
+-    }
+ }
+----
+
+*`LoginUiTests.swift` (обновляем тест):*
+
+[source, swift, diff]
+----
+ @MainActor
+ func testLoginWithValidData() {
+     let productsScreen = uiBot.menu.openLoginScreen()
+         .login(username: "bob@example.com", password: "10203040")
+     
+-    XCTAssertTrue(productsScreen.isProductsHeaderVisible(), "The Products header is not visible")
++    XCTAssertExists(productsScreen.productsHeader, "Заголовок 'Products' не появился на экране")
+ }
+----
+
+== Преимущества
+
+1.  **Выразительность:** Тесты читаются как простое утверждение на естественном языке.
+2.  **Чистые Page Objects:** Page Objects больше не содержат методов, предназначенных только для проверок. Они отвечают только за описание элементов и действий.
+3.  **Централизация:** Вся логика ассертов находится в одном месте, что упрощает ее поддержку и расширение.
+4.  **Точная отладка:** Ошибки в тестах указывают на правильное место благодаря `file` и `line`.
+
+Мы сделали наш фреймворк еще более профессиональным и удобным. В следующих уроках мы продолжим расширять его функциональность.

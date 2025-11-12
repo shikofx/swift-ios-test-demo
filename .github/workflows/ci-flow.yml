@@ -79,6 +79,17 @@ jobs:
       - name: Run tests and generate report
         uses: ./.github/actions/test-unit
 
+  ui_tests:
+    name: UI Tests
+    needs: build_for_testing
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run UI tests
+        uses: ./.github/actions/test-ui
+
   generate_coverage_report:
     name: Report - Coverage
     needs: unit_tests
@@ -102,30 +113,36 @@ jobs:
 
   generate_allure_report:
     name: Report - Test
-    needs: unit_tests
+    needs: [unit_tests, ui_tests]
     if: always()
     runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download test results
+      - name: Download unit test results
         uses: actions/download-artifact@v4
         with:
           name: unit-test-results
-          path: unit-test-results/TestResults.xcresult
+          path: unit-test-results/
+
+      - name: Download UI test results
+        uses: actions/download-artifact@v4
+        with:
+          name: ui-test-results
+          path: ui-test-results/
 
       - name: Create Allure Report page
         uses: ./.github/actions/allure-report
         with:
-          test-results-path: ./unit-test-results/TestResults.xcresult
+          test-results-path: "./unit-test-results/TestResults.xcresult,./ui-test-results/TestResults.xcresult"
 
   build_site:
     name: Build Reports Site
-    needs: [
-      generate_coverage_report,
-      generate_allure_report
-    ]
+    needs:
+      - generate_coverage_report
+      - generate_allure_report
+      - ui_tests
     continue-on-error: true
     if: always()
     runs-on: ubuntu-latest
