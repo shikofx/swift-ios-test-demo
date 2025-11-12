@@ -1,0 +1,41 @@
+name: 'Setup Project'
+description: 'Installs all project dependencies and caches them.'
+
+outputs:
+  destination-udid:
+    description: "The UDID of the simulator to use for the build"
+    value: ${{ steps.find-simulator.outputs.udid }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cache Homebrew dependencies
+      uses: actions/cache@v4
+      with:
+        path: /opt/homebrew
+        key: ${{ runner.os }}-brew-${{ hashFiles('**/Brewfile') }}
+        restore-keys: |
+          ${{ runner.os }}-brew-
+
+    - name: Install Homebrew dependencies
+      shell: bash
+      run: brew bundle
+
+    - name: Cache Pods
+      uses: actions/cache@v4
+      with:
+        path: Pods
+        key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pods-
+
+    - name: Install CocoaPods dependencies
+      shell: bash
+      run: pod install
+
+    - name: Find available simulator
+      id: find-simulator
+      shell: bash
+      run: |
+        DESTINATION_UDID=$(xcrun simctl list devices available -j | jq -r '.devices | .[] | .[] | select(.name | startswith("iPhone")) | .udid' | head -n 1)
+        echo "udid=$DESTINATION_UDID" >> $GITHUB_OUTPUT

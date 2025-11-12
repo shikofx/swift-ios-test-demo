@@ -1,6 +1,11 @@
 name: 'Run Unit Tests'
 description: 'Runs unit tests, generates raw coverage data and test results.'
 
+inputs:
+  destination-udid:
+    description: 'The UDID of the simulator to use for testing'
+    required: true
+
 runs:
   using: "composite"
   steps:
@@ -13,19 +18,11 @@ runs:
     - name: Run Unit Tests
       shell: bash
       run: |
-        # Find an available iPhone simulator
-        DESTINATION_UDID=$(xcrun simctl list devices available -j | jq -r '.devices | .[] | .[] | select(.name | startswith("iPhone")) | .udid' | head -n 1)
-        if [ -z "$DESTINATION_UDID" ]; then
-          echo "::error::No available iPhone simulator found."
-          exit 1
-        fi
-        echo "Using simulator with UDID: $DESTINATION_UDID"
-
         XCTESTRUN_FILE=$(find build/Build/Products -name "AllTests*.xctestrun")
         echo "Found xctestrun file at: $XCTESTRUN_FILE"
         xcodebuild test-without-building \
           -xctestrun "$XCTESTRUN_FILE" \
-          -destination "id=$DESTINATION_UDID" \
+          -destination "id=${{ inputs.destination-udid }}" \
           -only-testing:Demo\ AppTests \
           -resultBundlePath "unit-test-results/TestResults.xcresult"
     

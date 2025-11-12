@@ -15,31 +15,69 @@ permissions:
   id-token: write
 
 jobs:
+  setup:
+    name: Setup Environment
+    runs-on: macos-latest
+    outputs:
+      destination_udid: ${{ steps.setup_project.outputs.destination-udid }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup project dependencies
+        id: setup_project
+        uses: ./.github/actions/setup-project
+
   swiftlint_analysis:
     name: Static Analysis - SwiftLint
+    needs: setup
     runs-on: macos-latest
+    
     continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Restore Homebrew cache
+        uses: actions/cache@v4
+        with:
+          path: /opt/homebrew
+          key: ${{ runner.os }}-brew-${{ hashFiles('**/Brewfile') }}
+          restore-keys: |
+            ${{ runner.os }}-brew-
 
       - name: Create Swiftlint Report
         uses: ./.github/actions/swiftlint-report
 
   swiftformat_analysis:
     name: Static Analysis - SwiftFormat
+    needs: setup
     runs-on: macos-latest
     continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Restore Homebrew cache
+        uses: actions/cache@v4
+        with:
+          path: /opt/homebrew
+          key: ${{ runner.os }}-brew-${{ hashFiles('**/Brewfile') }}
+          restore-keys: |
+            ${{ runner.os }}-brew-
+
       - name: Create SwiftFormat Report
         uses: ./.github/actions/swiftformat-report
 
   build_for_testing:
     name: Build for Testing
-    needs: [swiftlint_analysis, swiftformat_analysis]
+    needs: 
+      - setup
+      - swiftlint_analysis
+      - swiftformat_analysis
+      
+    outputs:
+      destination_udid: ${{ needs.setup.outputs.destination_udid }}
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -54,8 +92,19 @@ jobs:
             ${{ runner.os }}-xcode-deriveddata-${{ hashFiles('**/Podfile.lock') }}-
             ${{ runner.os }}-xcode-deriveddata-
 
+      - name: Restore Pods cache
+        uses: actions/cache@v4
+        with:
+          path: Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
       - name: Build for Testing
         uses: ./.github/actions/build-for-testing
+        with:
+          destination-udid: ${{ needs.setup.outputs.destination_udid }}
+
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -66,11 +115,7 @@ jobs:
 
   unit_tests:
     name: Unit Tests
-    needs: [
-      swiftlint_analysis, 
-      swiftformat_analysis,
-      build_for_testing
-    ]
+    needs: build_for_testing
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -78,15 +123,14 @@ jobs:
 
       - name: Run tests and generate report
         uses: ./.github/actions/test-unit
+        with:
+          destination-udid: ${{ needs.build_for_testing.outputs.destination_udid }}
 
   ui_tests:
     name: UI Tests
-    needs: [
-      swiftlint_analysis, 
-      swiftformat_analysis,
-      build_for_testing,
-      unit_tests
-    ]
+    needs: 
+      - build_for_testing
+      - unit_tests
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -94,6 +138,8 @@ jobs:
 
       - name: Run UI tests
         uses: ./.github/actions/test-ui
+        with:
+          destination-udid: ${{ needs.build_for_testing.outputs.destination_udid }}
 
   merge_test_results:
     name: Merge Test Results
