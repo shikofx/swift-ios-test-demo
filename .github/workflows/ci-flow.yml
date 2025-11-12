@@ -81,7 +81,12 @@ jobs:
 
   ui_tests:
     name: UI Tests
-    needs: build_for_testing
+    needs: [
+      swiftlint_analysis, 
+      swiftformat_analysis,
+      build_for_testing,
+      unit_tests
+    ]
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -107,6 +112,11 @@ jobs:
         with:
           name: ui-test-results
           path: ui-test-results/
+
+      - name: List downloaded files for debugging
+        run: |
+          echo "--- Listing all downloaded files ---"
+          ls -R
 
       - name: Merge test results
         run: |
@@ -164,7 +174,6 @@ jobs:
     needs:
       - generate_coverage_report
       - generate_allure_report
-      - ui_tests
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -252,6 +261,7 @@ jobs:
     name: Deploy Reports Site
     runs-on: ubuntu-latest
     needs: build_site
+    if: always()
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}${{github.ref_name}}/${{ github.run_number }}

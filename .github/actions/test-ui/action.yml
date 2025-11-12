@@ -13,9 +13,20 @@ runs:
     - name: Run UI tests
       shell: bash
       run: |
+        # Find an available iPhone simulator
+        DESTINATION_UDID=$(xcrun simctl list devices available -j | jq -r '.devices | .[] | .[] | select(.name | startswith("iPhone")) | .udid' | head -n 1)
+        if [ -z "$DESTINATION_UDID" ]; then
+          echo "::error::No available iPhone simulator found."
+          exit 1
+        fi
+        echo "Using simulator with UDID: $DESTINATION_UDID"
+
+        # Run tests on the found simulator
+        XCTESTRUN_FILE=$(find build/Build/Products -name "AllTests*.xctestrun")
         xcodebuild test-without-building \
-          -xctestrun "build/Build/Products/SDET Demo App_UITests.xctestrun" \
-          -destination "platform=iOS Simulator,name=iPhone 15,OS=latest" \
+          -xctestrun "$XCTESTRUN_FILE" \
+          -destination "id=$DESTINATION_UDID" \
+          -only-testing:SDET\ Demo\ AppUITests \
           -resultBundlePath "ui-test-results/TestResults.xcresult"
 
     - name: Upload UI test results
