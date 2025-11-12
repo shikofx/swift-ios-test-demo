@@ -1,0 +1,77 @@
+= TC-UI-CART: Сценарии для экрана "My Cart"
+
+*Тестируемый экран:* My Cart
+
+*Pre-conditions:*
+
+. Приложение запущено.
+
+== TC-UI-CART-01: Просмотр пустой корзины
+
+*Pre-conditions:*
+
+. Корзина пуста.
+
+*Steps:*
+
+. Открыть экран "My Cart".
+
+*Expected result:*
+
+. Отображается сообщение "No Items".
+. Кнопки "Proceed to Checkout" и "Go to Shopping" видны.
+
+== TC-UI-CART-02: Просмотр корзины с одним товаром
+
+*Pre-conditions:*
+
+. В корзину добавлен "Sauce Labs Backpack" (1 шт.).
+
+*Steps:*
+
+. Открыть экран "My Cart".
+
+*Expected result:*
+
+. В списке виден товар "Sauce Labs Backpack".
+. Отображаются корректные UI элементы: общая стоимость, общее количество, кнопка "Proceed to Checkout".
+
+== TC-UI-CART-03: Интеграция: удаление товара и проверка отображения пустого экрана
+
+*Pre-conditions:*
+
+. В корзине есть один товар "Sauce Labs Backpack".
+
+*Steps:*
+
+. Нажать кнопку "Remove Item".
+
+*Expected result:*
+
+. Товар исчезает из списка, появляется экран с сообщением "No Items".
+. Корзина становится пустой, отображается сообщение "No Items".
+
+== TC-UI-CART-04: Интеграция: переход к оформлению заказа (пользователь не авторизован)
+
+*Pre-conditions:*
+
+. В корзине есть товар.
+. Пользователь не авторизован.
+
+*Steps:*
+
+. Нажать кнопку "Proceed to Checkout".
+
+*Expected result:*
+
+. Происходит переход на экран "Login".
+
+== TC-UI-CART-05: Переход на экран каталога по кнопке "Go to Shopping"
+
+*Steps:*
+
+. Нажать кнопку "Go to Shopping".
+
+*Expected result:*
+
+. Происходит переход на экран "Catalog".

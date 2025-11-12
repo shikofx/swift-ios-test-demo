@@ -11,11 +11,7 @@ class ProductsScreen: BaseScreen {
     lazy var productsHeader = app.staticText(.productsHeaderText)
     
     func isProductsHeaderVisible() -> Bool {
-        return productsHeader.waitForExistence(timeout: SCREEN_TIMEOUT)
-    }
-    
-    func verifyProductsHeaderVisible() {
-        XCTAssertTrue(isProductsHeaderVisible(), "The screen is not loaded in \(SCREEN_TIMEOUT) seconds")
+        return productsHeader.waitForExistence(timeout: screenTimeout) // Используем унаследованный screenTimeout
     }
 }
 

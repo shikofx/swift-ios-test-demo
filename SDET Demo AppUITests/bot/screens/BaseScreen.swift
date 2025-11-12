@@ -9,7 +9,7 @@ import XCTest
 
 internal class BaseScreen {
     
-    internal let SCREEN_TIMEOUT: TimeInterval = 5
+    internal var screenTimeout: TimeInterval = 5.0 // Renamed to be more Swift-idiomatic and made mutable
     
     let app: XCUIApplication!
     
@@ -18,4 +18,5 @@ internal class BaseScreen {
     init(_ app: XCUIApplication) {
         self.app = app
     }
+    
 }

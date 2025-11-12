@@ -23,8 +23,9 @@ final class LoginUiTests: XCTestCase {
     
     @MainActor
     func testLoginWithValidData() {
-        uiBot.menu.openLoginScreen()
+        let productsScreen = uiBot.menu.openLoginScreen()
             .login(username: "bob@example.com", password: "10203040")
-            .verifyProductsHeaderVisible()      
+        
+        XCTAssertExists(productsScreen.productsHeader, "The Products header is not visible")
     }
 }
