@@ -32,13 +32,14 @@ runs:
         artifact_id=$(gh api "repos/${{ github.repository }}/actions/runs/${{ inputs.source_run_id }}/artifacts" | jq '.artifacts[] | select(.name == "github-pages") | .id')
 
         if [ -z "$artifact_id" ]; then
-          echo "::error::Could not find 'github-pages' artifact in Run ID ${{ inputs.source_run_id }}."
-          exit 1
+          echo "::warning::Could not find 'github-pages' artifact in Run ID ${{ inputs.source_run_id }}. Skipping download of previous site version."
+        else
+          echo "Found artifact ID: $artifact_id"
+          echo "artifact_id=$artifact_id" >> $GITHUB_OUTPUT
         fi
-        echo "Found artifact ID: $artifact_id"
-        echo "artifact_id=$artifact_id" >> $GITHUB_OUTPUT
 
     - name: Download and extract artifact
+      if: steps.find_artifact.outputs.artifact_id
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.token }}

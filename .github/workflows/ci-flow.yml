@@ -143,7 +143,6 @@ jobs:
       - generate_coverage_report
       - generate_allure_report
       - ui_tests
-    continue-on-error: true
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -199,8 +198,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Ищем последний успешный запуск этого воркфлоу для текущей ветки,
-          # который не является текущим запуском.
           previous_run_id=$(gh api "repos/${{ github.repository }}/actions/workflows/ci-flow.yml/runs?branch=${{ github.ref_name }}&status=success" \
             --jq '.workflow_runs | map(select(.id != ${{ github.run_id }})) | .[0].id')
 
@@ -233,7 +230,6 @@ jobs:
     name: Deploy Reports Site
     runs-on: ubuntu-latest
     needs: build_site
-    if: always()
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}${{github.ref_name}}/${{ github.run_number }}
