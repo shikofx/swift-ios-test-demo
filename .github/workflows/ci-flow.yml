@@ -90,36 +90,12 @@ jobs:
       - name: Run UI tests
         uses: ./.github/actions/test-ui
 
-  generate_coverage_report:
-    name: Report - Coverage
-    needs: unit_tests
-    continue-on-error: true
-    if: always()
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download raw test results
-        uses: actions/download-artifact@v4
-        with:
-          name: unit-test-results
-          path: unit-test-results/TestResults.xcresult
-
-      - name: Generate HTML Report
-        uses: ./.github/actions/swift-coverage-report
-        with: 
-          test-results-path: ./unit-test-results/TestResults.xcresult
-
-  generate_allure_report:
-    name: Report - Test
+  merge_test_results:
+    name: Merge Test Results
     needs: [unit_tests, ui_tests]
     if: always()
     runs-on: macos-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Download unit test results
         uses: actions/download-artifact@v4
         with:
@@ -132,10 +108,56 @@ jobs:
           name: ui-test-results
           path: ui-test-results/
 
+      - name: Merge test results
+        run: |
+          xcrun xcresulttool merge ui-test-results/TestResults.xcresult unit-test-results/TestResults.xcresult --output-path merged-test-results.xcresult
+
+      - name: Upload merged test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-test-results
+          path: merged-test-results.xcresult
+
+  generate_coverage_report:
+    name: Report - Coverage
+    needs: merge_test_results
+    continue-on-error: true
+    if: always()
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download merged test results
+        uses: actions/download-artifact@v4
+        with:
+          name: merged-test-results
+          path: .
+
+      - name: Generate HTML Report
+        uses: ./.github/actions/swift-coverage-report
+        with: 
+          test-results-path: ./TestResults.xcresult
+
+  generate_allure_report:
+    name: Report - Test
+    needs: merge_test_results
+    if: always()
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download merged test results
+        uses: actions/download-artifact@v4
+        with:
+          name: merged-test-results
+          path: .
+
       - name: Create Allure Report page
         uses: ./.github/actions/allure-report
         with:
-          test-results-path: "./unit-test-results/TestResults.xcresult,./ui-test-results/TestResults.xcresult"
+          test-results-path: ./TestResults.xcresult
 
   build_site:
     name: Build Reports Site
