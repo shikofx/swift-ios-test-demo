@@ -259,19 +259,19 @@ jobs:
           source: ./.site
           destination: ./_site/${{github.ref_name}}/${{ github.run_number }}
 
-      - name: Find previous successful run
+      - name: Find previous completed run
         id: find_previous_run
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          previous_run_id=$(gh api "repos/${{ github.repository }}/actions/workflows/ci-flow.yml/runs?branch=${{ github.ref_name }}&status=success" \
+          previous_run_id=$(gh api "repos/${{ github.repository }}/actions/workflows/ci-flow.yml/runs?branch=${{ github.ref_name }}&status=completed" \
             --jq '.workflow_runs | map(select(.id != ${{ github.run_id }})) | .[0].id')
 
           if [ -n "$previous_run_id" ] && [ "$previous_run_id" != "null" ]; then
-            echo "Found previous successful run ID: $previous_run_id"
+            echo "Found previous completed run ID: $previous_run_id"
             echo "run_id=$previous_run_id" >> $GITHUB_OUTPUT
           else
-            echo "No previous successful run found for this branch. Skipping download."
+            echo "No previous completed run found for this branch. Skipping download."
           fi
 
       - name: Download previous site artifact
