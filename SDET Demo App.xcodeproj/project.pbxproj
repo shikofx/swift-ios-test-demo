@@ -152,6 +152,13 @@
 			);
 			target = D617BA062EBF104C0065DEB8 /* SDET Demo AppUITests */;
 		};
+		D6D1FDCD2EC5D86400D60F8F /* Exceptions for "Demo AppTests" folder in "SDET Demo Snapshot Tests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				allure/XCTestExtension.swift,
+			);
+			target = D6D1FBE32EC5BEB200D60F8F /* SDET Demo Snapshot Tests */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -164,6 +171,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				D6D1FBDF2EC4D5E100D60F8F /* Exceptions for "Demo AppTests" folder in "SDET Demo AppUITests" target */,
+				D6D1FDCD2EC5D86400D60F8F /* Exceptions for "Demo AppTests" folder in "SDET Demo Snapshot Tests" target */,
 			);
 			path = "Demo AppTests";
 			sourceTree = "<group>";

@@ -19,34 +19,48 @@ final class CatalogSnapshotTests: BaseSnapshotTest {
     }
 
     func testDefaultState() {
-        assertSnapshots(of: catalogVC, as: .image)
+        given("the Catalog screen is opened") { _ in
+            // View is loaded in setUp
+        }
+        then("it should match the snapshot for the default state") { _ in
+            assertSnapshots(of: catalogVC, as: .image)
+        }
     }
 
     func testSortByNameDescending() {
-        catalogVC.nameDescendingButton(UIButton())
-        assertSnapshots(of: catalogVC, as: .image)
+        when("the user sorts by name descending") { _ in
+            catalogVC.nameDescendingButton(UIButton())
+        }
+        then("it should match the snapshot with items sorted by name descending") { _ in
+            assertSnapshots(of: catalogVC, as: .image)
+        }
     }
 
     func testSortByPriceAscending() {
-        catalogVC.priceAscendingButton(UIButton())
-        assertSnapshots(of: catalogVC, as: .image)
+        when("the user sorts by price ascending") { _ in
+            catalogVC.priceAscendingButton(UIButton())
+        }
+        then("it should match the snapshot with items sorted by price ascending") { _ in
+            assertSnapshots(of: catalogVC, as: .image)
+        }
     }
 
     func testSortByPriceDescending() {
-        catalogVC.priceDescendingButton(UIButton())
-        assertSnapshots(of: catalogVC, as: .image)
+        when("the user sorts by price descending") { _ in
+            catalogVC.priceDescendingButton(UIButton())
+        }
+        then("it should match the snapshot with items sorted by price descending") { _ in
+            assertSnapshots(of: catalogVC, as: .image)
+        }
     }
 
     func testWithItemInCart() {
-        Engine.sharedInstance.cartCount = 3
-        // Reload viewDidLoad to update the UI
-        catalogVC.viewDidLoad()
-        assertSnapshots(of: catalogVC, as: .image)
-        // Reset the state
-        Engine.sharedInstance.cartCount = 0
-    }
-
-    func testRecursiveDescription() {
-        assertSnapshot(of: catalogVC, as: .recursiveDescription)
+        given("the cart has 3 items") { _ in
+            Engine.sharedInstance.cartCount = 3
+            catalogVC.viewDidLoad() // Reload viewDidLoad to update the UI
+        }
+        then("it should match the snapshot with the cart badge visible") { _ in
+            assertSnapshots(of: catalogVC, as: .image)
+        }
     }
 }

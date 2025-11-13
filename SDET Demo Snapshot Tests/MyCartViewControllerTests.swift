@@ -22,21 +22,33 @@ final class MyCartViewControllerTests: BaseSnapshotTest {
     }
 
     func testEmptyCart() {
-        cartVC.loadViewIfNeeded()
-        assertSnapshots(of: cartVC, as: .image)
+        given("the cart is empty") { _ in
+            cartVC.loadViewIfNeeded()
+        }
+        then("it should match the snapshot for the empty cart state") { _ in
+            assertSnapshots(of: cartVC, as: .image)
+        }
     }
 
     func testWithOneItem() {
-        addMockProduct(quantity: 1)
-        cartVC.loadViewIfNeeded()
-        assertSnapshots(of: cartVC, as: .image)
+        given("the cart has one item") { _ in
+            addMockProduct(quantity: 1)
+            cartVC.loadViewIfNeeded()
+        }
+        then("it should match the snapshot with one item in the cart") { _ in
+            assertSnapshots(of: cartVC, as: .image)
+        }
     }
 
     func testWithMultipleItems() {
-        addMockProduct(id: "1", name: "Sauce Labs Backpack", quantity: 2)
-        addMockProduct(id: "2", name: "Sauce Labs Bike Light", quantity: 1)
-        cartVC.loadViewIfNeeded()
-        assertSnapshots(of: cartVC, as: .image)
+        given("the cart has multiple items") { _ in
+            addMockProduct(id: "1", name: "Sauce Labs Backpack", quantity: 2)
+            addMockProduct(id: "2", name: "Sauce Labs Bike Light", quantity: 1)
+            cartVC.loadViewIfNeeded()
+        }
+        then("it should match the snapshot with multiple items in the cart") { _ in
+            assertSnapshots(of: cartVC, as: .image)
+        }
     }
 
     // Helper function to add products to the cart

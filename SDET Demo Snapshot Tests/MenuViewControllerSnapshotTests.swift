@@ -20,14 +20,22 @@ final class MenuViewControllerSnapshotTests: BaseSnapshotTest {
     }
 
     func testLoggedOutState() {
-        Engine.sharedInstance.isLogin = false
-        menuVC.loadViewIfNeeded() // viewDidLoad() will be called here
-        assertSnapshots(of: menuVC, as: .image)
+        given("the user is logged out") { _ in
+            Engine.sharedInstance.isLogin = false
+            menuVC.loadViewIfNeeded() // viewDidLoad() will be called here
+        }
+        then("it should match the snapshot for the logged out state") { _ in
+            assertSnapshots(of: menuVC, as: .image)
+        }
     }
 
     func testLoggedInState() {
-        Engine.sharedInstance.isLogin = true
-        menuVC.loadViewIfNeeded() // viewDidLoad() will be called here
-        assertSnapshots(of: menuVC, as: .image)
+        given("the user is logged in") { _ in
+            Engine.sharedInstance.isLogin = true
+            menuVC.loadViewIfNeeded() // viewDidLoad() will be called here
+        }
+        then("it should match the snapshot for the logged in state") { _ in
+            assertSnapshots(of: menuVC, as: .image)
+        }
     }
 }

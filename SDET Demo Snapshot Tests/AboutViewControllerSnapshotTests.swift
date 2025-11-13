@@ -1,3 +1,10 @@
+//
+//  AboutViewControllerSnapshotTests.swift
+//  SDET Demo Snapshot Tests
+//
+//  Created by Gemini Code Assist on 2025-11-13.
+//
+
 import XCTest
 import SnapshotTesting
 @testable import SDET_Demo_App
@@ -20,15 +27,28 @@ final class AboutViewControllerSnapshotTests: BaseSnapshotTest {
     }
 
     func testDefaultState() {
-        // Cart is empty by default
-        aboutVC.loadViewIfNeeded()
+        given("the About screen is opened with an empty cart") { _ in
+            // Cart is empty by default
+            aboutVC.loadViewIfNeeded()
+        }
 
-        assertSnapshots(of: aboutVC, as: .image)
+        when("the view is presented") { _ in
+            // No action needed, view is already loaded
+        }
+
+        then("it should match the snapshot for the default state") { _ in
+            assertSnapshots(of: aboutVC, as: .image)
+        }
     }
 
     func testWithItemsInCart() {
-        Engine.sharedInstance.cartCount = 5
-        aboutVC.loadViewIfNeeded() // viewDidLoad will be called and update the label
-        assertSnapshots(of: aboutVC, as: .image)
+        given("the cart has 5 items") { _ in
+            Engine.sharedInstance.cartCount = 5
+            aboutVC.loadViewIfNeeded() // viewDidLoad will be called and update the label
+        }
+
+        then("it should match the snapshot with the cart badge visible") { _ in
+            assertSnapshots(of: aboutVC, as: .image)
+        }
     }
 }

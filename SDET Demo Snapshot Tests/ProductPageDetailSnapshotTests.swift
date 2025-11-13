@@ -27,29 +27,49 @@ final class ProductPageDetailSnapshotTests: BaseSnapshotTest {
     }
 
     func testDefaultState() {
-        assertSnapshots(of: detailVC, as: .image)
+        given("the product detail screen is opened") { _ in
+            // View is configured in setUp
+        }
+        then("it should match the snapshot for the default state") { _ in
+            assertSnapshots(of: detailVC, as: .image)
+        }
     }
 
     func testBlackColorSelected() {
-        detailVC.blackButton(UIButton())
-        assertSnapshots(of: detailVC, as: .image)
+        when("the user selects the black color") { _ in
+            detailVC.blackButton(UIButton())
+        }
+        then("it should match the snapshot with the black color selected") { _ in
+            assertSnapshots(of: detailVC, as: .image)
+        }
     }
 
     func testBlueColorSelected() {
-        detailVC.blueButton(UIButton())
-        assertSnapshots(of: detailVC, as: .image)
+        when("the user selects the blue color") { _ in
+            detailVC.blueButton(UIButton())
+        }
+        then("it should match the snapshot with the blue color selected") { _ in
+            assertSnapshots(of: detailVC, as: .image)
+        }
     }
 
     func testIncreasedQuantity() {
-        detailVC.addButton(UIButton())
-        detailVC.addButton(UIButton())
-        assertSnapshots(of: detailVC, as: .image)
+        when("the user increases the quantity twice") { _ in
+            detailVC.addButton(UIButton())
+            detailVC.addButton(UIButton())
+        }
+        then("it should match the snapshot with a quantity of 3") { _ in
+            assertSnapshots(of: detailVC, as: .image)
+        }
     }
 
     func testZeroQuantity() {
-        // Decrease quantity to 0
-        detailVC.subtractButton(UIButton())
-        assertSnapshots(of: detailVC, as: .image)
+        when("the user decreases the quantity to 0") { _ in
+            detailVC.subtractButton(UIButton())
+        }
+        then("it should match the snapshot with a quantity of 0") { _ in
+            assertSnapshots(of: detailVC, as: .image)
+        }
     }
 
 }
