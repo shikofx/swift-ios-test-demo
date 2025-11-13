@@ -1,0 +1,21 @@
+name: 'Run Snapshot Tests'
+description: 'Runs the snapshot tests on a specific simulator destination.'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: xctestrun-build
+        path: build
+
+    - name: Run Snapshot tests
+      shell: bash
+      run: |
+        XCTESTRUN_FILE=$(find build/Build/Products -name "AllTests*.xctestrun")
+        echo "Found xctestrun file for snapshot tests at: $XCTESTRUN_FILE"
+        xcodebuild test-without-building \
+          -xctestrun "$XCTESTRUN_FILE" \
+          -destination "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5" \
+          -only-testing:"SDET Demo Snapshot Tests"

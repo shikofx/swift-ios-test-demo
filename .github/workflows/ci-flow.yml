@@ -53,8 +53,7 @@ jobs:
 
   build_for_testing:
     name: Build for Testing
-    needs: 
-      - setup
+    needs: setup
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -112,6 +111,7 @@ jobs:
     needs: 
       - build_for_testing
       - unit_tests
+      - snapshot_tests
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -120,9 +120,41 @@ jobs:
       - name: Run UI tests
         uses: ./.github/actions/test-ui
 
+  snapshot_tests:
+    name: Snapshot Tests
+    needs: build_for_testing
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: xctestrun-build
+          path: build
+
+      - name: Run Snapshot tests
+        uses: ./.github/actions/test-snapshot
+
+      - name: Debug Simulator Filesystem
+        if: always()
+        run: |
+          echo "--- Listing contents of CoreSimulator Devices directory ---"
+          ls -R /Users/runner/Library/Developer/CoreSimulator/Devices/
+          echo "--- End of directory listing ---"
+
+      - name: Upload Snapshot Failure Artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-test-failures
+          path: /Users/runner/Library/Developer/CoreSimulator/Devices/**/data/Containers/Data/Application/**/tmp/com.apple.dt.xctest.tool/Attachments/
+
   merge_test_results:
     name: Merge Test Results
-    needs: [unit_tests, ui_tests]
+    # Дожидаемся выполнения всех видов тестов
+    needs: [unit_tests, ui_tests, snapshot_tests]
     if: always()
     runs-on: macos-latest
     steps:
@@ -207,8 +239,8 @@ jobs:
   build_site:
     name: Build Reports Site
     needs:
-      - generate_coverage_report
-      - generate_allure_report
+      - generate_coverage_report # Зависит от unit_tests
+      - generate_allure_report   # Зависит от unit_tests и ui_tests
     if: always()
     runs-on: ubuntu-latest
     steps:

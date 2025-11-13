@@ -11,12 +11,12 @@ class BaseSnapshotTest: XCTestCase {
     // Define all the configurations we need in one place
     let lightModeConfigs: [String: ViewImageConfig] = [
         // Using more common device configurations for better compatibility
-        "iPhoneX": .iPhoneX,
+        "iPhone14Pro": .iPhone13ProMax,
         "iPhoneSE_Portrait": .iPhoneSe(.portrait),
         "iPadPro11_Portrait": .iPadPro11(.portrait)
     ]
 
-    let darkModeConfig: (name: String, config: ViewImageConfig) = ("iPhoneX_DarkMode", .iPhoneX)
+    let darkModeConfig: (name: String, config: ViewImageConfig) = ("iPhone13Pro_DarkMode", .iPhone13ProMax)
 
     /// Helper function that takes snapshots for all configurations
     func assertSnapshots<Value>(
