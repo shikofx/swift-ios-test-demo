@@ -80,17 +80,3 @@ git commit -m "feat: Add subtitle to login screen"
 Мы рассмотрели полный жизненный цикл Snapshot-тестов, от написания до командной работы. Это мощный инструмент для поддержания визуального качества продукта.
 
 В следующем уроке мы рассмотрим, как можно использовать библиотеку `SnapshotTesting` для не-визуальных данных, например, для проверки структуры JSON-ответов от сервера или для логирования сложных объектов в удобном для чтения формате.
-
-```
-
-### 2. Обновление `index.adoc` для курса по Snapshot-тестам
-
-```diff
---- a/docs/snapshot-tests/index.adoc
-+++ b/docs/snapshot-tests/index.adoc
-@@ -20,3 +20,5 @@
- include::./lesson_03_ci_cd_integration.adoc[leveloffset=+1]
- 
- include::./lesson_04_testing_individual_views.adoc[leveloffset=+1]
-+
-+include::./lesson_05_snapshot_update_strategy.adoc[leveloffset=+1]

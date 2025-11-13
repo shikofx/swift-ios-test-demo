@@ -18,8 +18,6 @@ jobs:
   setup:
     name: Setup Environment
     runs-on: macos-latest
-    outputs:
-      destination_udid: ${{ steps.setup_project.outputs.destination-udid }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,14 +36,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Restore Homebrew cache
-        uses: actions/cache@v4
-        with:
-          path: /opt/homebrew
-          key: ${{ runner.os }}-brew-${{ hashFiles('**/Brewfile') }}
-          restore-keys: |
-            ${{ runner.os }}-brew-
-
       - name: Create Swiftlint Report
         uses: ./.github/actions/swiftlint-report
 
@@ -58,14 +48,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Restore Homebrew cache
-        uses: actions/cache@v4
-        with:
-          path: /opt/homebrew
-          key: ${{ runner.os }}-brew-${{ hashFiles('**/Brewfile') }}
-          restore-keys: |
-            ${{ runner.os }}-brew-
-
       - name: Create SwiftFormat Report
         uses: ./.github/actions/swiftformat-report
 
@@ -73,11 +55,6 @@ jobs:
     name: Build for Testing
     needs: 
       - setup
-      - swiftlint_analysis
-      - swiftformat_analysis
-      
-    outputs:
-      destination_udid: ${{ needs.setup.outputs.destination_udid }}
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -100,10 +77,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pods-
 
+      - name: Restore Homebrew cache
+        uses: actions/cache@v4
+        with:
+          path: /opt/homebrew
+          key: ${{ runner.os }}-brew-${{ hashFiles('**/Brewfile') }}
+          restore-keys: |
+            ${{ runner.os }}-brew-
+
       - name: Build for Testing
         uses: ./.github/actions/build-for-testing
-        with:
-          destination-udid: ${{ needs.setup.outputs.destination_udid }}
 
 
       - name: Upload artifact
@@ -123,8 +106,6 @@ jobs:
 
       - name: Run tests and generate report
         uses: ./.github/actions/test-unit
-        with:
-          destination-udid: ${{ needs.build_for_testing.outputs.destination_udid }}
 
   ui_tests:
     name: UI Tests
@@ -138,8 +119,6 @@ jobs:
 
       - name: Run UI tests
         uses: ./.github/actions/test-ui
-        with:
-          destination-udid: ${{ needs.build_for_testing.outputs.destination_udid }}
 
   merge_test_results:
     name: Merge Test Results
@@ -188,12 +167,17 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: merged-test-results
-          path: .
+          path: ./merged-test-results.xcresult
+
+      - name: -------verify content------
+        shell: bash
+        run: |
+          ls -R
 
       - name: Generate HTML Report
         uses: ./.github/actions/swift-coverage-report
         with: 
-          test-results-path: ./TestResults.xcresult
+          test-results-path: ./merged-test-results.xcresult
 
   generate_allure_report:
     name: Report - Test
@@ -208,12 +192,17 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: merged-test-results
-          path: .
+          path: ./merged-test-results.xcresult
 
+      - name: -------verify content------
+        shell: bash
+        run: |
+          ls -R
+          
       - name: Create Allure Report page
         uses: ./.github/actions/allure-report
         with:
-          test-results-path: ./TestResults.xcresult
+          test-results-path: ./merged-test-results.xcresult
 
   build_site:
     name: Build Reports Site

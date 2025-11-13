@@ -1,19 +1,25 @@
 name: 'Build for Testing'
 description: 'Builds the project for testing and creates an xctestrun artifact.'
 
-inputs:
-  destination-udid:
-    description: 'The UDID of the simulator to use for testing'
-    required: true
-
 runs:
   using: "composite"
   steps:
     - name: Build for testing
       shell: bash
       run: |
+        # Find an available iPhone simulator
+        DESTINATION_UDID=$(xcrun simctl list devices available -j | jq -r '.devices | .[] | .[] | select(.name | startswith("iPhone")) | .udid' | head -n 1)
+        if [ -z "$DESTINATION_UDID" ]; then
+          echo "::error::No available iPhone simulator found."
+          exit 1
+        fi
+        echo "Using simulator with UDID: $DESTINATION_UDID"
+
         xcodebuild build-for-testing \
           -workspace "SDET Demo App.xcworkspace" \
           -scheme "AllTests" \
-          -destination "id=${{ inputs.destination-udid }}" \
-          -derivedDataPath build
+          -destination "id=$DESTINATION_UDID" \
+          -derivedDataPath build \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          DEVELOPMENT_TEAM=""

@@ -127,18 +127,3 @@ func testSwiftUIProductRow() {
 
 *   Разработка стратегии обновления эталонных снимков в команде.
 *   Использование Snapshot-тестов для не-визуальных данных, например, для проверки структуры JSON.
-
-```
-
-### 2. Обновление `index.adoc` для курса по Snapshot-тестам
-
-Я добавлю ссылку на новый, четвертый урок в `index.adoc`.
-
-```diff
---- a/docs/snapshot-tests/index.adoc
-+++ b/docs/snapshot-tests/index.adoc
-@@ -18,3 +18,5 @@
- include::./lesson_02_advanced_snapshot_testing.adoc[leveloffset=+1]
- include::./lesson_03_ci_cd_integration.adoc[leveloffset=+1]
- 
-+include::./lesson_04_testing_individual_views.adoc[leveloffset=+1]

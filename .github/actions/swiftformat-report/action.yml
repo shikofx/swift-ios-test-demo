@@ -1,27 +1,16 @@
 name: 'Create SwiftFormat Report Page'
-description: 'Converts a SwiftFormat JSON report to a Markdown file for Jekyll.'
+description: 'Runs SwiftFormat and creates a report.'
 
 runs:
   using: "composite"
   steps:
-    - name: 'Check for Homebrew and install if not present'
-      shell: bash
-      run: |
-        if ! command -v brew &> /dev/null; then
-          echo "Homebrew not found. Installing..."
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          echo "/opt/homebrew/bin" >> $GITHUB_PATH
-        else
-          echo "Homebrew is already installed."
-        fi
-
     - name: 'Install SwiftFormat'
       shell: bash
       run: |
         brew install swiftformat
         echo "SwiftFormat installed."
 
-    - name: Run SwiftFormat. Generate JSON data
+    - name: Run SwiftFormat and generate report
       shell: bash
       continue-on-error: true
       run: |

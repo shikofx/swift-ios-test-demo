@@ -3,19 +3,8 @@ description: 'Converts a SwiftLint JSON report to a Markdown file for Jekyll.'
 
 runs:
   using: "composite"
-  steps:   
-    - name: 'Check for Homebrew and install if not present'
-      shell: bash
-      run: |
-        if ! command -v brew &> /dev/null; then
-          echo "Homebrew not found. Installing..."
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          echo "/opt/homebrew/bin" >> $GITHUB_PATH
-        else
-          echo "Homebrew is already installed."
-        fi
-
-    - name: 'Install tools from Brewfile'
+  steps:
+    - name: 'Install SwiftLint'
       shell: bash
       run: |
         brew install swiftlint

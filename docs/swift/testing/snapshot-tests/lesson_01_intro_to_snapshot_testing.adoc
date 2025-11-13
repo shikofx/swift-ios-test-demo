@@ -126,17 +126,3 @@ func testLoginScreen() {
 *   Тестирование экрана в разных состояниях (например, с сообщением об ошибке).
 *   Тестирование для разных устройств (iPhone, iPad) и тем (светлая/темная).
 *   Создание базового класса для упрощения написания Snapshot-тестов.
-
-```
-
-### 2. Обновление `index.adoc`
-
-```diff
---- a/docs/ui_testing/index.adoc
-+++ b/docs/ui_testing/index.adoc
-@@ -25,3 +25,5 @@
- include::lesson_10_ci_cd_integration.adoc[]
- 
- include::lesson_11_advanced_allure_reporting.adoc[]
-+
-+include::lesson_12_intro_to_snapshot_testing.adoc[]

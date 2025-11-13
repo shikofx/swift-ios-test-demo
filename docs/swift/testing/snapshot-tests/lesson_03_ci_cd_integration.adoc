@@ -100,17 +100,3 @@ Snapshot-тесты чрезвычайно чувствительны к окр�
 == Что дальше?
 
 Мы настроили полный цикл для Snapshot-тестов: от написания до автоматической проверки в CI. В следующих уроках мы рассмотрим, как тестировать отдельные, изолированные UI-компоненты (например, одну ячейку таблицы), что еще больше ускорит наши тесты и сделает их более сфокусированными.
-
-```
-
-### 2. Обновление `index.adoc` для курса по Snapshot-тестам
-
-```diff
---- a/docs/snapshot-tests/index.adoc
-+++ b/docs/snapshot-tests/index.adoc
-@@ -16,3 +16,5 @@
- include::lesson_01_intro_to_snapshot_testing.adoc[]
- 
- include::lesson_02_advanced_snapshot_testing.adoc[]
-+
-+include::lesson_03_ci_cd_integration.adoc[]
