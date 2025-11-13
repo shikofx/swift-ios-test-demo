@@ -52,6 +52,17 @@
                ReferencedContainer = "container:SDET Demo App.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D6D1FBE32EC5BEB200D60F8F"
+               BuildableName = "SDET Demo Snapshot Tests.xctest"
+               BlueprintName = "SDET Demo Snapshot Tests"
+               ReferencedContainer = "container:SDET Demo App.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
