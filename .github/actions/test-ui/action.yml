@@ -21,11 +21,16 @@ runs:
         fi
         echo "Using simulator with UDID: $DESTINATION_UDID"
 
+        N_CORES=$(sysctl -n hw.ncpu)
+        echo "Number of CPU cores: $N_CORES"
+
         # Run tests on the found simulator
         XCTESTRUN_FILE=$(find build/Build/Products -name "AllTests*.xctestrun")
         xcodebuild test-without-building \
           -xctestrun "$XCTESTRUN_FILE" \
           -destination "id=$DESTINATION_UDID" \
+          -parallel-testing-enabled YES \
+          -parallel-testing-worker-count "$N_CORES" \
           -only-testing:SDET\ Demo\ AppUITests \
           -resultBundlePath "ui-test-results/TestResults.xcresult"
 

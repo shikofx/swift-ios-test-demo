@@ -13,9 +13,30 @@ runs:
     - name: Run Snapshot tests
       shell: bash
       run: |
+        # Find an available iPhone simulator
+        DESTINATION_UDID=$(xcrun simctl list devices available -j | jq -r '.devices | .[] | .[] | select(.name | startswith("iPhone")) | .udid' | head -n 1)
+        if [ -z "$DESTINATION_UDID" ]; then
+          echo "::error::No available iPhone simulator found."
+          exit 1
+        fi
+        echo "Using simulator with UDID: $DESTINATION_UDID"
+        
+        N_CORES=$(sysctl -n hw.ncpu)
+        echo "Number of CPU cores: $N_CORES"
+        
         XCTESTRUN_FILE=$(find build/Build/Products -name "AllTests*.xctestrun")
         echo "Found xctestrun file for snapshot tests at: $XCTESTRUN_FILE"
         xcodebuild test-without-building \
           -xctestrun "$XCTESTRUN_FILE" \
-          -destination "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5" \
-          -only-testing:"SDET Demo Snapshot Tests"
+          -destination "id=$DESTINATION_UDID" \
+          -parallel-testing-enabled YES \
+          -parallel-testing-worker-count "$N_CORES" \
+          -only-testing:"SDET Demo Snapshot Tests" \
+          -resultBundlePath "snapshot-test-results/TestResults.xcresult"
+
+    - name: Upload snapshot test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: snapshot-test-results
+        path: snapshot-test-results/
