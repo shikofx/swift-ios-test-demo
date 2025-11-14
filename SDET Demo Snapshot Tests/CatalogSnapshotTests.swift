@@ -9,6 +9,9 @@ final class CatalogSnapshotTests: BaseSnapshotTest {
     override func setUp() {
         super.setUp()
         let storyboard = UIStoryboard(name: "TabBar", bundle: nil)
+        
+        epic("Snapshot")
+        feature("Catalog")
         catalogVC = storyboard.instantiateViewController(withIdentifier: "CatalogViewController") as? CatalogViewController
         catalogVC.loadViewIfNeeded()
     }
@@ -19,6 +22,7 @@ final class CatalogSnapshotTests: BaseSnapshotTest {
     }
 
     func testDefaultState() {
+        story("Default state")
         given("the Catalog screen is opened") { _ in
             // View is loaded in setUp
         }
@@ -28,6 +32,7 @@ final class CatalogSnapshotTests: BaseSnapshotTest {
     }
 
     func testSortByNameDescending() {
+        story("Sort by name (descending)")
         when("the user sorts by name descending") { _ in
             catalogVC.nameDescendingButton(UIButton())
         }
@@ -37,6 +42,7 @@ final class CatalogSnapshotTests: BaseSnapshotTest {
     }
 
     func testSortByPriceAscending() {
+        story("Sort by price (ascending)")
         when("the user sorts by price ascending") { _ in
             catalogVC.priceAscendingButton(UIButton())
         }
@@ -46,6 +52,7 @@ final class CatalogSnapshotTests: BaseSnapshotTest {
     }
 
     func testSortByPriceDescending() {
+        story("Sort by price (descending)")
         when("the user sorts by price descending") { _ in
             catalogVC.priceDescendingButton(UIButton())
         }
@@ -55,6 +62,7 @@ final class CatalogSnapshotTests: BaseSnapshotTest {
     }
 
     func testWithItemInCart() {
+        story("State with items in cart")
         given("the cart has 3 items") { _ in
             Engine.sharedInstance.cartCount = 3
             catalogVC.viewDidLoad() // Reload viewDidLoad to update the UI

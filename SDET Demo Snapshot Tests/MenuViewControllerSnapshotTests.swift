@@ -9,6 +9,9 @@ final class MenuViewControllerSnapshotTests: BaseSnapshotTest {
     override func setUp() {
         super.setUp()
         let storyboard = UIStoryboard(name: "Menu", bundle: nil)
+        
+        epic("Snapshot")
+        feature("Main Menu")
         menuVC = storyboard.instantiateViewController(withIdentifier: "MenuViewController") as? MenuViewController
     }
 
@@ -20,6 +23,7 @@ final class MenuViewControllerSnapshotTests: BaseSnapshotTest {
     }
 
     func testLoggedOutState() {
+        story("Logged out state")
         given("the user is logged out") { _ in
             Engine.sharedInstance.isLogin = false
             menuVC.loadViewIfNeeded() // viewDidLoad() will be called here
@@ -30,6 +34,7 @@ final class MenuViewControllerSnapshotTests: BaseSnapshotTest {
     }
 
     func testLoggedInState() {
+        story("Logged in state")
         given("the user is logged in") { _ in
             Engine.sharedInstance.isLogin = true
             menuVC.loadViewIfNeeded() // viewDidLoad() will be called here

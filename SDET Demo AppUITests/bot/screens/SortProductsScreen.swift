@@ -9,33 +9,37 @@ final class SortProductsScreen: BaseScreen {
     private lazy var sortByPriceAscendingButton: XCUIElement = app.button(.sortByPriceAscendingButton)
     
     func waitUntilVisible() -> Self {
-        view.waitUntilVisible(timeout: screenTimeout)
+        step("Wait until sort options are visible") {
+            view.waitUntilVisible(timeout: screenTimeout)
+        }
         return self
     }
     
     func sortByNameDescending() -> ProductsScreen {
-        sortByNameDescendingButton.tap()
-        return ProductsScreen(app)
+        return step("Sort by name descending") {
+            sortByNameDescendingButton.tap()
+            return ProductsScreen(app)
+        }
     }
     
     func sortByNameAscending() -> ProductsScreen {
-        sortByNameAscendingButton.tap()
-        return ProductsScreen(app)
+        return step("Sort by name ascending") {
+            sortByNameAscendingButton.tap()
+            return ProductsScreen(app)
+        }
     }
     
     func sortByPriceDescending() -> ProductsScreen  {
-        sortByPriceDescendingButton.tap()
-        return ProductsScreen(app)
+        return step("Sort by price descending") {
+            sortByPriceDescendingButton.tap()
+            return ProductsScreen(app)
+        }
     }
     
     func sortByPriceAscending() -> ProductsScreen  {
-        sortByPriceAscendingButton.tap()
-        return ProductsScreen(app)
-    }
-}
-
-extension UiBot {
-    var sortProductsScreen: SortProductsScreen {
-        return .init(app)
+        return step("Sort by price ascending") {
+            sortByPriceAscendingButton.tap()
+            return ProductsScreen(app)
+        }
     }
 }

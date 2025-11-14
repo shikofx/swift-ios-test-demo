@@ -26,6 +26,9 @@ final class CatalogViewControllerTests: XCTestCase {
         let storyboard = UIStoryboard(name: "TabBar", bundle: nil)
         controller = storyboard.instantiateViewController(identifier: "CatalogViewController") as? CatalogViewController
         controller.loadViewIfNeeded() 
+        
+        epic("Unit")
+        feature("Catalog")
     }
     
     override func tearDown() {
@@ -34,6 +37,8 @@ final class CatalogViewControllerTests: XCTestCase {
     }
     
     func testSortByNameAscending() {
+        story("Sorting")
+        id("UC-CV-001")
         given("unsorted list: \(unsortedList)") { _ in
             engine.productList = unsortedList
         }
@@ -54,6 +59,8 @@ final class CatalogViewControllerTests: XCTestCase {
     }
     
     func testSortByNameDescending() {
+        story("Sorting")
+        id("UC-CV-002")
         given("unsorted list: \(unsortedList)") { _ in
             engine.productList = unsortedList
         }
@@ -74,6 +81,8 @@ final class CatalogViewControllerTests: XCTestCase {
     }
     
     func testSortByPriceAscending() {
+        story("Sorting")
+        id("UC-CV-003")
         given("unsorted list: \(unsortedList)") { _ in
             engine.productList = unsortedList
         }
@@ -94,6 +103,8 @@ final class CatalogViewControllerTests: XCTestCase {
     }
     
     func testSortByPriceDescending() {
+        story("Sorting")
+        id("UC-CV-004")
         given("unsorted list: \(unsortedList)") { _ in
             engine.productList = unsortedList
         }

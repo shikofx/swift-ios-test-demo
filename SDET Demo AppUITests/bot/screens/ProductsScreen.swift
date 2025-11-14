@@ -6,22 +6,19 @@ class ProductsScreen: BaseScreen {
     private lazy var sortButton = app.button(.sortButton)
     
     func sort() -> SortProductsScreen{
-        sortButton.tap()
-        return SortProductsScreen(app)
-    }
-    
-    @available(*, deprecated, message: "Use openProductDetails(at:) instead. Relying on names is brittle.")
-    @discardableResult
-    func openProductDetails(named name: String) -> ProductDetailsScreen {
-        app.collectionViews.cells["productCell_\(name)"].firstMatch.tap()
-        return ProductDetailsScreen(app)
+        return step("Tap sort button") {
+            sortButton.tap()
+            return SortProductsScreen(app)
+        }
     }
     
     @discardableResult
     func openProductDetails(at index: Int) -> ProductDetailsScreen {
-        // Открываем товар по его индексу в коллекции
-        app.collectionViews.cells.element(boundBy: index).tap()
-        return ProductDetailsScreen(app)
+        return step("Open product details at index \(index)") {
+            // Open product by its index in the collection
+            app.collectionViews.cells.element(boundBy: index).tap()
+            return ProductDetailsScreen(app)
+        }
     }
 }
 

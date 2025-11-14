@@ -7,7 +7,9 @@ class ProductDetailsScreen: BaseScreen {
     
     @discardableResult
     func addToCart() -> Self {
-        addToCartButton.tap()
+        step("Tap 'Add to cart' button") {
+            addToCartButton.tap()
+        }
         return self
     }
 }

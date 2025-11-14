@@ -7,14 +7,18 @@ class TabBarComponent: UIComponent {
     
     @discardableResult
     func openCart() -> CartScreen {
-        print(app.debugDescription)
-        cartItem.tap()
-        return CartScreen(app)
+        return step("Open cart from TabBar") {
+            print(app.debugDescription)
+            cartItem.tap()
+            return CartScreen(app)
+        }
     }
     
     @discardableResult
     func openMenu() -> MenuScreen {
-        menuItem.tap()
-        return MenuScreen(app)
+        return step("Open menu from TabBar") {
+            menuItem.tap()
+            return MenuScreen(app)
+        }
     }
 }

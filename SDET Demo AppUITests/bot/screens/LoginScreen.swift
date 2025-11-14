@@ -7,17 +7,23 @@ class LoginScreen: BaseScreen {
     private lazy var loginButton = app.button(.loginButton)
     
     fileprivate func setUsername(_ username: String) {
-        usernameTextField.tap()
-        usernameTextField.typeText(username)
+        step("Enter username: \(username)") {
+            usernameTextField.tap()
+            usernameTextField.typeText(username)
+        }
     }
     
     fileprivate func setPassword(_ password: String) {
-        passwordTextField.tap()
-        passwordTextField.typeText(password)
+        step("Enter password") {
+            passwordTextField.tap()
+            passwordTextField.typeText(password)
+        }
     }
     
     fileprivate func tapLoginButtonIfVisibleOrFail() {
-        loginButton.isEnabled ? loginButton.tap() : XCTFail("Login button not found")
+        step("Tap login button") {
+            loginButton.isEnabled ? loginButton.tap() : XCTFail("Login button not found")
+        }
     }
     
     @discardableResult

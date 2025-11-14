@@ -16,6 +16,9 @@ final class AboutViewControllerSnapshotTests: BaseSnapshotTest {
     override func setUp() {
         super.setUp()
         let storyboard = UIStoryboard(name: "Menu", bundle: nil)
+        
+        epic("Snapshot")
+        feature("About Screen")
         aboutVC = storyboard.instantiateViewController(withIdentifier: "AboutViewController") as? AboutViewController
     }
 
@@ -27,6 +30,7 @@ final class AboutViewControllerSnapshotTests: BaseSnapshotTest {
     }
 
     func testDefaultState() {
+        story("Default state")
         given("the About screen is opened with an empty cart") { _ in
             // Cart is empty by default
             aboutVC.loadViewIfNeeded()
@@ -42,6 +46,7 @@ final class AboutViewControllerSnapshotTests: BaseSnapshotTest {
     }
 
     func testWithItemsInCart() {
+        story("State with items in cart")
         given("the cart has 5 items") { _ in
             Engine.sharedInstance.cartCount = 5
             aboutVC.loadViewIfNeeded() // viewDidLoad will be called and update the label

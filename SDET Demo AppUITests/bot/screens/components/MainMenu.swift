@@ -6,14 +6,18 @@ class MainMenu : UIComponent {
     private lazy var itemLogin: XCUIElement = app.otherElement(.menuItemLogin)
     
     @discardableResult func open() -> Self {
-        tabItemMore.tap()
+        step("Open main menu") {
+            tabItemMore.tap()
+        }
         return self
     }
     
     @discardableResult func openLoginScreen() -> LoginScreen {
-        open()
-        itemLogin.tap()
-        return LoginScreen(app)
+        return step("Open login screen from menu") {
+            tabItemMore.tap()
+            itemLogin.tap()
+            return LoginScreen(app)
+        }
     }
 }
 

@@ -19,6 +19,9 @@ final class LoginViewControllerTest: XCTestCase {
         controller.loadViewIfNeeded()
         mock = MethodsMock()
         controller.methods = mock
+        
+        epic("Unit")
+        feature("Authentication")
     }
     
     override func tearDown() {
@@ -28,6 +31,8 @@ final class LoginViewControllerTest: XCTestCase {
     }
     
     func testEmptyUsernameValidation() {
+        story("Field validation")
+        id("UC-LV-001")
         given("empty username and valid password") { _ in
             controller.userNameTF.text = ""
             controller.passwordTF.text = "ValidPassword"
@@ -44,6 +49,8 @@ final class LoginViewControllerTest: XCTestCase {
     }
     
     func testEmptyPasswordValidation() {
+        story("Field validation")
+        id("UC-LV-002")
         given("valid username and empty password") { _ in
             controller.userNameTF.text = "ValidUserName"
             controller.passwordTF.text = ""

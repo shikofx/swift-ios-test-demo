@@ -9,6 +9,9 @@ final class MyCartViewControllerTests: BaseSnapshotTest {
     override func setUp() {
         super.setUp()
         let storyboard = UIStoryboard(name: "TabBar", bundle: nil)
+        
+        epic("Snapshot")
+        feature("Cart")
         cartVC = storyboard.instantiateViewController(withIdentifier: "MyCartViewController") as? MyCartViewController
     }
 
@@ -22,6 +25,7 @@ final class MyCartViewControllerTests: BaseSnapshotTest {
     }
 
     func testEmptyCart() {
+        story("Empty cart")
         given("the cart is empty") { _ in
             cartVC.loadViewIfNeeded()
         }
@@ -31,6 +35,7 @@ final class MyCartViewControllerTests: BaseSnapshotTest {
     }
 
     func testWithOneItem() {
+        story("Cart with one item")
         given("the cart has one item") { _ in
             addMockProduct(quantity: 1)
             cartVC.loadViewIfNeeded()
@@ -41,6 +46,7 @@ final class MyCartViewControllerTests: BaseSnapshotTest {
     }
 
     func testWithMultipleItems() {
+        story("Cart with multiple items")
         given("the cart has multiple items") { _ in
             addMockProduct(id: "1", name: "Sauce Labs Backpack", quantity: 2)
             addMockProduct(id: "2", name: "Sauce Labs Bike Light", quantity: 1)

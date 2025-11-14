@@ -9,6 +9,9 @@ final class ProductPageDetailSnapshotTests: BaseSnapshotTest {
     override func setUp() {
         super.setUp()
         let storyboard = UIStoryboard(name: "TabBar", bundle: nil)
+        
+        epic("Snapshot")
+        feature("Product Details")
         detailVC = storyboard.instantiateViewController(withIdentifier: "ProductPageDetailViewController") as? ProductPageDetailViewController
 
         // Configure VC with mock data
@@ -27,6 +30,7 @@ final class ProductPageDetailSnapshotTests: BaseSnapshotTest {
     }
 
     func testDefaultState() {
+        story("Default state")
         given("the product detail screen is opened") { _ in
             // View is configured in setUp
         }
@@ -36,6 +40,7 @@ final class ProductPageDetailSnapshotTests: BaseSnapshotTest {
     }
 
     func testBlackColorSelected() {
+        story("Color selection")
         when("the user selects the black color") { _ in
             detailVC.blackButton(UIButton())
         }
@@ -45,6 +50,7 @@ final class ProductPageDetailSnapshotTests: BaseSnapshotTest {
     }
 
     func testBlueColorSelected() {
+        story("Color selection")
         when("the user selects the blue color") { _ in
             detailVC.blueButton(UIButton())
         }
@@ -54,6 +60,7 @@ final class ProductPageDetailSnapshotTests: BaseSnapshotTest {
     }
 
     func testIncreasedQuantity() {
+        story("Quantity change")
         when("the user increases the quantity twice") { _ in
             detailVC.addButton(UIButton())
             detailVC.addButton(UIButton())
@@ -64,6 +71,7 @@ final class ProductPageDetailSnapshotTests: BaseSnapshotTest {
     }
 
     func testZeroQuantity() {
+        story("Quantity change")
         when("the user decreases the quantity to 0") { _ in
             detailVC.subtractButton(UIButton())
         }

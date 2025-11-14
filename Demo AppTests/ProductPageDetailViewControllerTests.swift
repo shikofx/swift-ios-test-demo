@@ -25,6 +25,9 @@ final class ProductPageDetailViewControllerTests : XCTestCase {
         controller.productHighlights = "Highlight 1"
         
         controller.loadViewIfNeeded()
+        
+        epic("Unit")
+        feature("Product Details")
         super.setUp()
     }
     
@@ -35,6 +38,8 @@ final class ProductPageDetailViewControllerTests : XCTestCase {
     }
     
     func testAddToCartSingleItem() {
+        story("Adding to cart")
+        id("UC-PPDV-001")
         given("empty cart") { _ in
             engine.cartList.removeAll()
             engine.cartCount = 0
@@ -55,6 +60,8 @@ final class ProductPageDetailViewControllerTests : XCTestCase {
     }
     
     func testAddToCartSingleItemTwice() {
+        story("Adding to cart")
+        id("UC-PPDV-003")
         given("empty cart") { _ in
             engine.cartList.removeAll()
             engine.cartCount = 0
@@ -77,6 +84,8 @@ final class ProductPageDetailViewControllerTests : XCTestCase {
     }
     
     func testAddToCartMultipleItems() {
+        story("Adding to cart")
+        id("UC-PPDV-004")
         given("empty cart)") { _ in
             engine.cartList.removeAll()
             engine.cartCount = 0
