@@ -112,6 +112,7 @@ jobs:
       - build_for_testing
       - unit_tests
       - snapshot_tests
+      - build_for_testing # Зависит только от сборки
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -170,6 +171,12 @@ jobs:
           name: ui-test-results
           path: ui-test-results/
 
+      - name: Download snapshot test results
+        uses: actions/download-artifact@v4
+        with:
+          name: snapshot-test-results
+          path: snapshot-test-results/
+
       - name: List downloaded files for debugging
         run: |
           echo "--- Listing all downloaded files ---"
@@ -177,7 +184,7 @@ jobs:
 
       - name: Merge test results
         run: |
-          xcrun xcresulttool merge ui-test-results/TestResults.xcresult unit-test-results/TestResults.xcresult --output-path merged-test-results.xcresult
+          xcrun xcresulttool merge unit-test-results/TestResults.xcresult ui-test-results/TestResults.xcresult snapshot-test-results/TestResults.xcresult --output-path merged-test-results.xcresult
 
       - name: Upload merged test results
         uses: actions/upload-artifact@v4
