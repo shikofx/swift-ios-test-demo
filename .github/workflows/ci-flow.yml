@@ -326,7 +326,11 @@ jobs:
           else 
             echo "The folder .history does not exitst. The step is skipped"
           fi
-            
+      
+      - name: Site content
+        run: |
+          ls -R
+          
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
 

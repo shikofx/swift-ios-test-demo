@@ -1,13 +1,10 @@
 import XCTest
 
 @MainActor
-final class TabBarUiTests: XCTestCase {
+final class TabBarUiTests: BaseUiTest {
 
     override func setUp() {
         super.setUp()
-        continueAfterFailure = false
-        uiBot.start()
-        
         epic("UI")
         feature("Navigation")
     }

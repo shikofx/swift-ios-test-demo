@@ -1,13 +1,10 @@
 import XCTest
 
 @MainActor
-final class ProductDetailsUiTests: XCTestCase {
+final class ProductDetailsUiTests: BaseUiTest {
 
     override func setUp() {
         super.setUp()
-        continueAfterFailure = false
-        uiBot.start()
-        
         epic("UI")
         feature("Product Details")
     }

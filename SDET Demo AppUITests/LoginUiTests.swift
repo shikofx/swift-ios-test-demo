@@ -1,12 +1,9 @@
 import XCTest
 
 @MainActor
-final class LoginUiTests: XCTestCase {
+final class LoginUiTests: BaseUiTest {
     override func setUp() {
         super.setUp()
-        continueAfterFailure = false
-        uiBot.start()
-        
         epic("UI")
         feature("Authentication")
     }

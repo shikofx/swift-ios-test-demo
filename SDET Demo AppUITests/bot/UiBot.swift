@@ -14,7 +14,7 @@ class UiBot {
     }
 }
 
-extension XCTestCase {
+extension BaseUiTest {
     var uiBot: UiBot {
         .init(app: XCUIApplication())
     }
